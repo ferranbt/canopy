@@ -15,6 +15,7 @@ members = [
     "crates/yaml-with-spans",
     "examples/gh-runner-registration",
     "examples/job-runner",
+    "tests",
     "examples/gh-runner-local",
     "examples/gh-runner-fargate-ondemand",
 ]
@@ -27,30 +28,16 @@ license = "MPL-2.0"
 repository = "https://github.com/ferranbt/canopy"
 
 [workspace.dependencies]
-gh-actions-spec = { path = "crates/gh-actions-spec" }
-gh-actions-expr = { path = "crates/gh-actions-expr" }
-gh-actions-context = { path = "crates/gh-actions-context" }
-gh-actions-plan = { path = "crates/gh-actions-plan" }
-gh-actions-report = { path = "crates/gh-actions-report" }
-gh-actions-lint = { path = "crates/gh-actions-lint" }
-gh-actions-runner = { path = "crates/gh-actions-runner" }
-gh-actions-services = { path = "crates/gh-actions-services" }
+gh-actions-spec = { path = "crates/gh-actions-spec", version = "0.1.0" }
+gh-actions-expr = { path = "crates/gh-actions-expr", version = "0.1.0" }
+gh-actions-context = { path = "crates/gh-actions-context", version = "0.1.0" }
+gh-actions-plan = { path = "crates/gh-actions-plan", version = "0.1.0" }
+gh-actions-report = { path = "crates/gh-actions-report", version = "0.1.0" }
+gh-actions-lint = { path = "crates/gh-actions-lint", version = "0.1.0" }
+gh-actions-runner = { path = "crates/gh-actions-runner", version = "0.1.0" }
+gh-actions-services = { path = "crates/gh-actions-services", version = "0.1.0" }
 local-runner = { path = "crates/local-runner" }
 canopy-lsp = { path = "crates/canopy-lsp" }
-yaml-with-spans = { path = "crates/yaml-with-spans" }
-gh-actions-listener = { path = "crates/gh-actions-listener" }
+yaml-with-spans = { path = "crates/yaml-with-spans", version = "0.1.0" }
+gh-actions-listener = { path = "crates/gh-actions-listener", version = "0.1.0" }
 serde = { version = "1.0", features = ["derive"] }
-
-[package]
-name = "canopy-tests"
-version.workspace = true
-edition.workspace = true
-publish = false
-
-[[test]]
-name = "integration"
-path = "tests/integration.rs"
-
-[dev-dependencies]
-local-runner.workspace = true
-gh-actions-runner.workspace = true

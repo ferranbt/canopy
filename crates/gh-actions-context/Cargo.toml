@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "The contexts a GitHub Actions run exposes, and the events behind them"
 
 [dependencies]
 gh-actions-expr.workspace = true

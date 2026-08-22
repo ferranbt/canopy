@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Turns a GitHub Actions workflow into the jobs that would run, in order"
 
 [dependencies]
 gh-actions-spec.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "canopy-tests"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[[test]]
+name = "integration"
+path = "integration.rs"
+
+[dependencies]
+local-runner.workspace = true
+gh-actions-runner.workspace = true

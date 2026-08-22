@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Runs a planned GitHub Actions job on whatever machine it is given"
 
 [dependencies]
 gh-actions-spec.workspace = true

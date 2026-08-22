@@ -5,7 +5,7 @@ use local_runner::{Config, Local};
 
 #[test]
 fn run_integration_tests() {
-    let testdata = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/testdata");
+    let testdata = Path::new(env!("CARGO_MANIFEST_DIR")).join("testdata");
     let target = std::env::var("TARGET_FILE")
         .ok()
         .filter(|name| !name.is_empty());
