@@ -10,24 +10,13 @@ jobs:
   expressions:
     runs-on: ubuntu-latest
     steps:
-      - name: Interpolate contexts into a command
-        run: echo "$GREETING from ${{ github.event_name }} on ${{ runner.os }}"
-
       - id: meta
         name: Write a step output
         run: echo "version=1.2.3" >> "$GITHUB_OUTPUT"
 
-      - name: Read the previous step's output
-        run: echo "version=${{ steps.meta.outputs.version }}"
-
-      - name: Export an environment variable
-        run: echo "BUILT_BY=canopy" >> "$GITHUB_ENV"
-
-      - name: Read it back in a later step
-        run: echo "built_by=$BUILT_BY"
-
-      - name: Export a multi-line value
+      - name: Export environment variables, one of them over several lines
         run: |
+          echo "BUILT_BY=canopy" >> "$GITHUB_ENV"
           {
             echo "NOTES<<EOF"
             echo "line one"
@@ -35,13 +24,25 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_ENV"
 
-      - name: Read the multi-line value
-        run: echo "$NOTES"
-
       - name: Skipped, because the condition is false
         if: github.event_name == 'schedule'
-        run: echo "this never prints"
+        run: echo "SKIPPED_STEP_RAN=yes" >> "$GITHUB_ENV"
 
       - name: Runs, because the condition holds
         if: startsWith(github.ref_name, 'm') || always()
-        run: echo "conditions work"
+        run: echo "CONDITION_HELD=yes" >> "$GITHUB_ENV"
+
+      - uses: ./actions/expect
+        with:
+          checks: |
+            $GREETING == hello                            # the workflow env reaches the shell
+            ${{ env.GREETING }} == hello                  # and an expression sees the same
+            ${{ github.event_name }} == push              # the event that started the run
+            ${{ runner.os }} == Linux
+            ${{ steps.meta.outputs.version }} == 1.2.3    # a step output, written to the output file
+            $BUILT_BY == canopy                           # an env file export reaches a later step
+            ${{ env.BUILT_BY }} == canopy                 # and the context it builds
+            $(echo "$NOTES" | wc -l) == 2                 # a multi-line export keeps its lines
+            $(echo "$NOTES" | head -1) == line one
+            $SKIPPED_STEP_RAN ==                          # a false condition left nothing behind
+            $CONDITION_HELD == yes                        # and a true one ran

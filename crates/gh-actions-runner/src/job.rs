@@ -496,6 +496,7 @@ impl JobRunner<'_> {
         let caller_inputs = std::mem::replace(&mut self.run.inputs, inputs.clone());
         let caller_steps = std::mem::take(&mut self.run.steps);
         let caller_path = self.run.github.action_path.replace(resolved.path.clone());
+        let caller_state = std::mem::take(&mut self.state);
 
         let planned = steps::plan(steps, &self.options.workspace, &self.options.cache)?;
         let failed = self.run_steps(&planned, depth + 1)?;
@@ -512,6 +513,7 @@ impl JobRunner<'_> {
         self.run.inputs = caller_inputs;
         self.run.steps = caller_steps;
         self.run.github.action_path = caller_path;
+        self.state = caller_state;
 
         Ok(StepOutcome {
             succeeded: !failed,

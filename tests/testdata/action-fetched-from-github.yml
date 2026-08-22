@@ -11,5 +11,10 @@ jobs:
         uses: actions/hello-world-javascript-action@main
         with:
           who-to-greet: canopy
-      - name: Read what the fetched action returned
-        run: echo "time=${{ steps.greet.outputs.time }}"
+
+      - name: What the fetched action returned
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.greet.outcome }} == success       # it was fetched, and it ran
+            ${{ steps.greet.outputs.time }} != ''       # and it returned what it declares
