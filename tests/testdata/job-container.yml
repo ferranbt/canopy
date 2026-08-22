@@ -1,0 +1,52 @@
+# A job that names its own container runs in that image, not the one `runs-on` implies.
+name: Job containers
+
+on: push
+
+jobs:
+  bare-image:
+    runs-on: ubuntu-latest
+    # Written as just a name. Debian rather than the Ubuntu `runs-on` would have picked,
+    # so a job that ignored this would fail the check below.
+    container: debian:bookworm-slim
+    steps:
+      - name: Check which image the steps are in
+        run: |
+          . /etc/os-release
+          echo "running on $ID"
+          test "$ID" = debian
+
+  with-settings:
+    runs-on: ubuntu-latest
+    # Written in full, so the settings beside the image have to be honoured too.
+    container:
+      image: debian:bookworm-slim
+      env:
+        FROM_CONTAINER: set by the container block
+        A_NUMBER: 42
+      options: --hostname canopy-container
+    steps:
+      - name: Check the image again
+        run: |
+          . /etc/os-release
+          test "$ID" = debian
+
+      - name: Check the environment the container was given
+        run: |
+          echo "FROM_CONTAINER=$FROM_CONTAINER"
+          test "$FROM_CONTAINER" = "set by the container block"
+          test "$A_NUMBER" = "42"
+
+      - name: Check the extra docker options were passed
+        run: |
+          echo "hostname=$(hostname)"
+          test "$(hostname)" = canopy-container
+
+  no-container:
+    runs-on: ubuntu-latest
+    # Nothing named, so this one still lands in the image `runs-on` maps to.
+    steps:
+      - name: Check the default is unchanged
+        run: |
+          . /etc/os-release
+          test "$ID" = ubuntu

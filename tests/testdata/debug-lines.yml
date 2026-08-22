@@ -1,0 +1,15 @@
+# `::debug::` is only shown when the runner was asked for it, the way GitHub keeps debug
+# logging behind a switch. Whether the line appears is asserted by
+# `crates/canopy/tests/output.rs`, which runs this twice: once quiet, once with RUNNER_DEBUG.
+name: Debug lines
+
+on: push
+
+jobs:
+  says_something_quietly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say something only a debug run should show
+        run: |
+          echo "::debug::a quiet word"
+          echo "said it"

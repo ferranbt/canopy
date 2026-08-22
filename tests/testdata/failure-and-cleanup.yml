@@ -1,0 +1,39 @@
+# expect: failure
+# What happens after a step fails: cleanup still runs, later jobs do not.
+name: Failure handling
+
+on: push
+
+jobs:
+  failing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: This one is fine
+        run: echo "first"
+
+      - name: Tolerated failure
+        continue-on-error: true
+        run: exit 1
+
+      - name: Still running after a tolerated failure
+        run: echo "continue-on-error kept the job green"
+
+      - name: Real failure
+        run: exit 3
+
+      - name: Skipped after the failure
+        run: echo "this never prints"
+
+      - name: Cleanup runs anyway
+        if: always()
+        run: echo "cleanup"
+
+      - name: Only on failure
+        if: failure()
+        run: echo "failure handler"
+
+  never-runs:
+    needs: failing
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "this job never starts"

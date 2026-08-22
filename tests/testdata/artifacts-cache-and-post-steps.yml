@@ -1,0 +1,93 @@
+# Actions that need a backend service: artifacts and cache.
+name: Artifacts and cache
+
+on: push
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make something worth uploading
+        run: |
+          # The workspace is this directory rather than a fresh checkout, so anything a
+          # previous run left has to go: `restored` surviving would let the check below
+          # pass without the download having done anything.
+          rm -rf out restored
+          mkdir -p out
+          echo "built at step time" > out/result.txt
+          echo "second file" > out/notes.txt
+
+      - name: Upload it
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: out
+
+      - name: Remove the local copy
+        run: rm -rf out
+
+      - name: Download it back
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: restored
+
+      - name: Check the round trip
+        run: |
+          cat restored/result.txt
+          test -f restored/notes.txt
+          echo "artifact round trip ok"
+
+  caching:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create something worth caching
+        run: |
+          rm -rf deps
+          mkdir -p deps
+          echo "an expensive dependency" > deps/lib.txt
+
+      # The explicit save action, so the round trip completes within one run.
+      - name: Save it to the cache
+        uses: actions/cache/save@v4
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-v1
+
+      - name: Throw the local copy away
+        run: rm -rf deps
+
+      - name: Restore it
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-v1
+          restore-keys: |
+            deps-${{ runner.os }}-
+
+      - name: Check the cache round trip
+        run: |
+          echo "cache-hit=${{ steps.restore.outputs.cache-hit }}"
+          cat deps/lib.txt
+          echo "cache round trip ok"
+
+  post-steps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create something worth caching
+        run: |
+          rm -rf vendor
+          mkdir -p vendor
+          echo "vendored" > vendor/lib.txt
+
+      # The combined action restores in its main step and saves in its post step,
+      # so this exercises the post hook and the `$GITHUB_STATE` round trip.
+      - name: Cache, saved by the post step
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: vendor-${{ runner.os }}-v1
+
+      - name: Work happens between main and post
+        run: echo "building"

@@ -1,0 +1,15 @@
+# An action fetched from GitHub and cached locally.
+name: Remote action
+
+on: push
+
+jobs:
+  remote:
+    runs-on: ubuntu-latest
+    steps:
+      - id: greet
+        uses: actions/hello-world-javascript-action@main
+        with:
+          who-to-greet: canopy
+      - name: Read what the fetched action returned
+        run: echo "time=${{ steps.greet.outputs.time }}"

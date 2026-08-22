@@ -1,0 +1,21 @@
+[package]
+name = "canopy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+eyre = "0.6"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+gh-actions-runner.workspace = true
+gh-actions-lint.workspace = true
+gh-actions-plan.workspace = true
+local-runner.workspace = true
+canopy-lsp.workspace = true
+
+[dev-dependencies]
+serde_json = "1.0"

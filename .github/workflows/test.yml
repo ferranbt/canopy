@@ -1,0 +1,80 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: Lint checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      
+      - uses: taiki-e/install-action@just
+
+      - name: Run lint checks
+        run: just lint
+        env:
+          RUSTFLAGS: -D warnings
+
+  run-tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run tests
+        run: cargo test --workspace --lib
+
+  integration-tests:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # Pre pull the images used in the integration tests
+      - name: Pull the images the workflows run in
+        run: |
+          docker pull catthehacker/ubuntu:act-latest
+          docker pull debian:bookworm-slim
+          docker pull redis:7-alpine
+
+      - name: Run integration tests
+        run: cargo test --test integration -- --nocapture
+
+  extension-tests:
+    name: Run VS Code extension tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build the canopy binary
+        run: cargo build -p canopy
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install extension dependencies
+        working-directory: editors/vscode
+        run: npm install
+
+      - name: Run extension tests
+        working-directory: editors/vscode
+        run: xvfb-run -a npm test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

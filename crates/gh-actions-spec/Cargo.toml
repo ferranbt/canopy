@@ -1,0 +1,12 @@
+[package]
+name = "gh-actions-spec"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+
+[dev-dependencies]
+yaml-with-spans.workspace = true

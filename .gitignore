@@ -1,0 +1,9 @@
+/target
+TODO.md
+credentials*
+_work
+
+.terraform
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup

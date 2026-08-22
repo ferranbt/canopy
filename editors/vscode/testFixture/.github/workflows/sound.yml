@@ -1,0 +1,17 @@
+name: Sound
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - id: meta
+        run: echo "version=1" >> "$GITHUB_OUTPUT"
+
+  ship:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "shipping ${{ needs.build.outputs.version }}"

@@ -1,0 +1,6 @@
+# Skip directories that the tests create locally
+deps/
+out/
+restored/
+vendor/
+combos/

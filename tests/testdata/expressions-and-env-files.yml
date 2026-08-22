@@ -1,0 +1,47 @@
+# Conditions, contexts and the state files steps exchange data through.
+name: Expressions
+
+on: push
+
+env:
+  GREETING: hello
+
+jobs:
+  expressions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Interpolate contexts into a command
+        run: echo "$GREETING from ${{ github.event_name }} on ${{ runner.os }}"
+
+      - id: meta
+        name: Write a step output
+        run: echo "version=1.2.3" >> "$GITHUB_OUTPUT"
+
+      - name: Read the previous step's output
+        run: echo "version=${{ steps.meta.outputs.version }}"
+
+      - name: Export an environment variable
+        run: echo "BUILT_BY=canopy" >> "$GITHUB_ENV"
+
+      - name: Read it back in a later step
+        run: echo "built_by=$BUILT_BY"
+
+      - name: Export a multi-line value
+        run: |
+          {
+            echo "NOTES<<EOF"
+            echo "line one"
+            echo "line two"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Read the multi-line value
+        run: echo "$NOTES"
+
+      - name: Skipped, because the condition is false
+        if: github.event_name == 'schedule'
+        run: echo "this never prints"
+
+      - name: Runs, because the condition holds
+        if: startsWith(github.ref_name, 'm') || always()
+        run: echo "conditions work"

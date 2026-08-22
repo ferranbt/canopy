@@ -1,0 +1,18 @@
+name: Greet (node)
+description: Greets someone from a JavaScript entry point.
+
+inputs:
+  who-to-greet:
+    description: Name to greet.
+    required: false
+    default: World
+
+outputs:
+  greeted-at:
+    description: When the greeting happened.
+
+runs:
+  using: node20
+  pre: pre.js
+  main: index.js
+  post: post.js

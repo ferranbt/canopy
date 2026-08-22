@@ -1,0 +1,61 @@
+# `defaults.run` sets the shell and working directory for every `run:` step under it, with
+# the job overriding the workflow and a step overriding both.
+name: Defaults
+
+on: push
+
+defaults:
+  run:
+    shell: sh
+    working-directory: from-workflow
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make the directories the defaults point at
+        # Back at the workspace root, since the workflow default points at one of the
+        # directories this step is about to create.
+        working-directory: .
+        run: mkdir -p from-workflow from-job from-step
+
+  takes-the-workflow-defaults:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run where the workflow said, in the shell it named
+        run: |
+          test "$(basename "$PWD")" = from-workflow
+          # `sh` is dash here and bash is not, which is a difference a script can see.
+          test -z "$BASH_VERSION"
+          echo "workflow defaults applied"
+
+  a_job_overrides_the_workflow:
+    needs: setup
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: from-job
+    steps:
+      - name: The job's defaults win
+        run: |
+          test "$(basename "$PWD")" = from-job
+          test -n "$BASH_VERSION"
+          echo "job defaults applied"
+
+      - name: A step wins over both
+        shell: sh
+        working-directory: from-step
+        run: |
+          test "$(basename "$PWD")" = from-step
+          test -z "$BASH_VERSION"
+          echo "step settings applied"
+
+  cleanup:
+    needs: [takes-the-workflow-defaults, a_job_overrides_the_workflow]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove what setup made
+        working-directory: .
+        run: rm -rf from-workflow from-job from-step

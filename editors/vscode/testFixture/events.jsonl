@@ -1,0 +1,36 @@
+{"event":"job-started","id":"composite","label":"composite"}
+{"event":"progress","text":"starting catthehacker/ubuntu:act-latest"}
+{"depth":0,"event":"step-started","index":0,"name":"./actions/greet-composite"}
+{"depth":1,"event":"step-started","index":0,"name":"echo \"message=${{ inputs.greeting }}, ${{ inputs.who-to-greet }}!\" >> \"$GITHUB_OUTPUT\""}
+{"code":0,"conclusion":"success","depth":1,"event":"step-finished","index":0,"name":"echo \"message=${{ inputs.greeting }}, ${{ inputs.who-to-greet }}!\" >> \"$GITHUB_OUTPUT\""}
+{"depth":1,"event":"step-started","index":1,"name":"Print it"}
+{"event":"output","line":"Hey, composite!","stream":"stdout"}
+{"code":0,"conclusion":"success","depth":1,"event":"step-finished","index":1,"name":"Print it"}
+{"depth":1,"event":"step-started","index":2,"name":"Show where the action lives"}
+{"event":"output","line":"action_path=/root/workspace/kratos/tests/testdata/./actions/greet-composite","stream":"stdout"}
+{"code":0,"conclusion":"success","depth":1,"event":"step-finished","index":2,"name":"Show where the action lives"}
+{"code":0,"conclusion":"success","depth":0,"event":"step-finished","index":0,"name":"./actions/greet-composite"}
+{"depth":0,"event":"step-started","index":1,"name":"Read the action's output"}
+{"event":"output","line":"action returned Hey, composite!","stream":"stdout"}
+{"code":0,"conclusion":"success","depth":0,"event":"step-finished","index":1,"name":"Read the action's output"}
+{"depth":0,"event":"step-started","index":2,"name":"Defaults are filled in when `with` is omitted"}
+{"depth":1,"event":"step-started","index":0,"name":"echo \"message=${{ inputs.greeting }}, ${{ inputs.who-to-greet }}!\" >> \"$GITHUB_OUTPUT\""}
+{"code":0,"conclusion":"success","depth":1,"event":"step-finished","index":0,"name":"echo \"message=${{ inputs.greeting }}, ${{ inputs.who-to-greet }}!\" >> \"$GITHUB_OUTPUT\""}
+{"depth":1,"event":"step-started","index":1,"name":"Print it"}
+{"event":"output","line":"Hello, World!","stream":"stdout"}
+{"code":0,"conclusion":"success","depth":1,"event":"step-finished","index":1,"name":"Print it"}
+{"depth":1,"event":"step-started","index":2,"name":"Show where the action lives"}
+{"event":"output","line":"action_path=/root/workspace/kratos/tests/testdata/./actions/greet-composite","stream":"stdout"}
+{"code":0,"conclusion":"success","depth":1,"event":"step-finished","index":2,"name":"Show where the action lives"}
+{"code":0,"conclusion":"success","depth":0,"event":"step-finished","index":2,"name":"Defaults are filled in when `with` is omitted"}
+{"conclusion":"success","event":"job-finished","id":"composite","label":"composite"}
+{"event":"job-started","id":"node","label":"node"}
+{"event":"progress","text":"starting catthehacker/ubuntu:act-latest"}
+{"depth":0,"event":"step-started","index":0,"name":"./actions/greet-node"}
+{"event":"output","line":"Hello, node! (from node 24.19.0)","stream":"stdout"}
+{"event":"output","line":"action_path=/root/workspace/kratos/tests/testdata/./actions/greet-node","stream":"stdout"}
+{"code":0,"conclusion":"success","depth":0,"event":"step-finished","index":0,"name":"./actions/greet-node"}
+{"depth":0,"event":"step-started","index":1,"name":"Outputs and env from a JavaScript action"}
+{"event":"output","line":"output=node env=node","stream":"stdout"}
+{"code":0,"conclusion":"success","depth":0,"event":"step-finished","index":1,"name":"Outputs and env from a JavaScript action"}
+{"conclusion":"success","event":"job-finished","id":"node","label":"node"}

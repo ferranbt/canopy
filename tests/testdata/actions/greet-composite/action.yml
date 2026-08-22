@@ -1,0 +1,30 @@
+name: Greet (composite)
+description: Greets someone by running a few shell steps.
+
+inputs:
+  who-to-greet:
+    description: Name to greet.
+    required: false
+    default: World
+  greeting:
+    description: Word used to greet.
+    required: false
+    default: Hello
+
+outputs:
+  message:
+    description: The greeting that was produced.
+    value: ${{ steps.build.outputs.message }}
+
+runs:
+  using: composite
+  steps:
+    - id: build
+      shell: bash
+      run: echo "message=${{ inputs.greeting }}, ${{ inputs.who-to-greet }}!" >> "$GITHUB_OUTPUT"
+    - name: Print it
+      shell: bash
+      run: echo "${{ steps.build.outputs.message }}"
+    - name: Show where the action lives
+      shell: bash
+      run: echo "action_path=${{ github.action_path }}"

@@ -1,0 +1,56 @@
+[workspace]
+members = [
+    "crates/canopy",
+    "crates/gh-actions-spec",
+    "crates/gh-actions-expr",
+    "crates/gh-actions-context",
+    "crates/gh-actions-plan",
+    "crates/gh-actions-report",
+    "crates/gh-actions-lint",
+    "crates/gh-actions-runner",
+    "crates/gh-actions-services",
+    "crates/local-runner",
+    "crates/canopy-lsp",
+    "crates/gh-actions-listener",
+    "crates/yaml-with-spans",
+    "examples/gh-runner-registration",
+    "examples/job-runner",
+    "examples/gh-runner-local",
+    "examples/gh-runner-fargate-ondemand",
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+repository = "https://github.com/ferranbt/canopy"
+
+[workspace.dependencies]
+gh-actions-spec = { path = "crates/gh-actions-spec" }
+gh-actions-expr = { path = "crates/gh-actions-expr" }
+gh-actions-context = { path = "crates/gh-actions-context" }
+gh-actions-plan = { path = "crates/gh-actions-plan" }
+gh-actions-report = { path = "crates/gh-actions-report" }
+gh-actions-lint = { path = "crates/gh-actions-lint" }
+gh-actions-runner = { path = "crates/gh-actions-runner" }
+gh-actions-services = { path = "crates/gh-actions-services" }
+local-runner = { path = "crates/local-runner" }
+canopy-lsp = { path = "crates/canopy-lsp" }
+yaml-with-spans = { path = "crates/yaml-with-spans" }
+gh-actions-listener = { path = "crates/gh-actions-listener" }
+serde = { version = "1.0", features = ["derive"] }
+
+[package]
+name = "canopy-tests"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[[test]]
+name = "integration"
+path = "tests/integration.rs"
+
+[dev-dependencies]
+local-runner.workspace = true
+gh-actions-runner.workspace = true

@@ -1,0 +1,48 @@
+name: Reusable build
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: Target triple to build
+        required: true
+        type: string
+      profile:
+        type: string
+        default: release
+    secrets:
+      registry-token:
+        description: Token used to fetch private crates
+        required: false
+    outputs:
+      artifact:
+        description: Name of the uploaded artifact
+        value: ${{ jobs.build.outputs.artifact }}
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.upload.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: upload
+        run: echo "name=canopy-${{ inputs.target }}" >> "$GITHUB_OUTPUT"
+
+  call-other:
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    with:
+      target: ${{ inputs.target }}
+    secrets: inherit
+
+  call-external:
+    uses: octo-org/shared/.github/workflows/publish.yml@v1
+    permissions:
+      contents: read
+    secrets:
+      token: ${{ secrets.PUBLISH_TOKEN }}

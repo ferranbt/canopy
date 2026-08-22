@@ -1,0 +1,36 @@
+# A job's `services:` run alongside it, each reachable at the name it was given.
+name: Job services
+
+on: push
+
+jobs:
+  talks-to-a-service:
+    runs-on: ubuntu-latest
+    services:
+      cache:
+        image: redis:7-alpine
+    steps:
+      - name: Reach the service by its label
+        run: |
+          # Nothing waits for a service to be ready, so this does, the way a workflow
+          # written for a slow morning anywhere else would have to.
+          for attempt in $(seq 30); do
+            (exec 3<>/dev/tcp/cache/6379) 2>/dev/null && break
+            sleep 1
+          done
+
+          exec 3<>/dev/tcp/cache/6379
+          printf 'PING\r\n' >&3
+          head -c 7 <&3 | grep -q PONG
+          echo "cache:6379 answered"
+
+  no-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A name no service claimed does not resolve
+        run: |
+          if getent hosts cache; then
+            echo "cache should not resolve in a job that declared no services"
+            exit 1
+          fi
+          echo "nothing leaked from the other job"

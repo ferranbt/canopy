@@ -1,0 +1,71 @@
+# The things a step says on stdout that the runner is meant to act on, and the files it is
+# given to write into.
+#
+# The log commands cannot be checked from inside the workflow — a step cannot read the
+# runner's log — so what they print is asserted by `crates/canopy/tests/output.rs`.
+name: Workflow commands
+
+on: push
+
+jobs:
+  adds-to-the-path:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Put a command somewhere and add it to the path
+        run: |
+          rm -rf tools
+          mkdir -p tools
+          printf '#!/bin/sh\necho "found on the path"\n' > tools/greet
+          chmod +x tools/greet
+          echo "$PWD/tools" >> "$GITHUB_PATH"
+
+      - name: The next step finds it by name alone
+        run: |
+          greet | grep -q "found on the path"
+          echo "the path carried over"
+
+      - name: The older spelling works too
+        run: |
+          rm -rf other
+          mkdir -p other
+          printf '#!/bin/sh\necho "also found"\n' > other/wave
+          chmod +x other/wave
+          echo "::add-path::$PWD/other"
+
+      - name: And is on the path for what follows
+        run: wave | grep -q "also found"
+
+      - name: Ordinary commands still resolve
+        run: |
+          # Adding to the path must not cost us what was already there.
+          command -v bash >/dev/null
+          command -v grep >/dev/null
+          echo "the rest of the path survived"
+
+      - name: Clean up
+        if: always()
+        run: rm -rf tools other
+
+  writes_a_step_summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: The summary file is there and can be written
+        run: |
+          echo "## What happened" >> "$GITHUB_STEP_SUMMARY"
+          echo "a line about it" >> "$GITHUB_STEP_SUMMARY"
+          # Each step gets its own, so a step can read back what it wrote.
+          grep -q "What happened" "$GITHUB_STEP_SUMMARY"
+          echo "wrote a summary"
+
+  says_things_to_the_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Group some lines and raise the three levels
+        run: |
+          echo "::group::a group of lines"
+          echo "inside the group"
+          echo "::endgroup::"
+          echo "::notice::something worth knowing"
+          echo "::warning::something worth watching"
+          echo "::error::something that went wrong"
+          echo "said everything"

@@ -1,0 +1,29 @@
+# The shells a `run:` step can ask for. `sh` and `bash` are covered by defaults.yml; this is
+# about `python`, which is the one that is not a shell at all.
+name: Shells
+
+on: push
+
+jobs:
+  runs_python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A python step is run by python, not by a shell
+        shell: python
+        run: |
+          import os
+          import sys
+
+          # A shell would have made nothing of these lines.
+          print("python", sys.version_info[0], "ran the step")
+          assert os.environ["GITHUB_WORKSPACE"], "the step still gets the environment"
+
+      - name: A python step that fails still fails its job
+        shell: python
+        continue-on-error: true
+        id: broken
+        run: |
+          raise SystemExit(1)
+
+      - name: And is reported as a failure
+        run: test "${{ steps.broken.outcome }}" = failure

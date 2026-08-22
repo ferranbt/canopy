@@ -1,0 +1,16 @@
+[package]
+name = "gh-actions-runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gh-actions-spec.workspace = true
+gh-actions-expr.workspace = true
+gh-actions-context.workspace = true
+gh-actions-plan.workspace = true
+gh-actions-report.workspace = true
+yaml-with-spans.workspace = true
+serde_json = "1.0"
+tracing = "0.1"

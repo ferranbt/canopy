@@ -1,0 +1,1237 @@
+{
+ "fileTable": [
+  ".github/workflows/ci.yml"
+ ],
+ "mask": [
+  {
+   "type": "regex",
+   "value": "\\b(?:eyJ0eXAiOi|eyJhbGciOi|eyJ4NXQiOi|eyJraWQiOi)[^\\s'\";]+"
+  },
+  {
+   "type": "regex",
+   "value": "\\bBearer\\s+[^\\s'\";]+"
+  },
+  {
+   "type": "regex",
+   "value": "\\b(?i:Password|Pwd)=(?:[^\\s'\";]+|\"[^\"]+\")"
+  },
+  {
+   "type": "regex",
+   "value": "\\s+-(?i:Password|Pwd)\\s+(?:[^\\s'\";]+|\"[^\"]+\")"
+  },
+  {
+   "type": "regex",
+   "value": "\\bv1\\.[0-9A-Fa-f]{40}\\b"
+  },
+  {
+   "type": "regex",
+   "value": "\\bgh[pousr]{1}_[A-Za-z0-9]{36}\\b"
+  },
+  {
+   "type": "regex",
+   "value": "\\bgithub_pat_[0-9][A-Za-z0-9]{21}_[A-Za-z0-9]{59}\\b"
+  },
+  {
+   "type": "regex",
+   "value": "(?:[a-zA-Z][a-zA-Z\\d+-.]*):\\/\\/([a-zA-Z\\d\\-._~\\!$&'()*+,;=%]+):([a-zA-Z\\d\\-._~\\!$&'()*+,;=:%]*)@"
+  },
+  {
+   "type": "regex",
+   "value": "\\b[0-9A-Za-z-_~.]{3}7Q~[0-9A-Za-z-_~.]{31}\\b|\\b[0-9A-Za-z-_~.]{3}8Q~[0-9A-Za-z-_~.]{34}\\b"
+  },
+  {
+   "type": "regex",
+   "value": "(?:^|[^0-9A-Za-z+/])[0-9A-Za-z+/]{76}(APIM|ACDb|\\+(ABa|AMC|ASt))[0-9A-Za-z+/]{5}[AQgw]=="
+  },
+  {
+   "type": "regex",
+   "value": "(?:^|[^0-9A-Za-z+/])[0-9A-Za-z+/]{33}(AIoT|\\+(ASb|AEh|ARm))[A-P][0-9A-Za-z+/]{5}="
+  },
+  {
+   "type": "regex",
+   "value": "\\b[0-9A-Za-z_\\-]{44}AzFu[0-9A-Za-z\\-_]{5}[AQgw]=="
+  },
+  {
+   "type": "regex",
+   "value": "\\b[0-9A-Za-z]{42}AzSe[A-D][0-9A-Za-z]{5}\\b"
+  },
+  {
+   "type": "regex",
+   "value": "\\b[0-9A-Za-z+/]{42}\\+ACR[A-D][0-9A-Za-z+/]{5}\\b"
+  },
+  {
+   "type": "regex",
+   "value": "\\b[0-9A-Za-z]{33}AzCa[A-P][0-9A-Za-z]{5}="
+  },
+  {
+   "type": "regex",
+   "value": "\\boy2[a-p][0-9a-z]{15}[aq][0-9a-z]{11}[eu][bdfhjlnprtvxz357][a-p][0-9a-z]{11}[aeimquy4]\\b"
+  },
+  {
+   "type": "regex",
+   "value": "\\bnpm_[0-9A-Za-z]{36}\\b"
+  },
+  {
+   "type": "regex",
+   "value": "\\bx-ghcr-signature=[^&]+"
+  },
+  {
+   "type": "regex",
+   "value": "ghs_[A-Za-z0-9._-]{36,}"
+  },
+  {
+   "type": "regex",
+   "value": "368_eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9\\.eyJhdWQiOiJhdXRobmQiLCJjdHgiOiJWbz"
+  },
+  {
+   "type": "regex",
+   "value": "ZBcHlqU2R3T3ZzbU9rZTVORy1tN0c4dWFiSHVUcUdZcXNEYkRjYzdJdEhXUUVPSDhvRjg0IiwiZ"
+  },
+  {
+   "type": "regex",
+   "value": "XhwIjoxNzg3MzA1ODIzLCJpYXQiOjE3ODczMDIyMjMsImlzcyI6ImdpdGh1YiIsImp0aSI6IjVl"
+  },
+  {
+   "type": "regex",
+   "value": "M2RhNzk1LTQ5YjctNDVmMi05ZWYzLTUyYTg5YmYxYjA5ZiIsInZlciI6M30\\.HPx-G-RRq6rNjsv"
+  },
+  {
+   "type": "regex",
+   "value": "7EdRQ51t8XkCvHSVd1zFa3xQX7MFCFPG51gXKniL62g2HcTjWVdLPD2VT9cGmn1BjqUZhBQ"
+  }
+ ],
+ "steps": [
+  {
+   "type": "action",
+   "reference": {
+    "type": "repository",
+    "name": "actions/checkout",
+    "ref": "v4",
+    "repositoryType": "GitHub"
+   },
+   "id": "c5fcd19b-da34-4373-b17f-c4c447b5d441",
+   "contextName": "__actions_checkout",
+   "name": "__actions_checkout",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 13,
+    "col": 15,
+    "lit": "Checkout"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "repository",
+    "name": "actions/setup-go",
+    "ref": "v5",
+    "repositoryType": "GitHub"
+   },
+   "id": "d1b51b8d-b170-46c7-a970-b1d8ae80f31f",
+   "contextName": "__actions_setup-go",
+   "name": "__actions_setup-go",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 16,
+    "col": 15,
+    "lit": "Set up Go"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "file": 1,
+    "line": 19,
+    "col": 11,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "file": 1,
+       "line": 19,
+       "col": 11,
+       "lit": "go-version"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 19,
+       "col": 23,
+       "lit": "1.25"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "f5279b74-86d3-4822-92bd-6715be12a618",
+   "contextName": "__run",
+   "name": "__run",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 21,
+    "col": 15,
+    "lit": "Verify formatting"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 22,
+       "col": 14,
+       "lit": "unformatted=$(gofmt -l .)\nif [ -n \"$unformatted\" ]; then\n  echo \"The following files are not gofmt-formatted:\"\n  echo \"$unformatted\"\n  exit 1\nfi\n"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "56180c2c-e57f-4fd8-9f3b-97681cc0940d",
+   "contextName": "__run_2",
+   "name": "__run_2",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 30,
+    "col": 15,
+    "lit": "Vet"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 31,
+       "col": 14,
+       "lit": "go vet ./..."
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "b9104258-65c6-43d4-b978-e825d0446a02",
+   "contextName": "__run_3",
+   "name": "__run_3",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 33,
+    "col": 15,
+    "lit": "Build"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 34,
+       "col": 14,
+       "lit": "go build ./..."
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "9e1795d9-8d6d-480f-b0bd-4a7904b6e71d",
+   "contextName": "__run_4",
+   "name": "__run_4",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 36,
+    "col": 15,
+    "lit": "Test"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 37,
+       "col": 14,
+       "lit": "go test -race -v ./..."
+      }
+     }
+    ]
+   }
+  }
+ ],
+ "variables": {
+  "Actions.EnableHttpRedirects": {
+   "value": "true"
+  },
+  "DistributedTask.AddWarningToNode12Action": {
+   "value": "true"
+  },
+  "DistributedTask.AddWarningToNode16Action": {
+   "value": "true"
+  },
+  "DistributedTask.AllowRunnerContainerHooks": {
+   "value": "true"
+  },
+  "DistributedTask.DeprecateStepOutputCommands": {
+   "value": "true"
+  },
+  "DistributedTask.DetailUntarFailure": {
+   "value": "true"
+  },
+  "DistributedTask.EnableCompositeActions": {
+   "value": "true"
+  },
+  "DistributedTask.EnableJobServerQueueTelemetry": {
+   "value": "true"
+  },
+  "DistributedTask.EnhancedAnnotations": {
+   "value": "true"
+  },
+  "DistributedTask.ForceGithubJavascriptActionsToNode16": {
+   "value": "true"
+  },
+  "DistributedTask.ForceGithubJavascriptActionsToNode20": {
+   "value": "true"
+  },
+  "DistributedTask.LogTemplateErrorsAsDebugMessages": {
+   "value": "true"
+  },
+  "DistributedTask.MarkJobAsFailedOnWorkerCrash": {
+   "value": "true"
+  },
+  "DistributedTask.NewActionMetadata": {
+   "value": "true"
+  },
+  "DistributedTask.UploadStepSummary": {
+   "value": "true"
+  },
+  "DistributedTask.UseActionArchiveCache": {
+   "value": "true"
+  },
+  "DistributedTask.UseWhich2": {
+   "value": "true"
+  },
+  "RunService.FixEmbeddedIssues": {
+   "value": "true"
+  },
+  "actions.runner.requirenode24": {
+   "value": "false"
+  },
+  "actions.runner.usenode24bydefault": {
+   "value": "true"
+  },
+  "actions.runner.warnonnode20": {
+   "value": "true"
+  },
+  "actions_add_check_run_id_to_job_context": {
+   "value": "true"
+  },
+  "actions_batch_action_resolution": {
+   "value": "false"
+  },
+  "actions_container_action_runner_temp": {
+   "value": "true"
+  },
+  "actions_display_helpful_actions_download_errors": {
+   "value": "true"
+  },
+  "actions_runner_allow_artifacts_file": {
+   "value": "false"
+  },
+  "actions_runner_compare_workflow_parser": {
+   "value": "false"
+  },
+  "actions_runner_deprecate_linux_arm32": {
+   "value": "true"
+  },
+  "actions_runner_emit_composite_markers": {
+   "value": "true"
+  },
+  "actions_runner_kill_linux_arm32": {
+   "value": "false"
+  },
+  "actions_runner_node20_removal_date": {
+   "value": ""
+  },
+  "actions_runner_node24_default_date": {
+   "value": "June 16th, 2026"
+  },
+  "actions_self_repository": {
+   "value": "true"
+  },
+  "actions_service_container_command": {
+   "value": "true"
+  },
+  "actions_set_orchestration_id_env_for_actions": {
+   "value": "true"
+  },
+  "actions_skip_retry_complete_job_upon_known_errors": {
+   "value": "true"
+  },
+  "actions_snapshot_preflight_hosted_runner_check": {
+   "value": "false"
+  },
+  "actions_snapshot_preflight_image_gen_pool_check": {
+   "value": "false"
+  },
+  "actions_use_bearer_token_for_codeload": {
+   "value": "redacted"
+  },
+  "actions_uses_cache_service_v2": {
+   "value": "true"
+  },
+  "github_token": {
+   "value": "redacted",
+   "isSecret": true
+  },
+  "system.from_run_service": {
+   "value": "true"
+  },
+  "system.github.job": {
+   "value": "test"
+  },
+  "system.github.launch_endpoint": {
+   "value": "https://launch.actions.githubusercontent.com"
+  },
+  "system.github.results_endpoint": {
+   "value": "https://results-receiver.actions.githubusercontent.com/"
+  },
+  "system.github.results_upload_with_sdk": {
+   "value": "true"
+  },
+  "system.github.token": {
+   "value": "redacted",
+   "isSecret": true
+  },
+  "system.github.token.permissions": {
+   "value": "redacted"
+  },
+  "system.orchestrationId": {
+   "value": "7965bbb6-33d2-4ec2-9a0f-1cd4ff079392.test.__default"
+  },
+  "system.phaseDisplayName": {
+   "value": "test"
+  },
+  "system.runner.lowdiskspacethreshold": {
+   "value": "100"
+  },
+  "system.runnerEnvironment": {
+   "value": "self-hosted"
+  },
+  "system.runnerGroupName": {
+   "value": "Default"
+  }
+ },
+ "messageType": "RunnerJobRequest",
+ "plan": {
+  "planType": "actions",
+  "version": 0,
+  "planId": "7965bbb6-33d2-4ec2-9a0f-1cd4ff079392",
+  "artifactUri": "",
+  "artifactLocation": ""
+ },
+ "timeline": {
+  "id": "7965bbb6-33d2-4ec2-9a0f-1cd4ff079392",
+  "changeId": 0,
+  "location": null
+ },
+ "jobId": "2fdaad95-6551-5273-904c-96e420ecdbcd",
+ "jobDisplayName": "test",
+ "jobName": "__default",
+ "requestId": 0,
+ "lockedUntil": "0001-01-01T00:00:00",
+ "environmentVariables": [],
+ "defaults": [],
+ "jobOutputs": null,
+ "jobContainer": null,
+ "jobServiceContainers": null,
+ "resources": {
+  "endpoints": [
+   {
+    "data": {
+     "ServerId": "",
+     "ServerName": "",
+     "CacheServerUrl": "https://artifactcache.actions.githubusercontent.com/SnzIyxdqsGYjTqV6JijVmQi74CN01sVEIisHsROZFkV5XdSP8O/",
+     "FeedStreamUrl": "wss://results-receiver.actions.githubusercontent.com/_ws/ingest.sock",
+     "ResultsServiceUrl": "https://results-receiver.actions.githubusercontent.com/",
+     "PipelinesServiceUrl": "https://pipelinesghubeus21.actions.githubusercontent.com/SnzIyxdqsGYjTqV6JijVmQi74CN01sVEIisHsROZFkV5XdSP8O/",
+     "GenerateIdTokenUrl": "",
+     "ConnectivityChecks": "[\"https://broker.actions.githubusercontent.com/health\",\"https://token.actions.githubusercontent.com/ready\",\"https://run.actions.githubusercontent.com/health\"]",
+     "ConnectivityAndDNSChecks": ""
+    },
+    "name": "SystemVssConnection",
+    "url": "https://run-actions-2-azure-eastus.actions.githubusercontent.com/210/",
+    "authorization": {
+     "parameters": {
+      "AccessToken": "redacted"
+     },
+     "scheme": "OAuth"
+    },
+    "isShared": false,
+    "isReady": true
+   }
+  ]
+ },
+ "contextData": {
+  "github": {
+   "t": 2,
+   "d": [
+    {
+     "k": "ref",
+     "v": "refs/heads/main"
+    },
+    {
+     "k": "sha",
+     "v": "4efc9c9d739dec8d6c730f47e30981fbdf9acf90"
+    },
+    {
+     "k": "repository",
+     "v": "ferranbt/test-ci"
+    },
+    {
+     "k": "repository_owner",
+     "v": "ferranbt"
+    },
+    {
+     "k": "repository_owner_id",
+     "v": "30872539"
+    },
+    {
+     "k": "repositoryUrl",
+     "v": "git://github.com/ferranbt/test-ci.git"
+    },
+    {
+     "k": "run_id",
+     "v": "32465023908"
+    },
+    {
+     "k": "run_number",
+     "v": "9"
+    },
+    {
+     "k": "retention_days",
+     "v": "90"
+    },
+    {
+     "k": "run_attempt",
+     "v": "1"
+    },
+    {
+     "k": "artifact_cache_size_limit",
+     "v": "10"
+    },
+    {
+     "k": "repository_visibility",
+     "v": "public"
+    },
+    {
+     "k": "actor_id",
+     "v": "30872539"
+    },
+    {
+     "k": "actor",
+     "v": "ferranbt"
+    },
+    {
+     "k": "workflow",
+     "v": "CI"
+    },
+    {
+     "k": "head_ref",
+     "v": ""
+    },
+    {
+     "k": "base_ref",
+     "v": ""
+    },
+    {
+     "k": "event_name",
+     "v": "workflow_dispatch"
+    },
+    {
+     "k": "server_url",
+     "v": "https://github.com"
+    },
+    {
+     "k": "api_url",
+     "v": "https://api.github.com"
+    },
+    {
+     "k": "graphql_url",
+     "v": "https://api.github.com/graphql"
+    },
+    {
+     "k": "ref_name",
+     "v": "main"
+    },
+    {
+     "k": "ref_protected",
+     "v": false
+    },
+    {
+     "k": "ref_type",
+     "v": "branch"
+    },
+    {
+     "k": "secret_source",
+     "v": "Actions"
+    },
+    {
+     "k": "event",
+     "v": {
+      "t": 2,
+      "d": [
+       {
+        "k": "ref",
+        "v": "refs/heads/main"
+       },
+       {
+        "k": "workflow",
+        "v": ".github/workflows/ci.yml"
+       },
+       {
+        "k": "inputs",
+        "v": null
+       },
+       {
+        "k": "repository",
+        "v": {
+         "t": 2,
+         "d": [
+          {
+           "k": "id",
+           "v": 1341503847
+          },
+          {
+           "k": "node_id",
+           "v": "R_kgDOT_W5Zw"
+          },
+          {
+           "k": "name",
+           "v": "test-ci"
+          },
+          {
+           "k": "full_name",
+           "v": "ferranbt/test-ci"
+          },
+          {
+           "k": "private",
+           "v": false
+          },
+          {
+           "k": "owner",
+           "v": {
+            "t": 2,
+            "d": [
+             {
+              "k": "login",
+              "v": "ferranbt"
+             },
+             {
+              "k": "id",
+              "v": 30872539
+             },
+             {
+              "k": "node_id",
+              "v": "MDQ6VXNlcjMwODcyNTM5"
+             },
+             {
+              "k": "avatar_url",
+              "v": "https://avatars.githubusercontent.com/u/30872539?v=4"
+             },
+             {
+              "k": "gravatar_id",
+              "v": ""
+             },
+             {
+              "k": "url",
+              "v": "https://api.github.com/users/ferranbt"
+             },
+             {
+              "k": "html_url",
+              "v": "https://github.com/ferranbt"
+             },
+             {
+              "k": "followers_url",
+              "v": "https://api.github.com/users/ferranbt/followers"
+             },
+             {
+              "k": "following_url",
+              "v": "https://api.github.com/users/ferranbt/following{/other_user}"
+             },
+             {
+              "k": "gists_url",
+              "v": "https://api.github.com/users/ferranbt/gists{/gist_id}"
+             },
+             {
+              "k": "starred_url",
+              "v": "https://api.github.com/users/ferranbt/starred{/owner}{/repo}"
+             },
+             {
+              "k": "subscriptions_url",
+              "v": "https://api.github.com/users/ferranbt/subscriptions"
+             },
+             {
+              "k": "organizations_url",
+              "v": "https://api.github.com/users/ferranbt/orgs"
+             },
+             {
+              "k": "repos_url",
+              "v": "https://api.github.com/users/ferranbt/repos"
+             },
+             {
+              "k": "events_url",
+              "v": "https://api.github.com/users/ferranbt/events{/privacy}"
+             },
+             {
+              "k": "received_events_url",
+              "v": "https://api.github.com/users/ferranbt/received_events"
+             },
+             {
+              "k": "type",
+              "v": "User"
+             },
+             {
+              "k": "user_view_type",
+              "v": "public"
+             },
+             {
+              "k": "site_admin",
+              "v": false
+             }
+            ]
+           }
+          },
+          {
+           "k": "html_url",
+           "v": "https://github.com/ferranbt/test-ci"
+          },
+          {
+           "k": "description",
+           "v": null
+          },
+          {
+           "k": "fork",
+           "v": false
+          },
+          {
+           "k": "url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci"
+          },
+          {
+           "k": "forks_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/forks"
+          },
+          {
+           "k": "keys_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/keys{/key_id}"
+          },
+          {
+           "k": "collaborators_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/collaborators{/collaborator}"
+          },
+          {
+           "k": "teams_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/teams"
+          },
+          {
+           "k": "hooks_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/hooks"
+          },
+          {
+           "k": "issue_events_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/issues/events{/number}"
+          },
+          {
+           "k": "events_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/events"
+          },
+          {
+           "k": "assignees_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/assignees{/user}"
+          },
+          {
+           "k": "branches_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/branches{/branch}"
+          },
+          {
+           "k": "tags_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/tags"
+          },
+          {
+           "k": "blobs_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/git/blobs{/sha}"
+          },
+          {
+           "k": "git_tags_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/git/tags{/sha}"
+          },
+          {
+           "k": "git_refs_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/git/refs{/sha}"
+          },
+          {
+           "k": "trees_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/git/trees{/sha}"
+          },
+          {
+           "k": "statuses_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/statuses/{sha}"
+          },
+          {
+           "k": "languages_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/languages"
+          },
+          {
+           "k": "stargazers_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/stargazers"
+          },
+          {
+           "k": "contributors_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/contributors"
+          },
+          {
+           "k": "subscribers_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/subscribers"
+          },
+          {
+           "k": "subscription_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/subscription"
+          },
+          {
+           "k": "commits_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/commits{/sha}"
+          },
+          {
+           "k": "git_commits_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/git/commits{/sha}"
+          },
+          {
+           "k": "comments_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/comments{/number}"
+          },
+          {
+           "k": "issue_comment_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/issues/comments{/number}"
+          },
+          {
+           "k": "contents_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/contents/{+path}"
+          },
+          {
+           "k": "compare_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/compare/{base}...{head}"
+          },
+          {
+           "k": "merges_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/merges"
+          },
+          {
+           "k": "archive_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/{archive_format}{/ref}"
+          },
+          {
+           "k": "downloads_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/downloads"
+          },
+          {
+           "k": "issues_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/issues{/number}"
+          },
+          {
+           "k": "pulls_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/pulls{/number}"
+          },
+          {
+           "k": "milestones_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/milestones{/number}"
+          },
+          {
+           "k": "notifications_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/notifications{?since,all,participating}"
+          },
+          {
+           "k": "labels_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/labels{/name}"
+          },
+          {
+           "k": "releases_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/releases{/id}"
+          },
+          {
+           "k": "deployments_url",
+           "v": "https://api.github.com/repos/ferranbt/test-ci/deployments"
+          },
+          {
+           "k": "created_at",
+           "v": "2026-08-21T07:00:01Z"
+          },
+          {
+           "k": "updated_at",
+           "v": "2026-08-21T07:51:13Z"
+          },
+          {
+           "k": "pushed_at",
+           "v": "2026-08-21T07:50:45Z"
+          },
+          {
+           "k": "git_url",
+           "v": "git://github.com/ferranbt/test-ci.git"
+          },
+          {
+           "k": "ssh_url",
+           "v": "git@github.com:ferranbt/test-ci.git"
+          },
+          {
+           "k": "clone_url",
+           "v": "https://github.com/ferranbt/test-ci.git"
+          },
+          {
+           "k": "svn_url",
+           "v": "https://github.com/ferranbt/test-ci"
+          },
+          {
+           "k": "homepage",
+           "v": null
+          },
+          {
+           "k": "size",
+           "v": 2
+          },
+          {
+           "k": "stargazers_count",
+           "v": 0
+          },
+          {
+           "k": "watchers_count",
+           "v": 0
+          },
+          {
+           "k": "language",
+           "v": "Go"
+          },
+          {
+           "k": "has_issues",
+           "v": true
+          },
+          {
+           "k": "has_projects",
+           "v": true
+          },
+          {
+           "k": "has_downloads",
+           "v": false
+          },
+          {
+           "k": "has_wiki",
+           "v": true
+          },
+          {
+           "k": "has_pages",
+           "v": false
+          },
+          {
+           "k": "has_discussions",
+           "v": false
+          },
+          {
+           "k": "forks_count",
+           "v": 0
+          },
+          {
+           "k": "mirror_url",
+           "v": null
+          },
+          {
+           "k": "archived",
+           "v": false
+          },
+          {
+           "k": "disabled",
+           "v": false
+          },
+          {
+           "k": "open_issues_count",
+           "v": 0
+          },
+          {
+           "k": "license",
+           "v": null
+          },
+          {
+           "k": "allow_forking",
+           "v": true
+          },
+          {
+           "k": "is_template",
+           "v": false
+          },
+          {
+           "k": "web_commit_signoff_required",
+           "v": false
+          },
+          {
+           "k": "has_pull_requests",
+           "v": true
+          },
+          {
+           "k": "pull_request_creation_policy",
+           "v": "all"
+          },
+          {
+           "k": "topics",
+           "v": {
+            "t": 1,
+            "a": []
+           }
+          },
+          {
+           "k": "visibility",
+           "v": "public"
+          },
+          {
+           "k": "forks",
+           "v": 0
+          },
+          {
+           "k": "open_issues",
+           "v": 0
+          },
+          {
+           "k": "watchers",
+           "v": 0
+          },
+          {
+           "k": "default_branch",
+           "v": "main"
+          }
+         ]
+        }
+       },
+       {
+        "k": "sender",
+        "v": {
+         "t": 2,
+         "d": [
+          {
+           "k": "login",
+           "v": "ferranbt"
+          },
+          {
+           "k": "id",
+           "v": 30872539
+          },
+          {
+           "k": "node_id",
+           "v": "MDQ6VXNlcjMwODcyNTM5"
+          },
+          {
+           "k": "avatar_url",
+           "v": "https://avatars.githubusercontent.com/u/30872539?v=4"
+          },
+          {
+           "k": "gravatar_id",
+           "v": ""
+          },
+          {
+           "k": "url",
+           "v": "https://api.github.com/users/ferranbt"
+          },
+          {
+           "k": "html_url",
+           "v": "https://github.com/ferranbt"
+          },
+          {
+           "k": "followers_url",
+           "v": "https://api.github.com/users/ferranbt/followers"
+          },
+          {
+           "k": "following_url",
+           "v": "https://api.github.com/users/ferranbt/following{/other_user}"
+          },
+          {
+           "k": "gists_url",
+           "v": "https://api.github.com/users/ferranbt/gists{/gist_id}"
+          },
+          {
+           "k": "starred_url",
+           "v": "https://api.github.com/users/ferranbt/starred{/owner}{/repo}"
+          },
+          {
+           "k": "subscriptions_url",
+           "v": "https://api.github.com/users/ferranbt/subscriptions"
+          },
+          {
+           "k": "organizations_url",
+           "v": "https://api.github.com/users/ferranbt/orgs"
+          },
+          {
+           "k": "repos_url",
+           "v": "https://api.github.com/users/ferranbt/repos"
+          },
+          {
+           "k": "events_url",
+           "v": "https://api.github.com/users/ferranbt/events{/privacy}"
+          },
+          {
+           "k": "received_events_url",
+           "v": "https://api.github.com/users/ferranbt/received_events"
+          },
+          {
+           "k": "type",
+           "v": "User"
+          },
+          {
+           "k": "user_view_type",
+           "v": "public"
+          },
+          {
+           "k": "site_admin",
+           "v": false
+          }
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "k": "workflow_ref",
+     "v": "ferranbt/test-ci/.github/workflows/ci.yml@refs/heads/main"
+    },
+    {
+     "k": "workflow_sha",
+     "v": "4efc9c9d739dec8d6c730f47e30981fbdf9acf90"
+    },
+    {
+     "k": "repository_id",
+     "v": "1341503847"
+    },
+    {
+     "k": "triggering_actor",
+     "v": "ferranbt"
+    }
+   ]
+  },
+  "inputs": {
+   "t": 2,
+   "d": []
+  },
+  "job": {
+   "t": 2,
+   "d": [
+    {
+     "k": "check_run_id",
+     "v": 96719713075
+    },
+    {
+     "k": "workflow_ref",
+     "v": "ferranbt/test-ci/.github/workflows/ci.yml@refs/heads/main"
+    },
+    {
+     "k": "workflow_sha",
+     "v": "4efc9c9d739dec8d6c730f47e30981fbdf9acf90"
+    },
+    {
+     "k": "workflow_repository",
+     "v": "ferranbt/test-ci"
+    },
+    {
+     "k": "workflow_file_path",
+     "v": ".github/workflows/ci.yml"
+    }
+   ]
+  },
+  "matrix": null,
+  "needs": {
+   "t": 2,
+   "d": []
+  },
+  "strategy": {
+   "t": 2,
+   "d": [
+    {
+     "k": "fail-fast",
+     "v": true
+    },
+    {
+     "k": "job-index",
+     "v": 0
+    },
+    {
+     "k": "job-total",
+     "v": 1
+    },
+    {
+     "k": "max-parallel",
+     "v": 1
+    }
+   ]
+  },
+  "vars": {
+   "t": 2,
+   "d": []
+  }
+ },
+ "snapshot": null,
+ "billingOwnerId": "U_kgDOAdcT2w"
+}

@@ -1,0 +1,18 @@
+[package]
+name = "canopy-lsp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+gh-actions-lint.workspace = true
+gh-actions-plan.workspace = true
+gh-actions-spec.workspace = true
+yaml-with-spans.workspace = true
+tower-lsp-server = "0.22"
+tokio = { version = "1", features = ["rt-multi-thread", "io-std", "macros", "process", "time"] }
+octocrab = "0.54"
+serde_json = "1.0"
+chrono = { version = "0.4", default-features = false }

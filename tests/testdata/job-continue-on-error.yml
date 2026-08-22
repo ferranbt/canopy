@@ -1,0 +1,45 @@
+# A job saying its failure should not count: the run passes, and what needed it still runs.
+name: Job continue-on-error
+
+on: push
+
+jobs:
+  allowed-to-fail:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    outputs:
+      reached: ${{ steps.before.outputs.reached }}
+    steps:
+      - id: before
+        run: echo "reached=yes" >> "$GITHUB_OUTPUT"
+
+      - name: Fail after saying so
+        run: exit 1
+
+  after-it:
+    needs: allowed-to-fail
+    runs-on: ubuntu-latest
+    steps:
+      - name: A job needing one that was allowed to fail still runs
+        run: |
+          echo "reached=${{ needs.allowed-to-fail.outputs.reached }}"
+          test "${{ needs.allowed-to-fail.outputs.reached }}" = yes
+          echo "the failure did not hold this back"
+
+  matrix-allowed-to-fail:
+    runs-on: ubuntu-latest
+    # Read against each run's own matrix, so one of them is forgiven and the other is not.
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      # `fail-fast` would call off `steady` when `risky` fails, if the forgiven failure
+      # counted as one. It does not, so both run whatever order they come in.
+      matrix:
+        value: [steady, risky]
+        include:
+          - value: risky
+            experimental: true
+    steps:
+      - name: The experimental one fails and is forgiven
+        run: |
+          echo "value=${{ matrix.value }} experimental=${{ matrix.experimental }}"
+          test "${{ matrix.value }}" = steady

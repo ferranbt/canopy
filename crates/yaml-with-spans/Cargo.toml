@@ -1,0 +1,10 @@
+[package]
+name = "yaml-with-spans"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "A YAML reader that keeps the spans and comments most readers throw away"
+
+[dependencies]
+serde.workspace = true

@@ -1,0 +1,62 @@
+# `exclude` takes combinations away and `include` adds to the ones that are left. The jobs
+# leave a marker each and a final job counts them, since a job cannot see its siblings.
+name: Matrix include and exclude
+
+on: push
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start with no markers
+        run: |
+          rm -rf combos
+          mkdir combos
+
+  combinations:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [linux, mac]
+        version: [1, 2]
+        # Two axes make four; this takes one away.
+        exclude:
+          - os: mac
+            version: 1
+        # And this adds a value to one of the three that are left, without making a job.
+        include:
+          - os: linux
+            version: 2
+            note: extended
+    steps:
+      - name: Record the combination
+        run: |
+          touch "combos/${{ matrix.os }}-${{ matrix.version }}"
+
+          # The excluded combination must never run.
+          test "${{ matrix.os }}-${{ matrix.version }}" != "mac-1"
+
+          # The include reaches only the combination it names.
+          if [ "${{ matrix.os }}-${{ matrix.version }}" = "linux-2" ]; then
+            test "${{ matrix.note }}" = extended
+          else
+            test -z "${{ matrix.note }}"
+          fi
+
+  check:
+    needs: combinations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Three of the four combinations ran
+        run: |
+          ls combos
+          test "$(ls combos | wc -l)" = 3
+          test -f combos/linux-1
+          test -f combos/linux-2
+          test -f combos/mac-2
+          test ! -f combos/mac-1
+
+      - name: Clean up
+        if: always()
+        run: rm -rf combos

@@ -1,0 +1,78 @@
+name: CI
+run-name: CI for ${{ github.ref_name }}
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        toolchain: [stable, nightly]
+        include:
+          - os: ubuntu-latest
+            toolchain: stable
+            coverage: true
+        exclude:
+          - os: macos-latest
+            toolchain: nightly
+    env:
+      RUST_BACKTRACE: 1
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - id: meta
+        name: Read version
+        run: echo "version=$(cargo pkgid | cut -d'#' -f2)" >> "$GITHUB_OUTPUT"
+        working-directory: ./crates/canopy
+      - name: Test
+        run: |
+          cargo build --workspace
+          cargo test --workspace
+        continue-on-error: false
+        timeout-minutes: 20
+      - name: Coverage
+        if: matrix.coverage
+        run: cargo llvm-cov --workspace
+
+  lint:
+    runs-on: [self-hosted, linux, x64]
+    needs: test
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo clippy --workspace -- -D warnings

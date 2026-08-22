@@ -1,0 +1,37 @@
+# `env` may be set at three levels, and the nearest one wins.
+name: Environment precedence
+
+on: push
+
+env:
+  LEVEL: workflow
+  FROM_WORKFLOW: yes
+
+jobs:
+  nearest_wins:
+    runs-on: ubuntu-latest
+    env:
+      LEVEL: job
+      FROM_JOB: yes
+    steps:
+      - name: A step's own env beats the job and the workflow
+        env:
+          LEVEL: step
+        run: |
+          test "$LEVEL" = step
+          # What the outer levels set is still there, just not overridden.
+          test "$FROM_WORKFLOW" = yes
+          test "$FROM_JOB" = yes
+
+      - name: Without one of its own, the job's wins
+        run: |
+          test "$LEVEL" = job
+          test "$FROM_WORKFLOW" = yes
+
+  no_job_env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: With neither, the workflow's stands
+        run: |
+          test "$LEVEL" = workflow
+          test -z "$FROM_JOB"

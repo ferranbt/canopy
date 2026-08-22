@@ -1,0 +1,12 @@
+# The smallest workflow that does something.
+name: Hello
+
+on: push
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "hello, world"
+      - name: Use a default variable
+        run: echo "repository=$GITHUB_REPOSITORY ref=$GITHUB_REF_NAME"

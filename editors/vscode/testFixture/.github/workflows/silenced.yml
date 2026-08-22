@@ -1,0 +1,16 @@
+name: Silenced
+on: push
+
+# Only warnings can be silenced. Validation — a workflow that will not run — is not an
+# opinion, so no directive applies to it.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      # canopy:ignore
+      version: ${{ steps.nothing.outputs.version }}
+    steps:
+      - id: twice
+        run: echo one
+      - id: twice
+        run: echo two

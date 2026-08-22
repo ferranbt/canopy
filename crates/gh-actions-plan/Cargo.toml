@@ -1,0 +1,14 @@
+[package]
+name = "gh-actions-plan"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gh-actions-spec.workspace = true
+gh-actions-expr.workspace = true
+gh-actions-context.workspace = true
+
+[dev-dependencies]
+yaml-with-spans.workspace = true

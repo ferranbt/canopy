@@ -1,0 +1,92 @@
+# What a failing job does to the jobs around it: nothing, unless they needed it or share
+# its matrix. The jobs leave marker files behind and the last one reads them.
+# expect: failure
+name: Job failure handling
+
+on: push
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start with no markers
+        run: |
+          rm -rf markers
+          mkdir markers
+
+  fails:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail on purpose
+        run: exit 1
+
+  unrelated:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: A job that needed nothing from the failure still runs
+        run: touch markers/unrelated
+
+  dependent:
+    needs: fails
+    runs-on: ubuntu-latest
+    steps:
+      - name: A job that needed the failure should never get here
+        run: touch markers/dependent
+
+  keeps-going:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      # Turned down, so one failing run does not call off its siblings.
+      fail-fast: false
+      matrix:
+        value: [1, 2, 3]
+    steps:
+      - name: Record the run and fail one of them
+        run: |
+          touch "markers/keeps-going-${{ matrix.value }}"
+          test "${{ matrix.value }}" != "2"
+
+  called-off:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      # `fail-fast` defaults to true, so the first failure stops the rest of the matrix.
+      matrix:
+        value: [1, 2, 3]
+    steps:
+      - name: Record the run and fail the first
+        run: |
+          touch "markers/called-off-${{ matrix.value }}"
+          test "${{ matrix.value }}" != "1"
+
+  check:
+    needs: [fails, unrelated, dependent, keeps-going, called-off]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: The failure was contained
+        run: |
+          test -f markers/unrelated
+          echo "an unrelated job still ran"
+
+          test ! -f markers/dependent
+          echo "a job needing the failure was skipped"
+
+      - name: fail-fast false let the whole matrix run
+        run: |
+          count=$(ls markers/keeps-going-* | wc -l)
+          echo "keeps-going ran $count of 3"
+          test "$count" = 3
+
+      - name: fail-fast true called the rest of the matrix off
+        run: |
+          count=$(ls markers/called-off-* | wc -l)
+          echo "called-off ran $count of 3"
+          test "$count" -lt 3
+
+      - name: Clean up
+        if: always()
+        run: rm -rf markers

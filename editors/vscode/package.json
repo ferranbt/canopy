@@ -1,0 +1,109 @@
+{
+  "name": "canopy",
+  "displayName": "GitHub Actions (canopy)",
+  "description": "Checks GitHub Actions workflows as you write them, via the canopy language server.",
+  "version": "0.1.0",
+  "publisher": "ferranborreguero",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ferranbt/canopy"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:yaml"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "canopy",
+      "properties": {
+        "canopy.server.path": {
+          "type": "string",
+          "default": "canopy",
+          "description": "Path to the `canopy` executable used as the language server."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "canopy",
+          "title": "Canopy",
+          "icon": "$(play-circle)"
+        }
+      ]
+    },
+    "views": {
+      "canopy": [
+        {
+          "id": "canopy.runs",
+          "name": "Runs"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "canopy.run",
+        "title": "Run workflow",
+        "category": "Canopy",
+        "icon": "$(play)"
+      },
+      {
+        "command": "canopy.stop",
+        "title": "Stop the running workflow",
+        "category": "Canopy",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "canopy.showStepOutput",
+        "title": "Show step output",
+        "category": "Canopy"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "canopy.stop",
+          "when": "view == canopy.runs",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "canopy.showStepOutput",
+          "when": "false"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "node esbuild.js --production",
+    "compile": "node esbuild.js",
+    "compile-tests": "tsc -p ./",
+    "watch": "node esbuild.js --watch",
+    "check-types": "tsc --noEmit",
+    "pretest": "npm run compile-tests && npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "pack": "vsce package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.75.0",
+    "@vscode/test-electron": "^2.3.9",
+    "esbuild": "^0.24.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.3.0",
+    "typescript": "^5.4.0"
+  }
+}

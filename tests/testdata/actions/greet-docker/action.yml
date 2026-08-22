@@ -1,0 +1,14 @@
+name: Greet (docker)
+description: Greets someone from inside a container.
+
+inputs:
+  who-to-greet:
+    description: Name to greet.
+    required: false
+    default: World
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.who-to-greet }}

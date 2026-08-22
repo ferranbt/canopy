@@ -1,0 +1,35 @@
+# Matrix expansion, job ordering through `needs`, and job outputs.
+name: Matrix and needs
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [debug, release]
+        include:
+          - target: release
+            optimised: true
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Build ${{ matrix.target }}
+        run: echo "building ${{ matrix.target }} optimised=${{ matrix.optimised }}"
+      - id: meta
+        run: echo "version=1.2.3" >> "$GITHUB_OUTPUT"
+
+  report:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read the output of the job we needed
+        run: echo "build produced ${{ needs.build.outputs.version }}"
+
+  skipped:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "only on releases"

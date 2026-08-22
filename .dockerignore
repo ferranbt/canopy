@@ -1,0 +1,6 @@
+target
+.git
+_work
+examples/*/credentials.json
+examples/*/_work
+editors

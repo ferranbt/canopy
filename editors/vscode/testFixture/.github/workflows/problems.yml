@@ -1,0 +1,20 @@
+name: Problems
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: nothing to do
+      - id: twice
+        run: echo one
+      - id: twice
+        run: echo two
+      - if: ${{ github.event_name == }}
+        run: echo broken
+
+  ship:
+    needs: gone
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ secrets.TOKEN }}"

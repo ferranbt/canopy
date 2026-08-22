@@ -1,0 +1,8 @@
+name: State (docker)
+description: Writes to the files a step exchanges state through, from inside a container.
+
+runs:
+  using: docker
+  image: Dockerfile
+  pre-entrypoint: /pre.sh
+  post-entrypoint: /post.sh
