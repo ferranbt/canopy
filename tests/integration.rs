@@ -10,17 +10,17 @@ fn run_integration_tests() {
         .ok()
         .filter(|name| !name.is_empty());
 
-    let mut files: Vec<PathBuf> = std::fs::read_dir(&testdata)
-        .expect("testdata exists")
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|extension| extension == "yml"))
-        .filter(|path| {
-            target
-                .as_deref()
-                .is_none_or(|name| path.file_name().is_some_and(|file| file == name))
+    let mut files = Vec::new();
+    workflows(&testdata, &mut files).expect("testdata exists");
+    // Either end of the path: a case named by its file, or a whole group by its folder.
+    files.retain(|path| {
+        target.as_deref().is_none_or(|wanted| {
+            path.strip_prefix(&testdata).is_ok_and(|case| {
+                let case = case.to_string_lossy();
+                case.ends_with(wanted) || case.starts_with(wanted)
+            })
         })
-        .collect();
+    });
     files.sort();
 
     // A run of its own each time, so what a case left behind is still there to look at.
@@ -29,21 +29,20 @@ fn run_integration_tests() {
         .join(chrono::Local::now().format("%Y-%m-%d_%H-%M-%S").to_string());
     println!("artifacts under {}", run.display());
 
+    let actions = testdata.parent().unwrap_or(&testdata).join("actions");
     let mut failures = Vec::new();
     for path in &files {
-        let name = path
-            .file_name()
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string();
+        // The group it is in and what it is called, which is how a case is named throughout.
+        let case = path.strip_prefix(&testdata).unwrap_or(path);
+        let name = case.to_string_lossy().to_string();
         let source = std::fs::read_to_string(path).expect("workflow is readable");
 
-        let artifacts = run.join(path.file_stem().unwrap_or_default());
+        let artifacts = run.join(case.with_extension(""));
         let workspace = artifacts.join("workspace");
         std::fs::create_dir_all(&workspace).expect("the artifacts directory is made");
         // Copy the actions folder to the workspace so that they can
         // have a relative access to it (TODO: improve)
-        copy(&testdata.join("actions"), &workspace.join("actions")).expect("the actions copy");
+        copy(&actions, &workspace.join("actions")).expect("the actions copy");
 
         let config = Config {
             temp: artifacts.join("temp"),
@@ -163,6 +162,21 @@ fn well_formed(out: &Collected) -> Result<(), String> {
     if let Some(name) = open.last() {
         return Err(format!("step {name:?} never finished"));
     }
+    Ok(())
+}
+
+/// Every workflow under a directory, however deep the groups go.
+fn workflows(directory: &Path, found: &mut Vec<PathBuf>) -> std::io::Result<()> {
+    for entry in std::fs::read_dir(directory)? {
+        let path = entry?.path();
+
+        if path.is_dir() {
+            workflows(&path, found)?;
+        } else if path.extension().is_some_and(|extension| extension == "yml") {
+            found.push(path);
+        }
+    }
+
     Ok(())
 }
 

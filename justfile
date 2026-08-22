@@ -16,6 +16,6 @@ fix-lint:
 release version *args:
     cargo release {{version}} {{args}}
 
-# Runs every workflow under tests/testdata, or only the one named.
+# Runs every workflow under tests/testdata, or only the group or case named.
 integration file="":
     TARGET_FILE={{file}} cargo test --test integration -- --nocapture
