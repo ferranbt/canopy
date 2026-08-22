@@ -1,0 +1,48 @@
+# Conditions, contexts and the state files steps exchange data through.
+name: Expressions
+
+on: push
+
+env:
+  GREETING: hello
+
+jobs:
+  expressions:
+    runs-on: ubuntu-latest
+    steps:
+      - id: meta
+        name: Write a step output
+        run: echo "version=1.2.3" >> "$GITHUB_OUTPUT"
+
+      - name: Export environment variables, one of them over several lines
+        run: |
+          echo "BUILT_BY=canopy" >> "$GITHUB_ENV"
+          {
+            echo "NOTES<<EOF"
+            echo "line one"
+            echo "line two"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Skipped, because the condition is false
+        if: github.event_name == 'schedule'
+        run: echo "SKIPPED_STEP_RAN=yes" >> "$GITHUB_ENV"
+
+      - name: Runs, because the condition holds
+        if: startsWith(github.ref_name, 'm') || always()
+        run: echo "CONDITION_HELD=yes" >> "$GITHUB_ENV"
+
+      - uses: ./actions/expect
+        with:
+          checks: |
+            $GREETING == hello                            # the workflow env reaches the shell
+            ${{ env.GREETING }} == hello                  # and an expression sees the same
+            ${{ github.event_name }} == push              # the event that started the run
+            ${{ runner.os }} == Linux
+            ${{ steps.meta.outputs.version }} == 1.2.3    # a step output, written to the output file
+            $BUILT_BY == canopy                           # an env file export reaches a later step
+            ${{ env.BUILT_BY }} == canopy                 # and the context it builds
+            $(echo "$NOTES" | wc -l) == 2                 # a multi-line export keeps its lines
+            $(echo "$NOTES" | head -1) == line one
+            $SKIPPED_STEP_RAN ==                          # a false condition left nothing behind
+            $CONDITION_HELD == yes                        # and a true one ran

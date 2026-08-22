@@ -51,11 +51,3 @@ jobs:
           test "$(basename "$PWD")" = from-step
           test -z "$BASH_VERSION"
           echo "step settings applied"
-
-  cleanup:
-    needs: [takes-the-workflow-defaults, a_job_overrides_the_workflow]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Remove what setup made
-        working-directory: .
-        run: rm -rf from-workflow from-job from-step

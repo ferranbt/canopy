@@ -1,0 +1,43 @@
+# The three kinds of action, all resolved from this repository.
+name: Local actions
+
+on: push
+
+jobs:
+  composite:
+    runs-on: ubuntu-latest
+    steps:
+      - id: greet
+        uses: ./actions/greet-composite
+        with:
+          who-to-greet: composite
+          greeting: Hey
+
+      - id: defaulted
+        name: Defaults are filled in when `with` is omitted
+        uses: ./actions/greet-composite
+
+      - name: What the composite action returned
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.greet.outputs.message }} == Hey, composite!         # its declared output
+            ${{ steps.defaulted.outputs.message }} == Hello, World!       # both inputs defaulted
+            ${{ steps.greet.outcome }} == success
+
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - id: greet
+        uses: ./actions/greet-node
+        with:
+          who-to-greet: node
+
+      - name: What the JavaScript action returned
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.greet.outputs.greeted-at }} == node       # an output written to the file
+            $GREETED_BY == node                                 # and an env export from inside it
+            ${{ env.GREETED_BY }} == node                       # which the context also sees
+            $NODE_RAN_PRE == yes                                # its pre hook ran first

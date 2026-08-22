@@ -12,7 +12,6 @@ jobs:
           # The workspace is this directory rather than a fresh checkout, so anything a
           # previous run left has to go: `restored` surviving would let the check below
           # pass without the download having done anything.
-          rm -rf out restored
           mkdir -p out
           echo "built at step time" > out/result.txt
           echo "second file" > out/notes.txt
@@ -43,7 +42,6 @@ jobs:
     steps:
       - name: Create something worth caching
         run: |
-          rm -rf deps
           mkdir -p deps
           echo "an expensive dependency" > deps/lib.txt
 
@@ -77,7 +75,6 @@ jobs:
     steps:
       - name: Create something worth caching
         run: |
-          rm -rf vendor
           mkdir -p vendor
           echo "vendored" > vendor/lib.txt
 

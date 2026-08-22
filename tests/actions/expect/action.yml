@@ -1,0 +1,76 @@
+name: Expect
+description: Fails unless every check holds, and says which ones did not.
+
+inputs:
+  checks:
+    description: >
+      One check per line, `actual == expected` or `actual != expected`, with an optional
+      ` # label` naming it. The runner fills in any `${{ }}` before this action sees the
+      line, which is what lets the same workflow run on GitHub; the actual side is then
+      expanded by the shell, so `$LEVEL` and `$(cat out.txt)` work too. Only that side is:
+      a label or an expected value is taken as it was written.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check what the workflow expects
+      shell: bash
+      run: |
+        checked=0
+        failed=0
+
+        trim() { printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'; }
+
+        while IFS= read -r line; do
+          label=""
+          case "$line" in
+            *" # "*)
+              label="$(trim "${line#* # }")"
+              line="${line%% # *}"
+              ;;
+          esac
+
+          line="$(trim "$line")"
+          [ -z "$line" ] && continue
+          checked=$((checked + 1))
+
+          # Padded, so a side that is empty still has the space the operator sits between.
+          padded=" $line "
+          case "$padded" in
+            *" != "*) operator="!="; actual="${padded%% != *}"; expected="${padded#* != }" ;;
+            *" == "*) operator="=="; actual="${padded%% == *}"; expected="${padded#* == }" ;;
+            *)
+              echo "FAIL  ${label:-check $checked}: not a check: $line"
+              failed=$((failed + 1))
+              continue
+              ;;
+          esac
+
+          actual="$(trim "$actual")"
+          expected="$(trim "$expected")"
+          actual="$(eval "printf '%s' \"$actual\"" 2>/dev/null)"
+
+          held=0
+          if [ "$operator" = "==" ]; then
+            [ "$actual" = "$expected" ] && held=1
+          else
+            [ "$actual" != "$expected" ] && held=1
+          fi
+
+          if [ "$held" = "1" ]; then
+            echo "ok    ${label:-check $checked}"
+          else
+            echo "FAIL  ${label:-check $checked}: expected $operator \"$expected\", got \"$actual\""
+            failed=$((failed + 1))
+          fi
+        done <<'CANOPY_CHECKS'
+        ${{ inputs.checks }}
+        CANOPY_CHECKS
+
+        if [ "$checked" = "0" ]; then
+          echo "no checks were given"
+          exit 1
+        fi
+        echo "$checked check(s), $failed failed"
+        [ "$failed" = "0" ]

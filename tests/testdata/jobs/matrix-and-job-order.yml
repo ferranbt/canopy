@@ -1,0 +1,58 @@
+# Matrix expansion, job ordering through `needs`, and job outputs.
+name: Matrix and needs
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [debug, release]
+        include:
+          - target: release
+            optimised: true
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - id: meta
+        run: echo "version=1.2.3" >> "$GITHUB_OUTPUT"
+
+      - name: The combination this job is
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ matrix.target }} != ''                      # every job is one combination
+            ${{ steps.meta.outputs.version }} == 1.2.3      # its own step output
+
+      - name: What `include` added, and only where it said
+        if: matrix.target == 'release'
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ matrix.optimised }} == true                 # the value include brought
+
+      - name: The other combination did not get it
+        if: matrix.target == 'debug'
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ matrix.optimised }} ==                      # include reached only `release`
+
+  report:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: What the job we needed left behind
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ needs.build.outputs.version }} == 1.2.3     # a job output crosses jobs
+            ${{ needs.build.result }} == success            # and so does how it ended
+
+  skipped:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "only on releases"

@@ -13,7 +13,6 @@ jobs:
     steps:
       - name: Put a command somewhere and add it to the path
         run: |
-          rm -rf tools
           mkdir -p tools
           printf '#!/bin/sh\necho "found on the path"\n' > tools/greet
           chmod +x tools/greet
@@ -26,7 +25,6 @@ jobs:
 
       - name: The older spelling works too
         run: |
-          rm -rf other
           mkdir -p other
           printf '#!/bin/sh\necho "also found"\n' > other/wave
           chmod +x other/wave
@@ -41,10 +39,6 @@ jobs:
           command -v bash >/dev/null
           command -v grep >/dev/null
           echo "the rest of the path survived"
-
-      - name: Clean up
-        if: always()
-        run: rm -rf tools other
 
   writes_a_step_summary:
     runs-on: ubuntu-latest

@@ -11,3 +11,6 @@ path = "integration.rs"
 [dependencies]
 local-runner.workspace = true
 gh-actions-runner.workspace = true
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+serde_json = "1.0"
+

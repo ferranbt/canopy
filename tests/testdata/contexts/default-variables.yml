@@ -1,0 +1,51 @@
+# The variables every step is given, and the contexts they are drawn from.
+name: Default variables
+
+on: push
+
+jobs:
+  variables:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./actions/expect
+        with:
+          checks: |
+            $CI == true
+            $GITHUB_ACTIONS == true
+            $GITHUB_EVENT_NAME == push
+            $GITHUB_JOB == variables                            # the id, not the display name
+            $GITHUB_WORKFLOW == Default variables
+            $GITHUB_REF_TYPE == branch
+            $GITHUB_RUN_ATTEMPT != ''
+            $GITHUB_RUN_ID != ''
+            $GITHUB_RUN_NUMBER != ''
+            $GITHUB_SERVER_URL == https://github.com
+            $GITHUB_API_URL == https://api.github.com
+            $GITHUB_GRAPHQL_URL == https://api.github.com/graphql
+            $GITHUB_REPOSITORY != ''
+            $GITHUB_REPOSITORY_OWNER != ''
+            $GITHUB_REF != ''
+            $GITHUB_REF_NAME != ''
+            $GITHUB_SHA != ''
+            $GITHUB_ACTOR != ''
+            $RUNNER_OS == Linux
+            $RUNNER_ARCH != ''
+            $RUNNER_NAME != ''
+            $RUNNER_ENVIRONMENT != ''
+
+            $(test -d "$GITHUB_WORKSPACE" && echo yes) == yes    # the workspace is a directory
+            $(test -d "$RUNNER_TEMP" && echo yes) == yes         # and so is the temp
+            $(test -f "$GITHUB_EVENT_PATH" && echo yes) == yes   # the payload is on disk
+            $(test -f "$GITHUB_ENV" && echo yes) == yes          # with the state files beside it
+            $(test -f "$GITHUB_OUTPUT" && echo yes) == yes
+            $(test -f "$GITHUB_PATH" && echo yes) == yes
+            $(test -f "$GITHUB_STEP_SUMMARY" && echo yes) == yes
+
+            ${{ github.event_name }} == push                     # what the variables come from
+            ${{ github.workflow }} == Default variables
+            ${{ github.job }} == variables
+            ${{ runner.os }} == Linux
+            ${{ github.repository }} != ''
+            ${{ github.ref_type }} == branch
+            ${{ env.CI }} ==                                     # but the `env` context holds
+            ${{ env.GITHUB_ACTIONS }} ==                         # only what a workflow set

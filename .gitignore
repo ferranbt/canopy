@@ -2,6 +2,7 @@
 TODO.md
 credentials*
 _work
+tests/artifacts
 
 .terraform
 .terraform.lock.hcl
