@@ -8,10 +8,8 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - name: Start with no markers
-        run: |
-          rm -rf combos
-          mkdir combos
+      - name: Make somewhere for the combinations to leave their markers
+        run: mkdir combos
 
   combinations:
     needs: setup
@@ -57,6 +55,3 @@ jobs:
           test -f combos/mac-2
           test ! -f combos/mac-1
 
-      - name: Clean up
-        if: always()
-        run: rm -rf combos

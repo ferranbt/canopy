@@ -9,10 +9,8 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - name: Start with no markers
-        run: |
-          rm -rf markers
-          mkdir markers
+      - name: Make somewhere for the jobs to leave their markers
+        run: mkdir markers
 
   fails:
     needs: setup
@@ -87,6 +85,3 @@ jobs:
           echo "called-off ran $count of 3"
           test "$count" -lt 3
 
-      - name: Clean up
-        if: always()
-        run: rm -rf markers
