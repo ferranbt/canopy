@@ -15,7 +15,7 @@ pub enum Phase {
 }
 
 impl Phase {
-    fn script(self, runs: &Runs) -> Option<String> {
+    pub fn script(self, runs: &Runs) -> Option<String> {
         match runs {
             Runs::Node16(node) | Runs::Node20(node) | Runs::Node24(node) => match self {
                 Self::Pre => node.pre.clone(),
@@ -101,6 +101,11 @@ pub fn plan(steps: &[Step], workspace: &Path, cache: &Path) -> Result<Vec<Planne
         for phase in [Phase::Pre, Phase::Main, Phase::Post] {
             let script = phase.script(&action.action.runs);
             if phase != Phase::Main && script.is_none() {
+                continue;
+            }
+            // An action in the repository being run has no `pre` hook: there is nowhere to
+            // run it before the repository is there, and GitHub passes it over as well.
+            if phase == Phase::Pre && matches!(uses, Uses::Local(_)) {
                 continue;
             }
 

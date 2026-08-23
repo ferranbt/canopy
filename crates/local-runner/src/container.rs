@@ -203,7 +203,7 @@ impl Machine for Containers {
         }
         command.arg(id).arg(program).args(args);
 
-        run_until(command, request.timeout, &request.masks, out)
+        run_until(command, request, out)
     }
 
     fn finish(&mut self) -> Result<(), Error> {

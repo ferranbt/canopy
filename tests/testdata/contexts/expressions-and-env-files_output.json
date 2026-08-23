@@ -1,0 +1,143 @@
+[
+  {
+    "event": "job-started",
+    "id": "expressions",
+    "label": "expressions"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Write a step output",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Write a step output",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Export environment variables, one of them over several lines",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Export environment variables, one of them over several lines",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Skipped, because the condition is false",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Skipped, because the condition is false",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Runs, because the condition holds",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Runs, because the condition holds",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "./actions/expect",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    the workflow env reaches the shell"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    and an expression sees the same"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    the event that started the run"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 4"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    a step output, written to the output file"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    an env file export reaches a later step"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    and the context it builds"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    a multi-line export keeps its lines"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 9"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    a false condition left nothing behind"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    and a true one ran"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "11 check(s), 0 failed"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "./actions/expect",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "expressions",
+    "label": "expressions",
+    "conclusion": "success"
+  }
+]

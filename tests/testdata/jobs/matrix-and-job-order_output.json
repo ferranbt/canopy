@@ -1,0 +1,251 @@
+[
+  {
+    "event": "job-started",
+    "id": "build (debug)",
+    "label": "build (debug)"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "run",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "run",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The combination this job is",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "Prepare all required actions"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    every job is one combination"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    its own step output"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "2 check(s), 0 failed"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The combination this job is",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "What `include` added, and only where it said",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "What `include` added, and only where it said",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "The other combination did not get it",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "The other combination did not get it",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "job-finished",
+    "id": "build (debug)",
+    "label": "build (debug)",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "build (true, release)",
+    "label": "build (true, release)"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "run",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "run",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The combination this job is",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "Prepare all required actions"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    every job is one combination"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    its own step output"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "2 check(s), 0 failed"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The combination this job is",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "What `include` added, and only where it said",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "What `include` added, and only where it said",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "The other combination did not get it",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "The other combination did not get it",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "job-finished",
+    "id": "build (true, release)",
+    "label": "build (true, release)",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "report",
+    "label": "report"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "What the job we needed left behind",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "Prepare all required actions"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "FAIL  a job output crosses jobs: expected == \"1.2.3\", got \"\""
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "FAIL  and so does how it ended: expected == \"success\", got \"\""
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "2 check(s), 2 failed"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "What the job we needed left behind",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 1
+  },
+  {
+    "event": "job-finished",
+    "id": "report",
+    "label": "report",
+    "conclusion": "failure"
+  },
+  {
+    "event": "job-started",
+    "id": "skipped",
+    "label": "skipped"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "run",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "only on releases"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "run",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "skipped",
+    "label": "skipped",
+    "conclusion": "success"
+  }
+]

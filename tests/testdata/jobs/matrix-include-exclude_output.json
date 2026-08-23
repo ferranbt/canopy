@@ -1,0 +1,132 @@
+[
+  {
+    "event": "job-started",
+    "id": "setup",
+    "label": "setup"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Make somewhere for the combinations to leave their markers",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Make somewhere for the combinations to leave their markers",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "setup",
+    "label": "setup",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "combinations (linux, 1)",
+    "label": "combinations (linux, 1)"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Record the combination",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Record the combination",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "combinations (linux, 1)",
+    "label": "combinations (linux, 1)",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "combinations (extended, linux, 2)",
+    "label": "combinations (extended, linux, 2)"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Record the combination",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Record the combination",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "combinations (extended, linux, 2)",
+    "label": "combinations (extended, linux, 2)",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "combinations (mac, 2)",
+    "label": "combinations (mac, 2)"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Record the combination",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Record the combination",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "combinations (mac, 2)",
+    "label": "combinations (mac, 2)",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "check",
+    "label": "check"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Three of the four combinations ran",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "-"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Three of the four combinations ran",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 1
+  },
+  {
+    "event": "job-finished",
+    "id": "check",
+    "label": "check",
+    "conclusion": "failure"
+  }
+]

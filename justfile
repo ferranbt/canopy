@@ -16,6 +16,11 @@ fix-lint:
 release version *args:
     cargo release {{version}} {{args}}
 
-# Runs every workflow under tests/testdata, or only the group or case named.
+build-runner-image:
+    docker build -q -f tests/csharp/runner.Dockerfile -t gh-runner tests/csharp
+
+csharp file="": build-runner-image
+    cargo run --bin csharp -- {{ if file == "" { "" } else { "--test " + file } }}
+
 integration file="":
-    TARGET_FILE={{file}} cargo test --test integration -- --nocapture
+    cargo run --bin integration -- {{ if file == "" { "" } else { "--test " + file } }}

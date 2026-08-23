@@ -1,0 +1,161 @@
+[
+  {
+    "event": "job-started",
+    "id": "failing",
+    "label": "failing"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "This one is fine",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "first"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "This one is fine",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Tolerated failure",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Tolerated failure",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 1
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Still running after a tolerated failure",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "continue-on-error kept the job green"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Still running after a tolerated failure",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Real failure",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Real failure",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 3
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "Skipped after the failure",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "Skipped after the failure",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "Cleanup runs anyway",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "cleanup"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "Cleanup runs anyway",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "Only on failure",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "failure handler"
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "Only on failure",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "failing",
+    "label": "failing",
+    "conclusion": "failure"
+  },
+  {
+    "event": "job-started",
+    "id": "never-runs",
+    "label": "never-runs"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "echo \"this job never starts\"",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "this job never starts"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "echo \"this job never starts\"",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "never-runs",
+    "label": "never-runs",
+    "conclusion": "success"
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "event": "job-started",
+    "id": "no-services",
+    "label": "no-services"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A name no service claimed does not resolve",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "nothing leaked from the other job"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A name no service claimed does not resolve",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "no-services",
+    "label": "no-services",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "talks-to-a-service",
+    "label": "talks-to-a-service"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Reach the service by its label",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "$RUNNER_TEMP/49a9854c-e406-4f2a-b130-3598b40ccdde.sh: line 8: cache: Name or service not known"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "$RUNNER_TEMP/49a9854c-e406-4f2a-b130-3598b40ccdde.sh: line 8: /dev/tcp/cache/6379: Invalid argument"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Reach the service by its label",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 1
+  },
+  {
+    "event": "job-finished",
+    "id": "talks-to-a-service",
+    "label": "talks-to-a-service",
+    "conclusion": "failure"
+  }
+]

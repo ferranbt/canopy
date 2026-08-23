@@ -1,10 +1,14 @@
+mod message;
+mod runner;
+mod service;
+
 use clap::Parser;
 use eyre::{Result, bail};
 use harness::{Harness, Outcome};
-use local_runner::{Config, Local};
+use runner::GhRunner;
 
 #[derive(Parser)]
-#[command(about = "Runs the corpus on canopy, and holds it to what the runner GitHub ships did")]
+#[command(about = "Runs the corpus on the runner GitHub ships, and records what it did")]
 struct Cli {
     /// A case or a group of them, by either end of its path under testdata.
     #[arg(long)]
@@ -12,34 +16,37 @@ struct Cli {
 }
 
 fn main() -> Result<()> {
-    let harness = Harness::new("cnp-");
+    let harness = Harness::new("gh-");
     let files = harness.get_test_files(Cli::parse().test.as_deref());
+    let gh = GhRunner::new().map_err(eyre::Report::msg)?;
 
     let mut failures = Vec::new();
     for file in &files {
         let name = file.name();
 
         let ran = harness.run(&file.path, |case| {
-            let local = Local::start(Config {
-                temp: case.temp.clone(),
-                ..Config::for_workspace(&case.workspace)
-            })
-            .map_err(|err| format!("cannot start: {err}"))?;
+            gh.place(&case.workspace)?;
 
+            let context =
+                local_runner::checkout::context(&case.workspace, "push", &case.temp, false);
             let mut outcome = Outcome::default();
-            local
-                .run(&case.workflow, &case.plan, &mut outcome)
-                .map_err(|err| format!("cannot run: {err}"))?;
+
+            for planned in &case.plan.jobs {
+                gh.run(
+                    runner::Job {
+                        workflow: &case.workflow,
+                        planned,
+                        context: &context,
+                        services: &case.service_env,
+                    },
+                    &mut outcome,
+                )?;
+            }
 
             Ok(outcome)
         });
 
-        let checked = ran.and_then(|outcome| {
-            let recorded = file.outcome.as_ref().ok_or("nothing recorded to match")?;
-            recorded.matches(&outcome)
-        });
-
-        match checked {
+        match ran.and_then(|outcome| file.record(&outcome)) {
             Ok(()) => println!("ok    {name}"),
             Err(reason) => {
                 println!("FAIL  {name}: {reason}");

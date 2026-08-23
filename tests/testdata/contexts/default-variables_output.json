@@ -1,0 +1,217 @@
+[
+  {
+    "event": "job-started",
+    "id": "variables",
+    "label": "variables"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "./actions/expect",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 1"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 2"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 3"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    the id, not the display name"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 5"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 6"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 7"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 8"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 9"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 10"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 11"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 12"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 13"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 14"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 15"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 16"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 17"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 18"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 19"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 20"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 21"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 22"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    the workspace is a directory"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    and so is the temp"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    the payload is on disk"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    with the state files beside it"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 27"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 28"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 29"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    what the variables come from"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 31"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 32"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 33"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 34"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    check 35"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    but the `env` context holds"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ok    only what a workflow set"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "37 check(s), 0 failed"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "./actions/expect",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "variables",
+    "label": "variables",
+    "conclusion": "success"
+  }
+]

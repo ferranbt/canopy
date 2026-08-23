@@ -1,0 +1,166 @@
+[
+  {
+    "event": "job-started",
+    "id": "docker",
+    "label": "docker"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "./actions/greet-docker",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "./actions/greet-docker",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Read the container's output",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Read the container's output",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Run a published image directly",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Run a published image directly",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "job-finished",
+    "id": "docker",
+    "label": "docker",
+    "conclusion": "failure"
+  },
+  {
+    "event": "job-started",
+    "id": "state",
+    "label": "state"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "./actions/state-docker",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "`pre` execution is not supported for local action from 'actions/state-docker'"
+  },
+  {
+    "event": "progress",
+    "text": "[Building docker image]"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "Dockerfile for action: '$GITHUB_WORKSPACE/actions/state-docker/Dockerfile'."
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "##[command]/usr/bin/docker build -t 6116a6:00000000000000010005000000000001 -f \"$GITHUB_WORKSPACE/actions/state-docker/Dockerfile\" \"$GITHUB_WORKSPACE/actions/state-docker\""
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ERROR: failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory"
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "Docker build failed with exit code 1"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "./actions/state-docker",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What the container wrote comes back",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the container wrote comes back",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "./actions/state-docker (post)",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "`pre` execution is not supported for local action from 'actions/state-docker'"
+  },
+  {
+    "event": "progress",
+    "text": "[Building docker image]"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "Dockerfile for action: '$GITHUB_WORKSPACE/actions/state-docker/Dockerfile'."
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "##[command]/usr/bin/docker build -t 6116a6:3c653d4b8c9b4cdba59276a4d9e5fa8b -f \"$GITHUB_WORKSPACE/actions/state-docker/Dockerfile\" \"$GITHUB_WORKSPACE/actions/state-docker\""
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "ERROR: failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory"
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "Docker build failed with exit code 1"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "./actions/state-docker (post)",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "state",
+    "label": "state",
+    "conclusion": "failure"
+  }
+]

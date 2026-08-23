@@ -131,14 +131,11 @@ impl RunContext {
         };
 
         set("GITHUB_ACTION", github.action.clone());
-        set(
-            "GITHUB_ACTION_PATH",
-            github
-                .action_path
-                .as_ref()
-                .map(|path| path.display().to_string())
-                .unwrap_or_default(),
-        );
+        // Only where there is one to give: outside a composite action there is no action
+        // path, and a step that looks for one is meant to find nothing rather than empty.
+        if let Some(path) = &github.action_path {
+            set("GITHUB_ACTION_PATH", path.display().to_string());
+        }
         set("GITHUB_ACTION_REF", github.action_ref.clone());
         set("GITHUB_ACTION_REPOSITORY", github.action_repository.clone());
         set("GITHUB_ACTOR", github.actor.clone());

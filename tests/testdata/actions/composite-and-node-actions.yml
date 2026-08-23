@@ -40,4 +40,4 @@ jobs:
             ${{ steps.greet.outputs.greeted-at }} == node       # an output written to the file
             $GREETED_BY == node                                 # and an env export from inside it
             ${{ env.GREETED_BY }} == node                       # which the context also sees
-            $NODE_RAN_PRE == yes                                # its pre hook ran first
+            $NODE_RAN_PRE ==                                    # a local action gets no `pre` hook

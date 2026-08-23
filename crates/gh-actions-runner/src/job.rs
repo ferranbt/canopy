@@ -258,6 +258,7 @@ fn run_prepared(
         counter: 0,
         job_deadline,
         step_deadline: None,
+        step_name: String::new(),
         defaults,
         masks: options.masks.clone(),
     };
@@ -294,6 +295,7 @@ struct JobRunner<'a> {
     counter: usize,
     job_deadline: Instant,
     step_deadline: Option<Instant>,
+    step_name: String,
     defaults: RunDefaults,
     masks: Vec<String>,
 }
@@ -301,6 +303,9 @@ struct JobRunner<'a> {
 impl JobRunner<'_> {
     fn run_steps(&mut self, steps: &[PlannedStep], depth: usize) -> Result<bool, Error> {
         let mut failed = false;
+        // Counted as they run rather than as they were written: a hook is a step of its own
+        // by the time it runs, and comes after everything the job did before it.
+        let mut index = 0;
 
         for planned in steps {
             let step = &planned.step;
@@ -324,7 +329,7 @@ impl JobRunner<'_> {
 
             let name = step_name(planned, &context)?;
             self.out.report(Event::StepStarted {
-                index: planned.position,
+                index,
                 name: name.clone(),
                 depth,
             });
@@ -342,12 +347,13 @@ impl JobRunner<'_> {
                 failed = true;
             }
             self.out.report(Event::StepFinished {
-                index: planned.position,
+                index,
                 name,
                 depth,
                 conclusion: conclusion_of(!outcome.succeeded && !forgiven),
                 code: outcome.code,
             });
+            index += 1;
         }
 
         Ok(failed)
@@ -363,6 +369,7 @@ impl JobRunner<'_> {
         let left = deadline.saturating_duration_since(Instant::now());
         let request = request
             .clone()
+            .name(self.step_name.clone())
             .timeout(Some(left))
             .masks(self.masks.clone());
 
@@ -377,6 +384,14 @@ impl JobRunner<'_> {
     ) -> Result<StepOutcome, Error> {
         let step = &planned.step;
         self.step_deadline = step_timeout(step, context)?.map(|limit| Instant::now() + limit);
+        self.step_name = step.name.clone().unwrap_or_default();
+
+        if let Some(hook) = passed_over(planned) {
+            self.out.report(Event::Message {
+                level: Level::Warning,
+                text: hook,
+            });
+        }
 
         if let (Some(hook), Some(resolved)) = (&planned.script, &planned.action) {
             let inputs = self.inputs_for(Some(&resolved.action), step, context)?;
@@ -540,8 +555,9 @@ impl JobRunner<'_> {
             },
             cwd,
         )
+        // No `GITHUB_ACTION_PATH`: where an action lives is told to a composite action,
+        // which has steps of its own to point at it, and to nothing else.
         .envs(self.step_env(&files))
-        .env("GITHUB_ACTION_PATH", resolved.path.display().to_string())
         .envs(
             inputs
                 .iter()
@@ -906,6 +922,20 @@ fn flag(
 
 fn continues_on_error(step: &Step, context: &Context) -> Result<bool, Error> {
     flag(&step.continue_on_error, false, context)
+}
+
+/// The `pre` hook that will not run, said the way GitHub says it, since an action that
+/// counts on one is worth telling about rather than quietly leaving out.
+fn passed_over(planned: &PlannedStep) -> Option<String> {
+    let (Some(Uses::Local(path)), Some(resolved)) = (&planned.step.uses, &planned.action) else {
+        return None;
+    };
+    Phase::Pre.script(&resolved.action.runs)?;
+
+    Some(format!(
+        "`pre` execution is not supported for local action from '{}'",
+        path.display().to_string().trim_start_matches("./")
+    ))
 }
 
 fn step_name(planned: &PlannedStep, context: &Context) -> Result<String, Error> {

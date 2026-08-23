@@ -7,7 +7,7 @@ use gh_actions_context::{
     Author, Commit, Github, Payload, Push, Repository, RunContext, Runner, User,
 };
 
-pub fn context(workspace: &Path, event_name: &str, temp: &Path) -> RunContext {
+pub fn context(workspace: &Path, event_name: &str, temp: &Path, debug: bool) -> RunContext {
     let git = Git::new(workspace.to_path_buf());
     let branch = git.branch().unwrap_or_default();
     let repository = git
@@ -82,7 +82,10 @@ pub fn context(workspace: &Path, event_name: &str, temp: &Path) -> RunContext {
             workspace: workspace.display().to_string(),
             ..Github::default()
         },
-        runner: Runner::host(temp),
+        runner: Runner {
+            debug,
+            ..Runner::host(temp)
+        },
         ..RunContext::default()
     }
 }

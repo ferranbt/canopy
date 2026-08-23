@@ -1,4 +1,3 @@
-# expect: failure
 # What happens after a step fails: cleanup still runs, later jobs do not.
 name: Failure handling
 

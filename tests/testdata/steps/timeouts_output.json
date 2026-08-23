@@ -1,0 +1,70 @@
+[
+  {
+    "event": "job-started",
+    "id": "step-timeout",
+    "label": "step-timeout"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A step that takes longer than it is allowed",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "The action 'A step that takes longer than it is allowed' has timed out after 1 minutes."
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A step that takes longer than it is allowed",
+    "depth": 0,
+    "conclusion": "success",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The step was killed rather than left running",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "outcome=failure"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The step was killed rather than left running",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "A step within its time is untouched",
+    "depth": 0
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "finished in good time"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "A step within its time is untouched",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "step-timeout",
+    "label": "step-timeout",
+    "conclusion": "success"
+  }
+]
