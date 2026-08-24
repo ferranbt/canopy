@@ -247,14 +247,17 @@ fn container(container: &Container) -> serde_json::Value {
         of.push(serde_json::json!({ "Key": literal("env".to_owned()), "Value": mapping(&env) }));
     }
     if let Some(ports) = &settings.ports {
-        let ports: Vec<serde_json::Value> = ports.iter().map(|port| literal(scalar(port))).collect();
+        let ports: Vec<serde_json::Value> =
+            ports.iter().map(|port| literal(scalar(port))).collect();
         of.push(
             serde_json::json!({ "Key": literal("ports".to_owned()), "Value": { "type": 1, "seq": ports } }),
         );
     }
     if let Some(volumes) = &settings.volumes {
-        let volumes: Vec<serde_json::Value> =
-            volumes.iter().map(|volume| literal(volume.clone())).collect();
+        let volumes: Vec<serde_json::Value> = volumes
+            .iter()
+            .map(|volume| literal(volume.clone()))
+            .collect();
         of.push(
             serde_json::json!({ "Key": literal("volumes".to_owned()), "Value": { "type": 1, "seq": volumes } }),
         );

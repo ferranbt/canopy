@@ -100,10 +100,7 @@ impl Jobs for Service {
         let taken = self.job.lock().expect("the job").take()?;
         debug!("handing the job over");
 
-        Some(Message {
-            id: 1,
-            body: taken,
-        })
+        Some(Message { id: 1, body: taken })
     }
 
     fn records(&self, _plan: &Plan, _timeline: &str, records: Vec<Record>) {
@@ -128,7 +125,11 @@ impl Jobs for Service {
             .map(|(name, said)| (name, said.value))
             .collect();
 
-        debug!(result = ended.result, ?outputs, "the runner says how it went");
+        debug!(
+            result = ended.result,
+            ?outputs,
+            "the runner says how it went"
+        );
         self.send(Update::Ended {
             result: ended.result,
             outputs,

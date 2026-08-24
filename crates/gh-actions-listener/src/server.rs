@@ -362,9 +362,16 @@ async fn uploaded<J: Jobs>(
 
     if !body.is_empty() {
         let step = path.rsplit(['\\', '/']).next().unwrap_or_default();
-        server
-            .jobs
-            .log(&Plan { scope, hub, id: plan }, log, step, body);
+        server.jobs.log(
+            &Plan {
+                scope,
+                hub,
+                id: plan,
+            },
+            log,
+            step,
+            body,
+        );
     }
 
     axum::Json(kept(log, &path))
@@ -375,7 +382,14 @@ async fn ended<J: Jobs>(
     Path((scope, hub, plan)): Path<(String, String, String)>,
     axum::Json(ended): axum::Json<JobEnded>,
 ) -> impl IntoResponse {
-    server.jobs.ended(&Plan { scope, hub, id: plan }, ended);
+    server.jobs.ended(
+        &Plan {
+            scope,
+            hub,
+            id: plan,
+        },
+        ended,
+    );
     StatusCode::OK
 }
 
