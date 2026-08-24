@@ -1,6 +1,7 @@
 //! Evaluates an [`Expr`] against a set of contexts.
 
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 
 use crate::ast::{BinaryOp, Expr};
 use crate::error::EvalError;
@@ -14,6 +15,8 @@ pub struct Context {
     pub contexts: BTreeMap<String, Value>,
     /// Backs `success()`, `failure()` and `cancelled()`.
     pub status: Status,
+    /// What `hashFiles()` reads its patterns against.
+    pub workspace: Option<PathBuf>,
 }
 
 impl Context {
@@ -27,7 +30,11 @@ impl Context {
             Value::Object(fields) => fields,
             _ => BTreeMap::new(),
         };
-        Self { contexts, status }
+        Self {
+            contexts,
+            status,
+            workspace: None,
+        }
     }
 
     pub fn with(mut self, name: impl Into<String>, value: Value) -> Self {
@@ -37,6 +44,11 @@ impl Context {
 
     pub fn with_status(mut self, status: Status) -> Self {
         self.status = status;
+        self
+    }
+
+    pub fn with_workspace(mut self, workspace: impl Into<PathBuf>) -> Self {
+        self.workspace = Some(workspace.into());
         self
     }
 }

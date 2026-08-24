@@ -1,0 +1,70 @@
+name: Expression functions
+
+on: push
+
+jobs:
+  functions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: What the functions return
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ format('{0}-{1}', 'a', 'b') }} == a-b
+            ${{ format('{0}{0}', 'x') }} == xx                       # an argument used twice
+            ${{ format('{0}', true) }} == true                       # and any type is spelled out
+            ${{ format('{0}', 1.50) }} == 1.5
+
+            ${{ join(fromJSON('["a","b","c"]'), '+') }} == a+b+c
+            ${{ join(fromJSON('["a","b"]')) }} == a,b                # a comma when none is given
+            ${{ join('lonely', '+') }} == lonely                     # a single value joins to itself
+
+            ${{ contains('hello world', 'lo wo') }} == true
+            ${{ contains('Hello', 'hello') }} == true                # strings are matched case-insensitively
+            ${{ contains(fromJSON('[1,2,3]'), 2) }} == true
+            ${{ contains(fromJSON('["a","b"]'), 'A') }} == true
+            ${{ contains(fromJSON('[1,2]'), 3) }} == false
+
+            ${{ startsWith('hello', 'HEL') }} == true
+            ${{ endsWith('hello', 'LO') }} == true
+            ${{ startsWith('hello', 'ello') }} == false
+
+            ${{ fromJSON('"text"') }} == text                        # a scalar comes back as itself
+            ${{ fromJSON('3') }} == 3
+            ${{ fromJSON('1.50') }} == 1.5                           # written the way a number is
+            ${{ fromJSON('true') }} == true
+            ${{ fromJSON('{"a":{"b":"deep"} }').a.b }} == deep        # reaching into an object
+            ${{ fromJSON('[10,20]')[1] }} == 20                       # and into an array
+            ${{ fromJSON('{"a":1}')['a'] }} == 1                      # either way of reaching in
+            ${{ fromJSON('{"a":1}').b }} ==                           # a key that is not there
+
+      - name: What toJSON writes
+        run: |
+          scalar=$(cat <<'CANOPY'
+          ${{ toJSON('canopy') }}
+          CANOPY
+          )
+          echo "scalar: $scalar"
+
+          number=$(cat <<'CANOPY'
+          ${{ toJSON(fromJSON('1.50')) }}
+          CANOPY
+          )
+          echo "number: $number"
+
+          structure=$(cat <<'CANOPY'
+          ${{ toJSON(fromJSON('{"a":[1,"two"],"b":true}')) }}
+          CANOPY
+          )
+          echo "structure:"
+          echo "$structure"
+
+      - name: A file the run can be held to
+        run: |
+          mkdir -p hashed
+          printf 'the same bytes on either runner\n' > hashed/file.txt
+
+      - name: What hashFiles makes of it
+        run: |
+          echo "hash: ${{ hashFiles('hashed/file.txt') }}"
+          echo "missing: ${{ hashFiles('hashed/nothing-here') }}"

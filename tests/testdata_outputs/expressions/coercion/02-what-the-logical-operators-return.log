@@ -1,0 +1,6 @@
+ok    the last operand, not a boolean
+ok    check 2
+ok    check 3
+ok    `&&` binds tighter than `||`
+ok    check 5
+5 check(s), 0 failed

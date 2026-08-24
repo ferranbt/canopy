@@ -58,7 +58,7 @@ fn for_job(workflow: &Workflow, job: &NormalJob) -> JobContext {
         .map(|id| {
             (
                 id.clone(),
-                step_result(Conclusion::Success, &BTreeMap::new()),
+                step_result(Conclusion::Success, Conclusion::Success, &BTreeMap::new()),
             )
         })
         .collect();

@@ -1,0 +1,49 @@
+name: Expression coercion
+
+on: push
+
+jobs:
+  coercion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comparisons across types
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ '1' == 1 }} == true                      # a string and a number compare as numbers
+            ${{ true == 1 }} == true
+            ${{ '' == 0 }} == true                       # an empty string is a zero
+            ${{ 'abc' == 0 }} == false                   # anything else is not a number at all
+            ${{ null == 0 }} == true
+            ${{ 'ABC' == 'abc' }} == true                # two strings, case-insensitively
+            ${{ 'a' != 'b' }} == true
+            ${{ 1 < 2 }} == true
+            ${{ 2 <= 2 }} == true
+            ${{ !'' }} == true                           # an empty string is false
+            ${{ !'text' }} == false
+
+      - name: What the logical operators return
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ 'a' && 'b' }} == b                       # the last operand, not a boolean
+            ${{ '' || 'fallback' }} == fallback
+            ${{ 'first' || 'second' }} == first
+            ${{ true || false && false }} == true        # `&&` binds tighter than `||`
+            ${{ (true || false) && false }} == false
+
+      - name: The ones worth recording rather than guessing at
+        run: |
+          echo "true == 'true': ${{ true == 'true' }}"
+          echo "'' == false: ${{ '' == false }}"
+          echo "null == '': ${{ null == '' }}"
+          echo "null == false: ${{ null == false }}"
+          echo "'2' > '10': ${{ '2' > '10' }}"
+          echo "'a' > 'B': ${{ 'a' > 'B' }}"
+          echo "1 && 2: ${{ 1 && 2 }}"
+          echo "false || 0: ${{ false || 0 }}"
+          echo "0 == '0.0': ${{ 0 == '0.0' }}"
+          echo "'0x1F' == 31: ${{ '0x1F' == 31 }}"
+          echo "' 1 ' == 1: ${{ ' 1 ' == 1 }}"
+          echo "empty array: ${{ fromJSON('[]') }}"
+          echo "an object: ${{ fromJSON('{"a":1}') }}"

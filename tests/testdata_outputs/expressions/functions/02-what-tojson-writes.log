@@ -1,0 +1,10 @@
+scalar: "canopy"
+number: 1.5
+structure:
+{
+  "a": [
+    1,
+    "two"
+  ],
+  "b": true
+}

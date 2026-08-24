@@ -1,0 +1,24 @@
+ok    check 1
+ok    an argument used twice
+ok    and any type is spelled out
+ok    check 4
+ok    check 5
+ok    a comma when none is given
+ok    a single value joins to itself
+ok    check 8
+ok    strings are matched case-insensitively
+ok    check 10
+ok    check 11
+ok    check 12
+ok    check 13
+ok    check 14
+ok    check 15
+ok    a scalar comes back as itself
+ok    check 17
+ok    written the way a number is
+ok    check 19
+ok    reaching into an object
+ok    and into an array
+ok    either way of reaching in
+ok    a key that is not there
+23 check(s), 0 failed

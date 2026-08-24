@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use gh_actions_context::{Conclusion, JobResult, RunContext, step_result};
-use gh_actions_expr::{Context, Value, interpolate, interpolate_value};
+use gh_actions_expr::{Context, interpolate, interpolate_value};
 use gh_actions_spec::{Action, Defaults, RunDefaults, Runs, Scalar, Step, Uses, Workflow};
 
 use gh_actions_context::Payload;
@@ -403,14 +403,22 @@ impl JobRunner<'_> {
             });
 
             let outcome = self.execute(planned, &context, depth)?;
+            let forgiven = continues_on_error(step, &context)?;
+
             if !planned.is_hook() {
                 if let Some(id) = &step.id {
-                    self.run.steps.insert(id.clone(), outcome.context.clone());
+                    self.run.steps.insert(
+                        id.clone(),
+                        step_result(
+                            conclusion_of(!outcome.succeeded),
+                            conclusion_of(!outcome.succeeded && !forgiven),
+                            &outcome.outputs,
+                        ),
+                    );
                 }
                 self.state.insert(planned.position, outcome.state.clone());
             }
 
-            let forgiven = continues_on_error(step, &context)?;
             if !outcome.succeeded && !forgiven {
                 failed = true;
             }
@@ -615,7 +623,7 @@ impl JobRunner<'_> {
         Ok(StepOutcome {
             succeeded: !failed,
             code: Some(i32::from(failed)),
-            context: step_result(conclusion_of(failed), &outputs),
+            outputs,
             state: BTreeMap::new(),
         })
     }
@@ -819,7 +827,7 @@ impl JobRunner<'_> {
         Ok(StepOutcome {
             succeeded: result.status.success,
             code: result.status.code,
-            context: step_result(conclusion_of(!result.status.success), &outputs),
+            outputs,
             state,
         })
     }
@@ -894,7 +902,7 @@ struct ContainerRun<'a> {
 struct StepOutcome {
     succeeded: bool,
     code: Option<i32>,
-    context: Value,
+    outputs: BTreeMap<String, String>,
     state: BTreeMap<String, String>,
 }
 

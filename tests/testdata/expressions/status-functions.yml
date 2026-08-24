@@ -1,0 +1,71 @@
+name: Status functions
+
+on: push
+
+jobs:
+  a-forgiven-failure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Nothing has gone wrong yet
+        if: success()
+        run: echo "success() held"
+
+      - id: broken
+        name: A failure the job was told to forgive
+        continue-on-error: true
+        run: exit 1
+
+      - name: What a forgiven failure leaves behind
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.broken.outcome }} == failure        # what the step did
+            ${{ steps.broken.conclusion }} == success     # and what it counted as
+
+      - name: The job is still going well
+        if: success()
+        run: echo "the job was never failing"
+
+      - name: So failure() finds nothing to do
+        if: failure()
+        run: echo "this never prints"
+
+  a-real-failure:
+    runs-on: ubuntu-latest
+    steps:
+      - id: fine
+        name: This one is fine
+        run: echo "first"
+
+      - id: broken
+        name: A failure with no excuse
+        run: exit 1
+
+      - name: Skipped, because the job is failing
+        run: echo "this never prints"
+
+      - name: failure() runs once something has
+        if: failure()
+        run: echo "failure() held"
+
+      - name: always() runs whatever happened
+        if: always()
+        run: echo "always() held"
+
+      - name: cancelled() does not, since nothing called this off
+        if: cancelled()
+        run: echo "this never prints"
+
+      - name: A handler running does not put the job back in the good
+        if: success()
+        run: echo "this never prints"
+
+      - name: What the steps are remembered as
+        if: always()
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.fine.outcome }} == success
+            ${{ steps.broken.outcome }} == failure
+            ${{ steps.broken.conclusion }} == failure     # nothing forgave this one
+            ${{ job.status }} == failure                  # and the job says so while it runs
