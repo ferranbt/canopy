@@ -304,6 +304,7 @@ pub fn run_until(
     let mut commands = Vec::new();
     let mut masks = request.masks.clone();
     let mut refused = false;
+    let mut listening = Listening::default();
 
     let (lines, reader) = std::sync::mpsc::channel();
     let output = pump(child.stdout.take(), Stream::Out, lines.clone());
@@ -319,7 +320,14 @@ pub fn run_until(
 
         match reader.recv_timeout(left) {
             Ok((Stream::Out, line)) => {
-                refused |= handle_line(&line, &switches, &mut commands, &mut masks, out);
+                refused |= handle_line(
+                    &line,
+                    &switches,
+                    &mut listening,
+                    &mut commands,
+                    &mut masks,
+                    out,
+                );
             }
             Ok((Stream::Err, line)) => out.report(Event::StepOutput {
                 stream: Stream::Err,
@@ -397,30 +405,75 @@ fn pump(
     })
 }
 
+/// What a step has asked the runner to make of the lines that follow.
+#[derive(Debug, Default)]
+struct Listening {
+    /// The token a step said would put the runner back to listening for commands.
+    stopped: Option<String>,
+    /// Whether a command is written to the log as well as acted on.
+    echo: bool,
+}
+
 /// Whether the step is to fail for having asked for a command it may not have.
 fn handle_line(
     line: &str,
     switches: &Switches,
+    listening: &mut Listening,
     commands: &mut Vec<WorkflowCommand>,
     masks: &mut Vec<String>,
     out: &mut dyn Reporter,
 ) -> bool {
-    let Some(command) = WorkflowCommand::parse(line) else {
+    let printed = |out: &mut dyn Reporter, masks: &Vec<String>| {
         out.report(Event::StepOutput {
             stream: Stream::Out,
             line: hide(line, masks),
         });
+    };
+
+    // Until the token comes back, everything a step says is only what it said.
+    if let Some(token) = &listening.stopped {
+        if line.trim() == format!("::{token}::") {
+            listening.stopped = None;
+        }
+        printed(out, masks);
+        return false;
+    }
+
+    let Some(command) = WorkflowCommand::parse(line) else {
+        printed(out, masks);
         return false;
     };
 
-    if matches!(command, WorkflowCommand::AddPath(_)) && !switches.unsecure {
-        for text in refusal(line.trim()) {
+    let taken_away = match &command {
+        WorkflowCommand::AddPath(_) => Some("add-path"),
+        WorkflowCommand::SetEnv { .. } => Some("set-env"),
+        _ => None,
+    };
+    if let Some(name) = taken_away.filter(|_| !switches.unsecure) {
+        for text in refusal(line.trim(), name) {
             out.report(Event::Message {
                 level: Level::Error,
                 text,
             });
         }
         return true;
+    }
+
+    if let WorkflowCommand::Stop(token) = &command {
+        // Kept out of the log from here on, so nothing a step prints can pass for the token
+        // that would have the runner listening again.
+        masks.push(token.clone());
+        listening.stopped = Some(token.clone());
+        printed(out, masks);
+        return false;
+    }
+
+    if let WorkflowCommand::Echo(on) = &command {
+        if listening.echo {
+            printed(out, masks);
+        }
+        listening.echo = *on;
+        return false;
     }
 
     if let WorkflowCommand::AddMask(secret) = &command
@@ -455,14 +508,15 @@ fn handle_line(
 
 /// What GitHub says when a step asks for a command it took away, word for word, since a
 /// workflow may well be reading the log for it.
-fn refusal(line: &str) -> [String; 2] {
+fn refusal(line: &str, name: &str) -> [String; 2] {
     [
         format!("Unable to process command '{line}' successfully."),
-        "The `add-path` command is disabled. Please upgrade to using Environment Files or opt \
-         into unsecure command execution by setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` \
-         environment variable to `true`. For more information see: \
-         https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/"
-            .to_owned(),
+        format!(
+            "The `{name}` command is disabled. Please upgrade to using Environment Files or opt \
+             into unsecure command execution by setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` \
+             environment variable to `true`. For more information see: \
+             https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/"
+        ),
     ]
 }
 

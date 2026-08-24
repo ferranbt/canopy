@@ -1,0 +1,52 @@
+name: Output edges
+
+on: push
+
+jobs:
+  edges:
+    runs-on: ubuntu-latest
+    steps:
+      - id: written
+        name: Values that are awkward to write down
+        run: |
+          {
+            echo "equals=a=b=c"
+            echo "empty="
+            echo "spaced=  padded  "
+            echo "quoted=\"quoted\""
+            echo "twice=first"
+            echo "twice=second"
+            echo "multi<<END"
+            echo "line one"
+            echo "line two"
+            echo "END"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: What came back out
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.written.outputs.equals }} == a=b=c            # only the first `=` divides
+            ${{ steps.written.outputs.empty }} ==
+            ${{ steps.written.outputs.quoted }} == "quoted"         # quotes are part of the value
+            ${{ steps.written.outputs.twice }} == second            # the later line wins
+            ${{ steps.written.outputs.missing }} ==
+
+      - name: The ones the checks cannot hold, printed instead
+        run: |
+          echo "spaced=[${{ steps.written.outputs.spaced }}]"
+          echo "multi=[${{ steps.written.outputs.multi }}]"
+
+      - id: env_and_output
+        name: The same name in both files
+        run: |
+          echo "SHARED=from the env file" >> "$GITHUB_ENV"
+          echo "SHARED=from the output file" >> "$GITHUB_OUTPUT"
+
+      - name: They are kept apart
+        uses: ./actions/expect
+        with:
+          checks: |
+            $SHARED == from the env file
+            ${{ steps.env_and_output.outputs.SHARED }} == from the output file
+            ${{ env.SHARED }} == from the env file

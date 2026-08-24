@@ -1,0 +1,6 @@
+ok    only the first `=` divides
+ok    check 2
+FAIL  quotes are part of the value: expected == ""quoted"", got "quoted"
+ok    the later line wins
+ok    check 5
+5 check(s), 1 failed

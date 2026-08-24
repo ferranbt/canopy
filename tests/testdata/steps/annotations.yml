@@ -1,0 +1,35 @@
+name: Annotations
+
+on: push
+
+jobs:
+  annotating:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A file to point the annotations at
+        run: |
+          mkdir -p src
+          printf 'one\ntwo\nthree\n' > src/app.js
+
+      - name: An error against a place in a file
+        run: echo "::error file=src/app.js,line=3,col=5::something went wrong there"
+
+      - name: With an end and a title as well
+        run: echo "::error file=src/app.js,line=1,endLine=3,title=Broken::from the first line to the third"
+
+      - name: A warning the same way
+        run: echo "::warning file=src/app.js,line=2::worth a look"
+
+      - name: A notice, which the runner takes and says nothing about
+        run: echo "::notice file=src/app.js,line=1::just so you know"
+
+      - name: The levels with nothing attached
+        run: |
+          echo "::warning::a bare warning"
+          echo "::error::a bare error"
+
+      - name: A property the runner has no use for
+        run: echo "::warning nonsense=yes::said anyway"
+
+      - name: The step is still a success, annotations and all
+        run: echo "nothing here failed"

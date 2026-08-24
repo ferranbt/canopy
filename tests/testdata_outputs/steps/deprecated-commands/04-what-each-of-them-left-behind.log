@@ -1,0 +1,5 @@
+set-output outcome=success
+set-output value=[said the old way]
+save-state outcome=success
+set-env outcome=failure
+set-env value=[]

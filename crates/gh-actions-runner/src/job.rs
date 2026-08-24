@@ -937,14 +937,34 @@ impl JobRunner<'_> {
     }
 
     fn collect(&mut self, files: &StepFiles, result: &ExecResult) -> Result<StepOutcome, Error> {
-        self.run
-            .env
-            .extend(parse_env_file(&self.read_file(&files.env)?));
+        let mut wrong = false;
+        let mut read = |name: &str, contents: &str, out: &mut dyn Reporter| {
+            match parse_env_file(contents) {
+                Ok(entries) => entries,
+                Err(why) => {
+                    // Word for word what GitHub says, since a step is failed for it.
+                    for text in [
+                        format!("Unable to process file command '{name}' successfully."),
+                        why,
+                    ] {
+                        out.report(Event::Message {
+                            level: Level::Error,
+                            text,
+                        });
+                    }
+                    wrong = true;
+                    BTreeMap::new()
+                }
+            }
+        };
+
+        let from_env = read("env", &self.read_file(&files.env)?, self.out);
+        let mut outputs = read("output", &self.read_file(&files.output)?, self.out);
+        let mut state = read("state", &self.read_file(&files.state)?, self.out);
+
+        self.run.env.extend(from_env);
         self.path_entries
             .extend(read_lines(&self.read_file(&files.path)?));
-
-        let mut outputs = parse_env_file(&self.read_file(&files.output)?);
-        let mut state = parse_env_file(&self.read_file(&files.state)?);
 
         for command in &result.commands {
             match command {
@@ -955,6 +975,9 @@ impl JobRunner<'_> {
                     state.insert(name.clone(), value.clone());
                 }
                 Command::AddPath(path) => self.path_entries.push(path.clone()),
+                Command::SetEnv { name, value } => {
+                    self.run.env.insert(name.clone(), value.clone());
+                }
                 Command::AddMask(secret) if !secret.is_empty() => {
                     self.masks.push(secret.clone());
                 }
@@ -963,7 +986,7 @@ impl JobRunner<'_> {
         }
 
         Ok(StepOutcome {
-            succeeded: result.status.success,
+            succeeded: result.status.success && !wrong,
             code: result.status.code,
             outputs,
             state,
@@ -1235,7 +1258,8 @@ fn scalar_string(scalar: &Scalar) -> String {
     scalar_value(scalar).to_display_string()
 }
 
-fn parse_env_file(contents: &str) -> BTreeMap<String, String> {
+/// A file written wrong is taken as nothing at all, and says which line it gave up on.
+fn parse_env_file(contents: &str) -> Result<BTreeMap<String, String>, String> {
     let mut entries = BTreeMap::new();
     let mut lines = contents.lines();
 
@@ -1246,19 +1270,28 @@ fn parse_env_file(contents: &str) -> BTreeMap<String, String> {
 
         if let Some((key, delimiter)) = line.split_once("<<") {
             let mut value = Vec::new();
+            let mut closed = false;
             for line in lines.by_ref() {
                 if line == delimiter {
+                    closed = true;
                     break;
                 }
                 value.push(line);
             }
+            if !closed {
+                return Err(format!(
+                    "Invalid value. Matching delimiter not found '{delimiter}'"
+                ));
+            }
             entries.insert(key.trim().to_owned(), value.join("\n"));
         } else if let Some((key, value)) = line.split_once('=') {
             entries.insert(key.trim().to_owned(), value.to_owned());
+        } else {
+            return Err(format!("Invalid format '{line}'"));
         }
     }
 
-    entries
+    Ok(entries)
 }
 
 fn read_lines(contents: &str) -> Vec<String> {
@@ -1399,8 +1432,21 @@ mod tests {
 
     #[test]
     fn reads_both_env_file_forms() {
-        let parsed = parse_env_file("SIMPLE=value\nNOTES<<EOF\nline one\nline two\nEOF\n");
+        let parsed = parse_env_file("SIMPLE=value\nNOTES<<EOF\nline one\nline two\nEOF\n")
+            .expect("both forms are read");
         assert_eq!(parsed["SIMPLE"], "value");
         assert_eq!(parsed["NOTES"], "line one\nline two");
+    }
+
+    #[test]
+    fn a_file_written_wrong_says_which_line_it_gave_up_on() {
+        assert_eq!(
+            parse_env_file("NEVER_CLOSED<<EOF\nline one\n"),
+            Err("Invalid value. Matching delimiter not found 'EOF'".to_owned())
+        );
+        assert_eq!(
+            parse_env_file("just some words\n"),
+            Err("Invalid format 'just some words'".to_owned())
+        );
     }
 }

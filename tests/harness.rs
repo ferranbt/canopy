@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use gh_actions_plan::Plan;
-use gh_actions_runner::report::{Event, Reporter};
+use gh_actions_runner::report::{Event, Reporter, Stream};
 use gh_actions_services::Services;
 use gh_actions_spec::Workflow;
 use local_runner::{Config, Local};
@@ -39,6 +39,25 @@ impl Reporter for Outcome {
         if let Event::StepOutput { line, .. } = &event
             && got_ready(line)
         {
+            return;
+        }
+
+        // A message of several lines reaches the log of the runner GitHub ships as the first
+        // of them under the level it was raised at, and the rest as what the step printed.
+        if let Event::Message { level, text } = &event
+            && let Some((first, rest)) = text.split_once('\n')
+        {
+            let (level, rest) = (*level, rest.to_owned());
+            self.report(Event::Message {
+                level,
+                text: first.to_owned(),
+            });
+            for line in rest.lines() {
+                self.report(Event::StepOutput {
+                    stream: Stream::Out,
+                    line: line.to_owned(),
+                });
+            }
             return;
         }
 

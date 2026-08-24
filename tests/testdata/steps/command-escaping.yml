@@ -1,0 +1,33 @@
+name: Command escaping
+
+on: push
+
+jobs:
+  escaping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A percent in the data is written as one
+        run: echo "::warning::100%25 of the way there"
+
+      - name: A newline in the data is written as one
+        run: echo "::warning::first line%0Asecond line"
+
+      - name: A carriage return too
+        run: echo "::warning::before%0Dafter"
+
+      - name: All three at once
+        run: echo "::error::a%25b%0Ac%0Dd"
+
+      - name: A property with a comma and a colon in it
+        run: echo "::warning title=one%2Ctwo%3Athree::the title had both"
+
+      - name: What is not an escape is left alone
+        run: echo "::warning::50% off, and %00 is nothing"
+
+      - name: A command with nothing after it
+        run: echo "::warning::"
+
+      - name: Text that only looks like a command
+        run: |
+          echo "the runner is told with ::warning:: at the start of a line"
+          echo "  ::warning::indented, so not a command"
