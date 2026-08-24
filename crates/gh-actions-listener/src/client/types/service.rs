@@ -140,6 +140,63 @@ impl Record {
     }
 }
 
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Many<T> {
+    pub count: usize,
+    pub value: Vec<T>,
+}
+
+impl<T> Many<T> {
+    pub fn of(value: Vec<T>) -> Self {
+        Self {
+            count: value.len(),
+            value,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case", default)]
+pub struct Granted {
+    pub access_token: String,
+    pub token_type: String,
+    pub expires_in: u64,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct JobRequest {
+    pub request_id: i64,
+    pub lock_token: String,
+    pub locked_until: String,
+    pub result: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct TaskLog {
+    pub id: i64,
+    pub path: String,
+    pub line_count: u64,
+    pub created_on: String,
+    pub last_changed_on: String,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct JobEnded {
+    pub request_id: i64,
+    pub result: String,
+    pub outputs: std::collections::BTreeMap<String, Said>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct Said {
+    pub value: String,
+}
+
 /// The actions a job uses, which a runner asks where to get before it starts one.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", default)]

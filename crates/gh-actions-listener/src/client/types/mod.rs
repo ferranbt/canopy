@@ -18,7 +18,8 @@ pub use registration::{
 };
 pub use service::{
     ACTIONS, AccessMapping, ActionDownload, ActionDownloads, ActionReference, ActionReferences,
-    ConnectionData, Identity, Lines, LocationServiceData, LogReference, Record, ResourceLocation,
+    ConnectionData, Granted, Identity, JobEnded, JobRequest, Lines, LocationServiceData,
+    LogReference, Many, Record, ResourceLocation, Said, TaskLog,
 };
 
 pub use results::{

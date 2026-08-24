@@ -7,6 +7,7 @@ pub mod error;
 pub mod listener;
 pub mod progress;
 pub mod register;
+pub mod server;
 
 pub use auth::Credentials;
 pub use client::types::{

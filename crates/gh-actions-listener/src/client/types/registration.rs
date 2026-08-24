@@ -8,10 +8,14 @@ pub struct TenantRequest<'a> {
     pub runner_event: &'a str,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Tenant {
     pub url: String,
     pub token: String,
+    /// Which credential to talk with, which a client is told out of band and a service has
+    /// to say out loud.
+    #[serde(default)]
+    pub token_schema: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
