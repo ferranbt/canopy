@@ -361,6 +361,7 @@ impl Harness {
         // Who committed and what they called it is the machine's to say, and a recording
         // made on one machine is read on another.
         unsafe {
+            std::env::set_var("GITHUB_REF_NAME", "canopy-branch");
             std::env::set_var("GITHUB_ACTOR", "canopy");
             std::env::set_var("GITHUB_COMMIT_AUTHOR", "canopy");
             std::env::set_var("GITHUB_COMMIT_EMAIL", "canopy@example.com");

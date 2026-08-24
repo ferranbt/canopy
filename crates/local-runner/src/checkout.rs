@@ -9,7 +9,11 @@ use gh_actions_context::{
 
 pub fn context(workspace: &Path, event_name: &str, temp: &Path, debug: bool) -> RunContext {
     let git = Git::new(workspace.to_path_buf());
-    let branch = git.branch().unwrap_or_default();
+    let branch = std::env::var("GITHUB_REF_NAME")
+        .ok()
+        .filter(|said| !said.is_empty())
+        .or_else(|| git.branch())
+        .unwrap_or_default();
     let repository = git
         .repository()
         .unwrap_or_else(|| "local/workspace".to_owned());
