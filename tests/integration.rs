@@ -22,6 +22,9 @@ fn main() -> Result<()> {
         let ran = harness.run(&file.path, |case| {
             let local = Local::start(Config {
                 temp: case.temp.clone(),
+                // A store of its own, so what a case cached is what this run cached: one
+                // kept between runs would answer for work that never happened.
+                services: case.artifacts.join("services"),
                 ..Config::for_workspace(&case.workspace)
             })
             .map_err(|err| format!("cannot start: {err}"))?;

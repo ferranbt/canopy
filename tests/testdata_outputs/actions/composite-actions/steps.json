@@ -1,0 +1,55 @@
+[
+  {
+    "event": "job-started",
+    "id": "composite",
+    "label": "composite"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "./actions/greet-composite",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "./actions/greet-composite",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Defaults are filled in when `with` is omitted",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Defaults are filled in when `with` is omitted",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "What the composite action returned",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "What the composite action returned",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "composite",
+    "label": "composite",
+    "conclusion": "success"
+  }
+]

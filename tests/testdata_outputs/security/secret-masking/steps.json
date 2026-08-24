@@ -1,0 +1,55 @@
+[
+  {
+    "event": "job-started",
+    "id": "masks-a-value",
+    "label": "masks-a-value"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Ask for it to be masked, then print it",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Ask for it to be masked, then print it",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "A later step in the same job is masked too",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "A later step in the same job is masked too",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Masking reaches standard error as well",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Masking reaches standard error as well",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "masks-a-value",
+    "label": "masks-a-value",
+    "conclusion": "success"
+  }
+]

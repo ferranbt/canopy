@@ -1,0 +1,38 @@
+# Artifacts round trip
+name: Artifacts round trip
+
+on: push
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make something worth uploading
+        run: |
+          # The workspace is this directory rather than a fresh checkout, so anything a
+          # previous run left has to go: `restored` surviving would let the check below
+          # pass without the download having done anything.
+          mkdir -p out
+          echo "built at step time" > out/result.txt
+          echo "second file" > out/notes.txt
+
+      - name: Upload it
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: out
+
+      - name: Remove the local copy
+        run: rm -rf out
+
+      - name: Download it back
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: restored
+
+      - name: Check the round trip
+        run: |
+          cat restored/result.txt
+          test -f restored/notes.txt
+          echo "artifact round trip ok"

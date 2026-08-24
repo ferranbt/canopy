@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 
 use gh_actions_context::RunContext;
 use gh_actions_plan::PlannedJob;
-use gh_actions_spec::{Defaults, Expr, RunDefaults, Scalar, Step, Uses, Workflow};
+use gh_actions_spec::{Container, Defaults, Expr, RunDefaults, Scalar, Step, Uses, Workflow};
 
 /// A planned job as the runner expects to be handed one.
 ///
@@ -18,7 +18,6 @@ pub fn encode(
     workflow: &Workflow,
     job: &PlannedJob,
     run: &RunContext,
-    needs: &BTreeMap<String, serde_json::Value>,
     services: &BTreeMap<String, String>,
     base: &str,
     nth: u64,
@@ -86,14 +85,6 @@ pub fn encode(
             workflow.name.clone().unwrap_or_default().into(),
         );
     }
-    // What the jobs this one waited for came out with, which the service keeps rather than
-    // any one runner.
-    if !needs.is_empty()
-        && let Ok(needs) = serde_json::to_value(needs)
-    {
-        contexts["needs"] = needs;
-    }
-
     // Which combination of a matrix this job is, which is settled by planning it rather
     // than by anything the run as a whole knows.
     if !job.matrix.is_empty()
@@ -126,6 +117,18 @@ pub fn encode(
         // What the job is to come out with, which a runner works out at the end from what
         // its steps left behind.
         "jobOutputs": mapping(&job.spec.outputs.clone().unwrap_or_default()),
+        // Where the steps run, and what runs alongside them.
+        "jobContainer": job.spec.container.as_ref().map(container),
+        "jobServiceContainers": job.spec.services.as_ref().map(|services| {
+            let alongside: Vec<serde_json::Value> = services
+                .iter()
+                .map(|(label, service)| {
+                    serde_json::json!({ "Key": literal(label.clone()), "Value": container(service) })
+                })
+                .collect();
+
+            serde_json::json!({ "type": 2, "map": alongside })
+        }),
         "requestId": nth,
         "steps": steps,
         "contextData": context_data,
@@ -142,11 +145,17 @@ pub fn encode(
 }
 
 /// A token shaped the way the runner insists on, which is a JWT it can read the life of.
+///
+/// It hands this to the actions it runs as `ACTIONS_RUNTIME_TOKEN`, over whatever else the
+/// job was given, so it carries the claims the results service is read with: an action
+/// that cannot read a run and a job out of it will not upload anything.
 fn token() -> String {
     #[derive(serde::Serialize)]
     struct Claims {
         nbf: u64,
         exp: u64,
+        scp: String,
+        iss: String,
     }
 
     let now = std::time::SystemTime::now()
@@ -159,6 +168,11 @@ fn token() -> String {
         &Claims {
             nbf: now,
             exp: now + 3600,
+            scp: format!(
+                "Actions.Results:{}:{}",
+                "00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"
+            ),
+            iss: "local-actions-services".to_owned(),
         },
         &jsonwebtoken::EncodingKey::from_secret(b"canopy"),
     )
@@ -194,6 +208,51 @@ fn reference(uses: &Uses) -> serde_json::Value {
             "image": image,
         }),
     }
+}
+
+/// A container as the runner is handed one: a name on its own, or everything beside it.
+fn container(container: &Container) -> serde_json::Value {
+    let settings = match container {
+        Container::Image(image) => return literal(image.clone()),
+        Container::Settings(settings) => settings,
+    };
+
+    let mut said = BTreeMap::from([("image".to_owned(), settings.image.clone())]);
+    if let Some(options) = &settings.options {
+        said.insert("options".to_owned(), options.clone());
+    }
+
+    let mut of = vec![
+        serde_json::json!({ "Key": literal("image".to_owned()), "Value": literal(settings.image.clone()) }),
+    ];
+    if let Some(options) = &settings.options {
+        of.push(
+            serde_json::json!({ "Key": literal("options".to_owned()), "Value": literal(options.clone()) }),
+        );
+    }
+    if let Some(env) = &settings.env {
+        let env: BTreeMap<String, String> = env
+            .iter()
+            .map(|(name, value)| (name.clone(), scalar(value)))
+            .collect();
+
+        of.push(serde_json::json!({ "Key": literal("env".to_owned()), "Value": mapping(&env) }));
+    }
+    if let Some(ports) = &settings.ports {
+        let ports: Vec<serde_json::Value> = ports.iter().map(|port| literal(scalar(port))).collect();
+        of.push(
+            serde_json::json!({ "Key": literal("ports".to_owned()), "Value": { "type": 1, "seq": ports } }),
+        );
+    }
+    if let Some(volumes) = &settings.volumes {
+        let volumes: Vec<serde_json::Value> =
+            volumes.iter().map(|volume| literal(volume.clone())).collect();
+        of.push(
+            serde_json::json!({ "Key": literal("volumes".to_owned()), "Value": { "type": 1, "seq": volumes } }),
+        );
+    }
+
+    serde_json::json!({ "type": 2, "map": of })
 }
 
 /// What a step is called when it was not given a name, which a service works out before a

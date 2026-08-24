@@ -1,0 +1,16 @@
+# A name no service claimed does not resolve.
+name: No job services
+
+on: push
+
+jobs:
+  no-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A name no service claimed does not resolve
+        run: |
+          if getent hosts cache; then
+            echo "cache should not resolve in a job that declared no services"
+            exit 1
+          fi
+          echo "nothing resolved"

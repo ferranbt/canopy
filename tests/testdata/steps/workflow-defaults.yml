@@ -1,0 +1,25 @@
+# With nothing nearer, a step runs where the workflow's `defaults.run` said, in the shell
+# it named.
+name: Workflow defaults
+
+on: push
+
+defaults:
+  run:
+    shell: sh
+    working-directory: from-workflow
+
+jobs:
+  takes-the-workflow-defaults:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make the directory the default points at
+        working-directory: .
+        run: mkdir -p from-workflow
+
+      - name: Run where the workflow said, in the shell it named
+        run: |
+          test "$(basename "$PWD")" = from-workflow
+          # `sh` is dash here and bash is not, which is a difference a script can see.
+          test -z "$BASH_VERSION"
+          echo "workflow defaults applied"

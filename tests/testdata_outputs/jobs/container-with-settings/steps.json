@@ -1,0 +1,55 @@
+[
+  {
+    "event": "job-started",
+    "id": "with-settings",
+    "label": "with-settings"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Check the image again",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Check the image again",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Check the environment the container was given",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Check the environment the container was given",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Check the extra docker options were passed",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Check the extra docker options were passed",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "with-settings",
+    "label": "with-settings",
+    "conclusion": "success"
+  }
+]

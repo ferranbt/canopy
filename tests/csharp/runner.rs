@@ -1,13 +1,11 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::mpsc::{RecvTimeoutError, channel};
-use std::time::Duration;
+use std::sync::mpsc::channel;
 
 use gh_actions_context::{Conclusion, RunContext};
-use gh_actions_listener::client::types::{Lines, Record};
+use gh_actions_listener::client::types::Record;
 use gh_actions_plan::PlannedJob;
 use gh_actions_runner::report::{Event, Level, Reporter, Stream};
 use gh_actions_spec::Workflow;
@@ -17,6 +15,8 @@ use crate::service::{self, Listening, Service, Update};
 
 const IMAGE: &str = "gh-runner";
 const CONTAINER: &str = "gh-runner";
+/// Everything a job touches: the repository, the temp files, the actions it unpacks.
+const WORK: &str = "/home/runner/_work";
 /// Where the runner looks for the repository, which is one place for every case in turn.
 const WORKSPACE: &str = "/home/runner/_work/canopy/canopy";
 
@@ -24,8 +24,6 @@ pub struct Job<'a> {
     pub workflow: &'a Workflow,
     pub planned: &'a PlannedJob,
     pub context: &'a RunContext,
-    /// How the jobs it waited for went, and what they came out with.
-    pub needs: &'a BTreeMap<String, serde_json::Value>,
     pub services: &'a BTreeMap<String, String>,
 }
 
@@ -42,7 +40,7 @@ impl GhRunner {
     pub fn new() -> Result<Self, String> {
         let service = Service::default();
         let listening = service.start()?;
-        let workspace = std::env::temp_dir().join("canopy-gh-runner");
+        let workspace = PathBuf::from(WORKSPACE);
 
         std::fs::create_dir_all(&workspace).map_err(|err| format!("cannot make a mount: {err}"))?;
 
@@ -92,270 +90,153 @@ impl GhRunner {
             job.workflow,
             job.planned,
             job.context,
-            job.needs,
             job.services,
             service::BASE,
             nth,
         );
         let (updates, arriving) = channel();
-        self.service.hand_over(message, updates);
+        self.service.hand_over(message.to_string(), updates);
 
-        let agent = start(&self.workspace)?;
-        let mut reported = Reported::new(WORKSPACE, &job.planned.id);
+        let mut agent = start()?;
+        agent.wait()?;
 
-        // Until the runner is gone rather than until the job is written down as over: what
-        // the job came out with is the last thing it says, after both.
-        while !agent.finished()? {
-            match arriving.recv_timeout(Duration::from_millis(100)) {
-                Ok(update) => reported.take(update, out),
-                Err(RecvTimeoutError::Disconnected) => break,
-                Err(RecvTimeoutError::Timeout) => {}
-            }
-        }
-        for update in arriving.try_iter() {
-            reported.take(update, out);
-        }
-
-        // Taken down before the next one, since they answer to the same name.
-        drop(agent);
-
-        match reported.steps.is_empty() {
-            true => Err("the runner ran no step".to_owned()),
-            false => Ok(()),
-        }
+        // Read once the runner is gone rather than as it goes: what it says is only true
+        // of the job when the job is over, so there is nothing to piece together.
+        report(arriving.try_iter().collect(), &job.planned.id, out)
     }
 }
 
-struct Reported {
-    workspace: String,
-    id: String,
-    job: Option<String>,
-    steps: Vec<String>,
-    finished: Vec<String>,
-    waiting: HashMap<String, Vec<Event>>,
-    codes: HashMap<String, i32>,
-    /// The steps that have said something, which is what makes an upload worth reading.
-    said: Vec<String>,
-    /// The steps that ran out of time, which came back with no code of their own.
-    killed: Vec<String>,
-    /// What a step uploaded at the end, until it is known whether it said it as it went.
-    uploads: HashMap<String, String>,
-    /// The step that is over, kept open until nothing more can arrive for it.
-    ending: Option<(usize, Record)>,
-    echoing: bool,
-}
+/// What the runner did, told the way canopy tells it.
+fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), String> {
+    let mut written: BTreeMap<String, Record> = BTreeMap::new();
+    let mut uploads: HashMap<String, String> = HashMap::new();
+    let mut came = None;
 
-impl Reported {
-    fn new(workspace: &str, id: &str) -> Self {
-        Self {
-            workspace: workspace.to_owned(),
-            id: id.to_owned(),
-            job: None,
-            steps: Vec::new(),
-            finished: Vec::new(),
-            waiting: HashMap::new(),
-            codes: HashMap::new(),
-            said: Vec::new(),
-            killed: Vec::new(),
-            uploads: HashMap::new(),
-            ending: None,
-            echoing: false,
-        }
-    }
-
-    fn take(&mut self, update: Update, out: &mut dyn Reporter) {
+    for update in updates {
         match update {
-            Update::Records(records) => self.timeline(records, out),
-            Update::Printed(lines) => self.printed(lines, out),
-            // Kept rather than read: it is the same output the step sent as it went, and
-            // whether it sent any is only settled when the step is over.
-            Update::Log { step, text } => {
-                self.uploads.insert(step, text);
-            }
-            Update::Outputs(outputs) if !outputs.is_empty() => {
-                let id = self.id.clone();
-                self.report(Event::JobOutputs { id, outputs }, out);
-            }
-            Update::Outputs(_) => {}
-        }
-    }
-
-    fn timeline(&mut self, mut records: Vec<Record>, out: &mut dyn Reporter) {
-        records.sort_by_key(|record| record.order);
-
-        let job = records.iter().find(|record| !record.is_step()).cloned();
-        if let Some(job) = &job
-            && self.job.is_none()
-        {
-            self.job = Some(job.id.clone());
-            self.report(
-                Event::JobStarted {
-                    id: self.id.clone(),
-                    label: job.name.clone(),
-                },
-                out,
-            );
-        }
-
-        for record in records.iter().filter(|record| record.is_step()) {
-            self.step(record, out);
-        }
-
-        if let Some(job) = job
-            && job.finished()
-            && !self.finished.contains(&job.id)
-        {
-            self.ended(out);
-            self.finished.push(job.id.clone());
-            self.report(
-                Event::JobFinished {
-                    id: self.id.clone(),
-                    label: job.name.clone(),
-                    conclusion: conclusion(job.result.as_deref()),
-                },
-                out,
-            );
-        }
-    }
-
-    fn step(&mut self, record: &Record, out: &mut dyn Reporter) {
-        // A runner writes its whole timeline down before it starts, so a record only says a
-        // step is under way once it stops being pending.
-        let under_way = record.finished() || record.state == "inProgress";
-        let Some(name) = named(record).filter(|_| under_way) else {
-            return;
-        };
-
-        let index = match self.steps.iter().position(|id| *id == record.id) {
-            Some(at) => at,
-            None => {
-                self.ended(out);
-                self.steps.push(record.id.clone());
-                let index = self.steps.len() - 1;
-                self.report(
-                    Event::StepStarted {
-                        index,
-                        name: name.clone(),
-                        depth: 0,
-                    },
-                    out,
-                );
-
-                for event in self.waiting.remove(&record.id).unwrap_or_default() {
-                    self.report(event, out);
+            Update::Records(records) => {
+                for record in records {
+                    written
+                        .entry(record.id.clone())
+                        .or_insert_with(|| Record {
+                            id: record.id.clone(),
+                            ..Record::default()
+                        })
+                        .update(record);
                 }
-                index
             }
-        };
-
-        // Held rather than reported: a runner uploads what a step said after it has already
-        // written down that the step is over, so the step is not closed until something
-        // else happens.
-        if record.finished() && !self.finished.contains(&record.id) {
-            self.finished.push(record.id.clone());
-            self.ending = Some((index, record.clone()));
+            Update::Log { step, text } => {
+                uploads.insert(step, text);
+            }
+            Update::Ended { result, outputs } => came = Some((result, outputs)),
         }
     }
 
-    /// Closes the step that was waiting to be closed, now that nothing more can be said of it.
-    fn ended(&mut self, out: &mut dyn Reporter) {
-        let Some((index, record)) = self.ending.clone() else {
-            return;
+    let mut records: Vec<Record> = written.into_values().collect();
+    records.sort_by_key(|record| record.order);
+
+    let job = records.iter().find(|record| !record.is_step());
+    let label = job.map(|job| job.name.clone()).unwrap_or_default();
+
+    out.report(Event::JobStarted {
+        id: id.to_owned(),
+        label: label.clone(),
+    });
+
+    let mut ran = 0;
+    for record in records.iter().filter(|record| record.is_step()) {
+        let Some(name) = named(record).filter(|_| record.finished()) else {
+            continue;
         };
 
-        // What was uploaded, for a step that said nothing as it went: the upload is the same
-        // output, so reading both would say everything twice.
-        let uploaded = self.uploads.remove(&record.id);
-        if let Some(text) = uploaded.filter(|_| !self.said.contains(&record.id)) {
-            let lines = Lines {
-                value: text.lines().map(without_timestamp).collect(),
-                step_id: record.id.clone(),
-            };
-            self.printed(lines, out);
-        }
+        let index = ran;
+        ran += 1;
+        out.report(Event::StepStarted {
+            index,
+            name: name.clone(),
+            depth: 0,
+        });
 
-        self.ending = None;
-
+        let said = uploads.remove(&record.id).unwrap_or_default();
+        let (code, killed) = printed(&said, out);
         let conclusion = conclusion(record.result.as_deref());
+
         // Only a code worth complaining about is said out loud, so a step that came back at
         // all and did not complain came back with nothing to say. One that was killed never
         // came back, and one that was skipped never went.
-        let killed = self.killed.contains(&record.id);
-        let code = match (self.codes.get(&record.id), conclusion) {
-            (Some(code), _) => Some(*code),
+        let code = match (code, conclusion) {
+            (Some(code), _) => Some(code),
             (None, Conclusion::Skipped) => None,
             (None, _) if killed => None,
             (None, _) => Some(0),
         };
 
-        self.report(
-            Event::StepFinished {
-                index,
-                name: named(&record).unwrap_or_else(|| record.name.clone()),
-                depth: 0,
-                conclusion,
-                code,
-            },
-            out,
-        );
+        out.report(Event::StepFinished {
+            index,
+            name,
+            depth: 0,
+            conclusion,
+            code,
+        });
     }
 
-    fn printed(&mut self, lines: Lines, out: &mut dyn Reporter) {
-        if self.job.as_ref().is_some_and(|job| *job == lines.step_id) {
-            return;
-        }
+    // A job that ran in a container of its own never has its record written down as over:
+    // the timeline is left saying the runner was taking the container down, and what the
+    // job came to is only in what it said at the end.
+    let over = match job.filter(|job| job.finished()) {
+        Some(job) => job.result.clone(),
+        None => came.as_ref().map(|(result, _)| result.clone()),
+    };
+    out.report(Event::JobFinished {
+        id: id.to_owned(),
+        label,
+        conclusion: conclusion(over.as_deref()),
+    });
 
-        let mut said = Vec::new();
-        for line in &lines.value {
-            let line = clean(line, &self.workspace);
-            if CHATTER.iter().any(|chatter| line.starts_with(chatter)) {
-                continue;
-            }
-            if line.starts_with("##[group]Run ") {
-                self.echoing = true;
-            }
-            if self.echoing {
-                self.echoing = line != "##[endgroup]";
-                continue;
-            }
-
-            if line.contains("has timed out after") {
-                self.killed.push(lines.step_id.clone());
-            }
-
-            match reported(&line) {
-                Said::Event(event) => said.push(event),
-                Said::Code(code) => {
-                    self.codes.insert(lines.step_id.clone(), code);
-                }
-                Said::Nothing => {}
-            }
-        }
-
-        let ending = self
-            .ending
-            .as_ref()
-            .is_some_and(|(_, record)| record.id == lines.step_id);
-
-        if !said.is_empty() {
-            self.said.push(lines.step_id.clone());
-        }
-
-        if self.steps.contains(&lines.step_id)
-            && (ending || !self.finished.contains(&lines.step_id))
-        {
-            for event in said {
-                self.report(event, out);
-            }
-            return;
-        }
-
-        self.waiting.entry(lines.step_id).or_default().extend(said);
+    if let Some((_, outputs)) = came.filter(|(_, outputs)| !outputs.is_empty()) {
+        out.report(Event::JobOutputs {
+            id: id.to_owned(),
+            outputs,
+        });
     }
 
-    fn report(&mut self, event: Event, out: &mut dyn Reporter) {
-        out.report(event);
+    match ran {
+        0 => Err("the runner ran no step".to_owned()),
+        _ => Ok(()),
     }
+}
+
+/// What a step printed, as the run reports it: the lines it said, the levels it raised,
+/// and the code it came back with.
+fn printed(said: &str, out: &mut dyn Reporter) -> (Option<i32>, bool) {
+    let (mut code, mut killed, mut echoing) = (None, false, false);
+
+    for line in said.lines() {
+        let line = clean(without_timestamp(line).as_str());
+        if CHATTER.iter().any(|chatter| line.starts_with(chatter)) {
+            continue;
+        }
+
+        // A runner opens a step by printing it back, which is the step as it was given.
+        if line.starts_with("##[group]Run ") {
+            echoing = true;
+        }
+        if echoing {
+            echoing = line != "##[endgroup]";
+            continue;
+        }
+        if line.contains("has timed out after") {
+            killed = true;
+        }
+
+        match reported(&line) {
+            Said::Event(event) => out.report(event),
+            Said::Code(said) => code = Some(said),
+            Said::Nothing => {}
+        }
+    }
+
+    (code, killed)
 }
 
 enum Said {
@@ -443,22 +324,21 @@ fn reported(line: &str) -> Said {
     })
 }
 
-/// The one runner the suite is run on, which takes job after job until it is stopped.
+/// The runner the job is run on, which takes it and stops.
 struct Agent {
-    child: Mutex<std::process::Child>,
+    child: std::process::Child,
 }
 
 impl Agent {
-    fn finished(&self) -> Result<bool, String> {
+    fn wait(&mut self) -> Result<(), String> {
         self.child
-            .lock()
-            .expect("the runner")
-            .try_wait()
-            .map(|status| status.is_some())
+            .wait()
+            .map(|_| ())
             .map_err(|err| format!("cannot wait for the runner: {err}"))
     }
 }
 
+/// Taken down before the next one, since they answer to the same name.
 impl Drop for Agent {
     fn drop(&mut self) {
         let _ = Command::new("docker")
@@ -467,16 +347,19 @@ impl Drop for Agent {
             .stderr(Stdio::null())
             .status();
 
-        let _ = self.child.lock().expect("the runner").wait();
+        let _ = self.child.wait();
     }
 }
 
-fn start(workspace: &std::path::Path) -> Result<Agent, String> {
+fn start() -> Result<Agent, String> {
     let child = Command::new("docker")
         .args(["run", "--rm", "--network", "host"])
         .args(["--name", CONTAINER])
-        .arg("--volume")
-        .arg(format!("{}:{WORKSPACE}", workspace.display()))
+        // At the same path inside as out, since a runner starting a container of its own
+        // hands the daemon the paths it sees, and the daemon looks for them out here.
+        .args(["--volume", &format!("{WORK}:{WORK}")])
+        // The daemon it asks, which is the one running it.
+        .args(["--volume", "/var/run/docker.sock:/var/run/docker.sock"])
         .arg("--entrypoint")
         .arg("/bin/bash")
         .arg(IMAGE)
@@ -491,12 +374,10 @@ fn start(workspace: &std::path::Path) -> Result<Agent, String> {
         .spawn()
         .map_err(|err| format!("cannot run docker: {err}"))?;
 
-    Ok(Agent {
-        child: Mutex::new(child),
-    })
+    Ok(Agent { child })
 }
 
-fn clean(line: &str, workspace: &str) -> String {
+fn clean(line: &str) -> String {
     let mut plain = String::with_capacity(line.len());
     let mut rest = line;
 
@@ -510,33 +391,11 @@ fn clean(line: &str, workspace: &str) -> String {
     plain.push_str(rest);
 
     let plain = plain
-        .replace(workspace, "$GITHUB_WORKSPACE")
+        .replace(WORKSPACE, "$GITHUB_WORKSPACE")
         .replace("/home/runner/_work/_temp", "$RUNNER_TEMP")
         .replace("/home/runner/_work", "$RUNNER_WORK");
 
-    ids(plain.trim_end())
-}
-
-fn ids(line: &str) -> String {
-    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
-
-    line.split(' ')
-        .map(|word| {
-            let id = word.rsplit('_').next().unwrap_or(word);
-            let parts: Vec<&str> = id.split('-').collect();
-
-            let shaped = parts.len() == SHAPE.len()
-                && parts.iter().enumerate().all(|(at, part)| {
-                    part.len() == SHAPE[at] && part.chars().all(|it| it.is_ascii_hexdigit())
-                });
-
-            match shaped {
-                true => word.replace(id, "<id>"),
-                false => word.to_owned(),
-            }
-        })
-        .collect::<Vec<_>>()
-        .join(" ")
+    plain.trim_end().to_owned()
 }
 
 fn conclusion(result: Option<&str>) -> Conclusion {

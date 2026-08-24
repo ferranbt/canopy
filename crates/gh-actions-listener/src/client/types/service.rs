@@ -112,16 +112,25 @@ pub struct Record {
     pub id: String,
     pub parent_id: Option<String>,
     /// `Job` for the job itself, `Task` for a step of it.
+    #[serde(deserialize_with = "said")]
     pub r#type: String,
+    #[serde(deserialize_with = "said")]
     pub name: String,
     /// What the message called it, which is how a step is told from the runner's own.
+    #[serde(deserialize_with = "said")]
     pub ref_name: String,
     /// Where it sits among the steps, counting the ones the runner adds.
     pub order: u64,
+    #[serde(deserialize_with = "said")]
     pub state: String,
     pub result: Option<String>,
     /// Where everything it printed was uploaded, once it has stopped printing.
     pub log: Option<LogReference>,
+}
+
+/// A runner leaves out what it has nothing to say about, and says `null` for the rest.
+fn said<'de, D: serde::Deserializer<'de>>(from: D) -> Result<String, D::Error> {
+    Ok(Option::<String>::deserialize(from)?.unwrap_or_default())
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -137,6 +146,36 @@ impl Record {
 
     pub fn finished(&self) -> bool {
         self.state == "completed"
+    }
+
+    /// What a runner says about a record it has written down before: only what changed, so
+    /// what it leaves out is what it said last time and not nothing.
+    ///
+    /// A record that is over stays over. A runner says what it knew when it said it, over
+    /// as many connections as it has, so what it knew first can be heard last.
+    pub fn update(&mut self, said: Self) {
+        if self.finished() && !said.finished() {
+            return;
+        }
+
+        self.parent_id = said.parent_id.or(self.parent_id.take());
+        self.result = said.result.or(self.result.take());
+        self.log = said.log.or(self.log.take());
+
+        for (mine, theirs) in [
+            (&mut self.r#type, said.r#type),
+            (&mut self.name, said.name),
+            (&mut self.ref_name, said.ref_name),
+            (&mut self.state, said.state),
+        ] {
+            if !theirs.is_empty() {
+                *mine = theirs;
+            }
+        }
+
+        if said.order != 0 {
+            self.order = said.order;
+        }
     }
 }
 

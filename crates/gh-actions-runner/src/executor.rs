@@ -69,6 +69,8 @@ impl Exec {
                 args.push(script.display().to_string());
                 Ok((program.to_owned(), args))
             }
+            // TODO: run it on the node major the action asks for, which is what a runner
+            // does from the copies it carries.
             Self::Node { entrypoint } => {
                 Ok(("node".to_owned(), vec![entrypoint.display().to_string()]))
             }

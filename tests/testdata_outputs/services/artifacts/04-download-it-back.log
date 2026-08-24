@@ -1,0 +1,9 @@
+Downloading single artifact
+Preparing to download the following artifacts:
+- build-output (ID: 2, Size: 279, Expected Digest: undefined)
+Redirecting to blob download url: http://127.0.0.1:34877/blob/build-output
+Starting download of artifact to: $GITHUB_WORKSPACE/restored
+SHA256 digest of downloaded artifact is be307041116f0531cddc04390a1398d3a5b4f4df306a31a4809aae7221e7704e
+Artifact download completed successfully.
+Total of 1 artifact(s) downloaded
+Download artifact has finished successfully

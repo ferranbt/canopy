@@ -1,0 +1,38 @@
+ok    check 1
+ok    check 2
+ok    check 3
+ok    the id, not the display name
+ok    check 5
+ok    check 6
+ok    check 7
+ok    check 8
+ok    check 9
+ok    check 10
+ok    check 11
+ok    check 12
+ok    check 13
+ok    check 14
+ok    check 15
+ok    check 16
+ok    check 17
+ok    check 18
+ok    check 19
+ok    check 20
+ok    check 21
+ok    check 22
+ok    the workspace is a directory
+ok    and so is the temp
+ok    the payload is on disk
+ok    with the state files beside it
+ok    check 27
+ok    check 28
+ok    check 29
+ok    what the variables come from
+ok    check 31
+ok    check 32
+ok    check 33
+ok    check 34
+ok    check 35
+ok    but the `env` context holds
+ok    only what a workflow set
+37 check(s), 0 failed

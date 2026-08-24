@@ -319,14 +319,19 @@ async fn said<J: Jobs>(
     body: String,
 ) -> impl IntoResponse {
     let (plan, timeline) = under.split();
+    tracing::trace!(bytes = body.len(), "the runner says what happened");
 
-    if let Ok(update) = serde_json::from_str::<Many<Record>>(&body) {
-        server.jobs.records(&plan, &timeline, update.value);
-    }
+    // The same route carries both what happened and what was printed while it happened.
     if let Ok(lines) = serde_json::from_str::<Lines>(&body)
         && !lines.value.is_empty()
     {
         server.jobs.printed(&plan, &timeline, lines);
+        return axum::Json(Many::of(Vec::<Record>::new()));
+    }
+
+    match serde_json::from_str::<Many<Record>>(&body) {
+        Ok(update) => server.jobs.records(&plan, &timeline, update.value),
+        Err(err) => tracing::warn!(%err, "a timeline this service cannot read"),
     }
 
     axum::Json(Many::of(Vec::<Record>::new()))

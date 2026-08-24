@@ -1,0 +1,73 @@
+[
+  {
+    "event": "job-started",
+    "id": "state",
+    "label": "state"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "./actions/state-docker",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "`pre` execution is not supported for local action from 'actions/state-docker'"
+  },
+  {
+    "event": "progress",
+    "text": "[Building docker image]"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "./actions/state-docker",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What the container wrote comes back",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the container wrote comes back",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "./actions/state-docker (post)",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "`pre` execution is not supported for local action from 'actions/state-docker'"
+  },
+  {
+    "event": "progress",
+    "text": "[Building docker image]"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "./actions/state-docker (post)",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "state",
+    "label": "state",
+    "conclusion": "failure"
+  }
+]

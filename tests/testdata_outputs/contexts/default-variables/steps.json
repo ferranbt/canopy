@@ -1,0 +1,27 @@
+[
+  {
+    "event": "job-started",
+    "id": "variables",
+    "label": "variables"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "./actions/expect",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "./actions/expect",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "variables",
+    "label": "variables",
+    "conclusion": "success"
+  }
+]

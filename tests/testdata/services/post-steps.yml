@@ -1,0 +1,24 @@
+# An action that saves in its post step
+name: An action that saves in its post step
+
+on: push
+
+jobs:
+  post-steps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create something worth caching
+        run: |
+          mkdir -p vendor
+          echo "vendored" > vendor/lib.txt
+
+      # The combined action restores in its main step and saves in its post step,
+      # so this exercises the post hook and the `$GITHUB_STATE` round trip.
+      - name: Cache, saved by the post step
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: vendor-${{ runner.os }}-v1
+
+      - name: Work happens between main and post
+        run: echo "building"

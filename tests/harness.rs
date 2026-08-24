@@ -2,14 +2,24 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use gh_actions_plan::Plan;
-use gh_actions_runner::report::{Event, Reporter, Stream};
+use gh_actions_runner::report::{Event, Reporter};
 use gh_actions_services::Services;
 use gh_actions_spec::Workflow;
 use local_runner::{Config, Local};
 
+/// What running one planned job came to: what happened, and what each step printed.
 #[derive(Debug, Default)]
 pub struct Outcome {
     pub events: Vec<Event>,
+    /// One log per step, in the order the steps ran.
+    pub logs: Vec<Printed>,
+}
+
+/// What one step printed, kept apart from the next one's.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct Printed {
+    pub step: String,
+    pub lines: Vec<String>,
 }
 
 impl Reporter for Outcome {
@@ -22,18 +32,17 @@ impl Reporter for Outcome {
             return;
         }
 
-        // Which stream a line came out of is lost on the way to a timeline, so it is not
-        // something one run can be held to against another.
-        let event = match event {
-            Event::StepOutput { line, .. } => Event::StepOutput {
-                stream: Stream::Out,
-                line,
-            },
-            event => event,
-        };
+        // What the node an action runs on says about itself, which is about the node and
+        // not the action: a runner carries its own, and whatever is here is another.
+        if let Event::StepOutput { line, .. } = &event
+            && (line.contains("DeprecationWarning:") || line.starts_with("(Use `node"))
+        {
+            return;
+        }
 
         // What a composite action is made of is canopy's own telling: the runner GitHub
-        // ships keeps an action's inner steps to itself.
+        // ships keeps an action's inner steps to itself. What they print is the step's all
+        // the same, so only the boundaries go.
         let nested = match &event {
             Event::StepStarted { depth, .. } | Event::StepFinished { depth, .. } => *depth > 0,
             _ => false,
@@ -42,37 +51,66 @@ impl Reporter for Outcome {
             return;
         }
 
-        self.events.push(event);
+        match event {
+            // Under the step that printed it, which is the one still open.
+            Event::StepOutput { line, .. } => {
+                if let Some(printed) = self.logs.last_mut() {
+                    printed.lines.push(line);
+                }
+            }
+            Event::StepStarted { name, .. } => {
+                self.logs.push(Printed {
+                    step: name.clone(),
+                    lines: Vec::new(),
+                });
+                self.events.push(Event::StepStarted {
+                    index: self.logs.len() - 1,
+                    name,
+                    depth: 0,
+                });
+            }
+            event => self.events.push(event),
+        }
     }
 }
 
 impl Outcome {
-    pub fn output(&self) -> Vec<&str> {
-        self.events
-            .iter()
-            .filter_map(|event| match event {
-                Event::StepOutput { line, .. } => Some(line.as_str()),
-                _ => None,
-            })
-            .collect()
-    }
-
     /// What is only true of this run, under the name every run knows it by: where it
     /// happened, and which commit of what it happened on.
     pub fn rewrite(&mut self, from: &str, name: &str) {
         let path = from.to_owned();
 
-        for event in &mut self.events {
-            let said = match event {
-                Event::StepOutput { line, .. } => line,
-                Event::Message { text, .. } => text,
-                _ => continue,
-            };
-
+        for said in self.said() {
             *said = said.replace(&path, name);
         }
     }
 
+    /// What no two runs agree on and neither is wrong about: the ids given to the files a
+    /// run makes as it goes, and how many bytes something it packed came to.
+    pub fn settle(&mut self) {
+        for said in self.said() {
+            *said = ids(said);
+
+            if let Some((before, rest)) = said.split_once(" B)")
+                && let Some((head, bytes)) = before.rsplit_once('(')
+                && bytes.chars().all(|it| it.is_ascii_digit())
+            {
+                *said = format!("{head}(<bytes>){rest}");
+            }
+        }
+    }
+
+    fn said(&mut self) -> impl Iterator<Item = &mut String> {
+        let messages = self.events.iter_mut().filter_map(|event| match event {
+            Event::Message { text, .. } => Some(text),
+            _ => None,
+        });
+
+        messages.chain(self.logs.iter_mut().flat_map(|printed| &mut printed.lines))
+    }
+
+    /// The same run, or the first thing the two do not agree on: what happened first, and
+    /// then what was said while it happened.
     pub fn matches(&self, other: &Self) -> Result<(), String> {
         for (at, (mine, theirs)) in self.events.iter().zip(&other.events).enumerate() {
             if mine != theirs {
@@ -86,32 +124,155 @@ impl Outcome {
 
         let (mine, theirs) = (self.events.len(), other.events.len());
         match mine.cmp(&theirs) {
-            std::cmp::Ordering::Equal => Ok(()),
-            std::cmp::Ordering::Less => Err(format!(
-                "{} event(s) too many, from {}",
-                theirs - mine,
-                one(&other.events[mine])
-            )),
-            std::cmp::Ordering::Greater => Err(format!(
-                "{} event(s) missing, from {}",
-                mine - theirs,
-                one(&self.events[theirs])
-            )),
+            std::cmp::Ordering::Equal => {}
+            std::cmp::Ordering::Less => {
+                return Err(format!(
+                    "{} event(s) too many, from {}",
+                    theirs - mine,
+                    one(&other.events[mine])
+                ));
+            }
+            std::cmp::Ordering::Greater => {
+                return Err(format!(
+                    "{} event(s) missing, from {}",
+                    mine - theirs,
+                    one(&self.events[theirs])
+                ));
+            }
+        }
+
+        for (mine, theirs) in self.logs.iter().zip(&other.logs) {
+            if mine != theirs {
+                return Err(format!(
+                    "step {:?} printed something else\n  expected {}\n  got      {}",
+                    mine.step,
+                    mine.lines.join(" ⏎ "),
+                    theirs.lines.join(" ⏎ ")
+                ));
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Read back from where it was written down: what happened, and a log for each step.
+    pub fn read(at: &Path) -> Result<Self, String> {
+        let happened = at.join("steps.json");
+
+        let recorded = std::fs::read_to_string(&happened).map_err(|err| err.to_string())?;
+        let events = serde_json::from_str(&recorded)
+            .map_err(|err| format!("{}: {err}", happened.display()))?;
+
+        let mut outcome = Self {
+            events,
+            ..Self::default()
+        };
+
+        for (of, step) in named(&outcome.events) {
+            let text = std::fs::read_to_string(log(at, "", of, &step)).unwrap_or_default();
+            outcome.logs.push(Printed {
+                step,
+                lines: text.lines().map(str::to_owned).collect(),
+            });
+        }
+
+        Ok(outcome)
+    }
+
+    /// Written down under a name of its own, so what one runner did sits beside what
+    /// another did rather than over it.
+    pub fn write(&self, at: &Path, called: &str) -> Result<(), String> {
+        std::fs::create_dir_all(at).map_err(|err| format!("{}: {err}", at.display()))?;
+        clear(at, called);
+
+        let happened = at.join(format!("{called}steps.json"));
+        let recorded = serde_json::to_string_pretty(&self.events).map_err(|err| err.to_string())?;
+        std::fs::write(&happened, recorded)
+            .map_err(|err| format!("{}: {err}", happened.display()))?;
+
+        for (of, printed) in self.logs.iter().enumerate() {
+            if printed.lines.is_empty() {
+                continue;
+            }
+
+            let path = log(at, called, of, &printed.step);
+            let said = printed.lines.join("\n");
+
+            std::fs::write(&path, said).map_err(|err| format!("{}: {err}", path.display()))?;
+        }
+
+        Ok(())
+    }
+}
+
+/// What a run left here last time, so a step that no longer prints leaves nothing behind.
+fn clear(at: &Path, called: &str) {
+    let Ok(entries) = std::fs::read_dir(at) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let theirs = called.is_empty() && name.starts_with("cnp_");
+
+        if name.starts_with(called) && !theirs {
+            let _ = std::fs::remove_file(entry.path());
         }
     }
+}
 
-    pub fn read(path: &Path) -> Result<Self, String> {
-        let recorded = std::fs::read_to_string(path).map_err(|err| err.to_string())?;
-        let events =
-            serde_json::from_str(&recorded).map_err(|err| format!("{}: {err}", path.display()))?;
+/// Which step is which, in the order they ran.
+fn named(events: &[Event]) -> Vec<(usize, String)> {
+    events
+        .iter()
+        .filter_map(|event| match event {
+            Event::StepStarted { index, name, .. } => Some((*index, name.clone())),
+            _ => None,
+        })
+        .collect()
+}
 
-        Ok(Self { events })
-    }
+/// Where one step's log is kept, named after the step so a folder reads as the run did.
+fn log(at: &Path, called: &str, of: usize, step: &str) -> PathBuf {
+    let sanitised: String = step
+        .chars()
+        .map(|letter| match letter.is_alphanumeric() {
+            true => letter.to_ascii_lowercase(),
+            false => '-',
+        })
+        .collect();
 
-    pub fn write(&self, path: &Path) -> Result<(), String> {
-        let recorded = serde_json::to_string_pretty(&self.events).map_err(|err| err.to_string())?;
-        std::fs::write(path, recorded).map_err(|err| format!("{}: {err}", path.display()))
-    }
+    let step = sanitised.trim_matches('-').replace("--", "-");
+    at.join(format!("{called}{:02}-{step}.log", of + 1))
+}
+
+fn ids(line: &str) -> String {
+    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
+
+    // By the piece: an id is a word of its own, part of a path, or the tail of a name.
+    line.split(' ')
+        .map(|word| {
+            word.split('/')
+                .map(|part| {
+                    let id = part.rsplit('_').next().unwrap_or(part);
+                    let shape: Vec<&str> = id.split('-').collect();
+
+                    let shaped = shape.len() == SHAPE.len()
+                        && shape.iter().enumerate().all(|(at, piece)| {
+                            piece.len() == SHAPE[at]
+                                && piece.chars().all(|it| it.is_ascii_hexdigit())
+                        });
+
+                    match shaped {
+                        true => part.replace(id, "<id>"),
+                        false => part.to_owned(),
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("/")
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 fn one(event: &Event) -> String {
@@ -134,25 +295,30 @@ impl TargetFile {
     }
 
     pub fn record(&self, outcome: &Outcome) -> Result<(), String> {
-        outcome.write(&beside(&self.path, "_output.json"))
+        outcome.write(&expected(&self.path), "")
     }
 
     /// What canopy did, beside what the runner GitHub ships did, so the two can be read
-    /// against each other rather than one difference at a time.
+    /// against each other rather than one difference at a time. Under a name of its own,
+    /// since only what the runner did is kept.
     pub fn ours(&self, outcome: &Outcome) -> Result<(), String> {
-        outcome.write(&beside(&self.path, "_output_us.json"))
+        outcome.write(&expected(&self.path), "cnp_")
     }
 }
 
 fn expected(case: &Path) -> PathBuf {
-    beside(case, "_output.json")
+    outputs(case)
 }
 
-fn beside(case: &Path, suffix: &str) -> PathBuf {
-    case.with_file_name(format!(
-        "{}{suffix}",
-        case.file_stem().unwrap_or_default().to_string_lossy()
-    ))
+/// Where a case's outcome is kept: a folder of its own, named after the case.
+fn outputs(case: &Path) -> PathBuf {
+    let testdata = testdata();
+    let named = case
+        .strip_prefix(&testdata)
+        .unwrap_or(case)
+        .with_extension("");
+
+    testdata.with_file_name("testdata_outputs").join(named)
 }
 
 pub struct Case {
@@ -234,8 +400,9 @@ impl Harness {
         outcome.rewrite(&case.workspace.display().to_string(), "$GITHUB_WORKSPACE");
         outcome.rewrite(&case.sha, "$GITHUB_SHA");
         outcome.rewrite(&case.branch, "$GITHUB_REF_NAME");
+        outcome.settle();
 
-        outcome.write(&case.artifacts.join("events.json"))?;
+        outcome.write(&case.artifacts.join("outcome"), "")?;
         well_formed(&outcome)?;
 
         Ok(outcome)

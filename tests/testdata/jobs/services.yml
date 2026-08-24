@@ -1,0 +1,29 @@
+# A job's `services:` run alongside it. A job that runs in a container of its own reaches
+# them by the label they were given, since the runner puts both on one network.
+name: Job services
+
+on: push
+
+jobs:
+  talks-to-a-service:
+    runs-on: ubuntu-latest
+    container: debian:bookworm-slim
+    services:
+      cache:
+        image: redis:7-alpine
+    steps:
+      - name: Reach the service by its label
+        # `/dev/tcp` is bash's, and a container is not asked what its `sh` is.
+        shell: bash
+        run: |
+          # Nothing waits for a service to be ready, so this does, the way a workflow
+          # written for a slow morning anywhere else would have to.
+          for attempt in $(seq 30); do
+            (exec 3<>/dev/tcp/cache/6379) 2>/dev/null && break
+            sleep 1
+          done
+
+          exec 3<>/dev/tcp/cache/6379
+          printf 'PING\r\n' >&3
+          head -c 7 <&3 | grep -q PONG
+          echo "cache:6379 answered"

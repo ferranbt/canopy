@@ -1,0 +1,55 @@
+[
+  {
+    "event": "job-started",
+    "id": "runs_python",
+    "label": "runs_python"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A python step is run by python, not by a shell",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A python step is run by python, not by a shell",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "A python step that fails still fails its job",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "A python step that fails still fails its job",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 1
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "And is reported as a failure",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "And is reported as a failure",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "runs_python",
+    "label": "runs_python",
+    "conclusion": "success"
+  }
+]

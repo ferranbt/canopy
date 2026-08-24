@@ -1,0 +1,50 @@
+docker build -q -f tests/csharp/runner.Dockerfile -t gh-runner tests/csharp
+sha256:436e5e6becd1f4064a96020d795abfa7fa90cd5fa14bcb69b917ac0877c4f255
+cargo run --bin csharp -- --test steps/
+   Compiling gh-actions-listener v0.1.0 (/root/workspace/canopy/crates/gh-actions-listener)
+   Compiling canopy-tests v0.1.0 (/root/workspace/canopy/tests)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.03s
+     Running `target/debug/csharp --test steps/`
+[2m2026-08-24T08:06:14.385698Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:16.012501Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:06:17.680882Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+ok    steps/debug-lines.yml
+[2m2026-08-24T08:06:17.926421Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:19.580639Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:06:21.237916Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+[2m2026-08-24T08:06:21.455991Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:23.079706Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:06:24.697571Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+[2m2026-08-24T08:06:24.916104Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:26.580967Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:06:28.208857Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+ok    steps/defaults.yml
+[2m2026-08-24T08:06:28.453098Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:29.956258Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:06:31.603696Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+[2m2026-08-24T08:06:31.822069Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:33.300554Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:06:34.975917Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+ok    steps/env-precedence.yml
+[2m2026-08-24T08:06:35.320694Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:36.864225Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:06:38.503668Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+ok    steps/shells.yml
+[2m2026-08-24T08:06:38.752608Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:06:40.514372Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:07:55.138425Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+ok    steps/timeouts.yml
+[2m2026-08-24T08:07:55.384675Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:07:57.134100Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:07:58.777687Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+ok    steps/unsecure-commands.yml
+[2m2026-08-24T08:07:59.025384Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:08:00.556999Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:08:02.197421Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+[2m2026-08-24T08:08:02.416212Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:08:04.033778Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:08:05.658120Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+[2m2026-08-24T08:08:05.876072Z[0m [34mDEBUG[0m a job is ready to be picked up
+[2m2026-08-24T08:08:07.616843Z[0m [34mDEBUG[0m handing the job over
+[2m2026-08-24T08:08:09.273840Z[0m [34mDEBUG[0m the runner says what the job came out with [3moutputs[0m[2m=[0m{}
+ok    steps/workflow-commands.yml

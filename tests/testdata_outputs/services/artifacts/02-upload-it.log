@@ -1,0 +1,11 @@
+With the provided path, there will be 2 files uploaded
+Artifact name is valid!
+Root directory input is valid!
+Beginning upload of artifact content to blob storage
+Uploaded bytes 279
+Finished uploading artifact content to blob storage!
+SHA256 digest of uploaded artifact zip is be307041116f0531cddc04390a1398d3a5b4f4df306a31a4809aae7221e7704e
+Finalizing artifact upload
+Artifact build-output.zip successfully finalized. Artifact ID 2
+Artifact build-output has been successfully uploaded! Final size is 279 bytes. Artifact ID is 2
+Artifact download URL: https://github.com/ferranbt/canopy/actions/runs/NaN/artifacts/2

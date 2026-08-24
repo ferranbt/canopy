@@ -1,0 +1,69 @@
+[
+  {
+    "event": "job-started",
+    "id": "post-steps",
+    "label": "post-steps"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Create something worth caching",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Create something worth caching",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Cache, saved by the post step",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Cache, saved by the post step",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Work happens between main and post",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Work happens between main and post",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Cache, saved by the post step (post)",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Cache, saved by the post step (post)",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "post-steps",
+    "label": "post-steps",
+    "conclusion": "success"
+  }
+]

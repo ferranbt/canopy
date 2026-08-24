@@ -1,0 +1,27 @@
+[
+  {
+    "event": "job-started",
+    "id": "says_something_quietly",
+    "label": "says_something_quietly"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Say something only a debug run should show",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Say something only a debug run should show",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "says_something_quietly",
+    "label": "says_something_quietly",
+    "conclusion": "success"
+  }
+]

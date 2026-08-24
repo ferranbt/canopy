@@ -1,0 +1,17 @@
+# What a container action writes to the files it is given comes back out of the container.
+name: Docker action state
+
+on: push
+
+jobs:
+  state:
+    runs-on: ubuntu-latest
+    steps:
+      - id: state
+        uses: ./actions/state-docker
+
+      - name: What the container wrote comes back
+        run: |
+          test "${{ steps.state.outputs.wrote-state }}" = "yes"
+          test "$FROM_CONTAINER" = "yes"
+          echo "the container reached every state file"

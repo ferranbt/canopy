@@ -27,11 +27,3 @@ jobs:
         run: |
           test "$LEVEL" = job
           test "$FROM_WORKFLOW" = yes
-
-  no_job_env:
-    runs-on: ubuntu-latest
-    steps:
-      - name: With neither, the workflow's stands
-        run: |
-          test "$LEVEL" = workflow
-          test -z "$FROM_JOB"

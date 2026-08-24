@@ -1,0 +1,26 @@
+# A composite action, resolved from this repository.
+name: Composite action
+
+on: push
+
+jobs:
+  composite:
+    runs-on: ubuntu-latest
+    steps:
+      - id: greet
+        uses: ./actions/greet-composite
+        with:
+          who-to-greet: composite
+          greeting: Hey
+
+      - id: defaulted
+        name: Defaults are filled in when `with` is omitted
+        uses: ./actions/greet-composite
+
+      - name: What the composite action returned
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.greet.outputs.message }} == Hey, composite!         # its declared output
+            ${{ steps.defaulted.outputs.message }} == Hello, World!       # both inputs defaulted
+            ${{ steps.greet.outcome }} == success

@@ -1,0 +1,97 @@
+[
+  {
+    "event": "job-started",
+    "id": "adds-to-the-path",
+    "label": "adds-to-the-path"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Put a command somewhere and add it to the path",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Put a command somewhere and add it to the path",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The next step finds it by name alone",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The next step finds it by name alone",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Ordinary commands still resolve",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Ordinary commands still resolve",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Group some lines and raise the two levels",
+    "depth": 0
+  },
+  {
+    "event": "progress",
+    "text": "[a group of lines]"
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "something worth watching"
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "something that went wrong"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Group some lines and raise the two levels",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "The summary file is there and can be written",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "The summary file is there and can be written",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "adds-to-the-path",
+    "label": "adds-to-the-path",
+    "conclusion": "success"
+  }
+]

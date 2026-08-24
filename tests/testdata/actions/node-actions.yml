@@ -1,0 +1,22 @@
+# A JavaScript action, resolved from this repository.
+name: JavaScript action
+
+on: push
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - id: greet
+        uses: ./actions/greet-node
+        with:
+          who-to-greet: node
+
+      - name: What the JavaScript action returned
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.greet.outputs.greeted-at }} == node       # an output written to the file
+            $GREETED_BY == node                                 # and an env export from inside it
+            ${{ env.GREETED_BY }} == node                       # which the context also sees
+            $NODE_RAN_PRE ==                                    # a local action gets no `pre` hook
