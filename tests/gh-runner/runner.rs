@@ -15,9 +15,7 @@ use crate::service::{self, Listening, Service, Update};
 
 const IMAGE: &str = "gh-runner";
 const CONTAINER: &str = "gh-runner";
-/// Everything a job touches: the repository, the temp files, the actions it unpacks.
 const WORK: &str = "/home/runner/_work";
-/// Where the runner looks for the repository, which is one place for every case in turn.
 const WORKSPACE: &str = "/home/runner/_work/canopy/canopy";
 
 pub struct Job<'a> {
@@ -29,9 +27,8 @@ pub struct Job<'a> {
 
 pub struct GhRunner {
     service: Service,
-    /// How many jobs have been run, since no two may look alike to a runner.
+    /// No two jobs may look alike to a runner.
     jobs: AtomicU64,
-    /// What the container mounts as the repository, which each case is copied into in turn.
     workspace: PathBuf,
     _listening: Listening,
 }
@@ -52,8 +49,6 @@ impl GhRunner {
         })
     }
 
-    /// The case's files, where the containers running it can see them.
-    ///
     /// Once per case rather than once per job: what a job leaves behind is what the next
     /// one finds, the same as a run on one machine.
     pub fn place(&self, case: &std::path::Path) -> Result<(), String> {
@@ -80,8 +75,6 @@ impl GhRunner {
         }
     }
 
-    /// Runs one job on a runner of its own.
-    ///
     /// A container per job: a runner takes one job and stops, which is the only thing it
     /// does without being asked to wait for work.
     pub fn run(&self, job: Job<'_>, out: &mut dyn Reporter) -> Result<(), String> {
@@ -100,13 +93,12 @@ impl GhRunner {
         let mut agent = start()?;
         agent.wait()?;
 
-        // Read once the runner is gone rather than as it goes: what it says is only true
-        // of the job when the job is over, so there is nothing to piece together.
+        // Read once the runner is gone: what it says is only true of the job when the job
+        // is over, so there is nothing to piece together.
         report(arriving.try_iter().collect(), &job.planned.id, out)
     }
 }
 
-/// What the runner did, told the way canopy tells it.
 fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), String> {
     let mut written: BTreeMap<String, Record> = BTreeMap::new();
     let mut uploads: HashMap<String, String> = HashMap::new();
@@ -161,9 +153,9 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         let (code, killed) = printed(&said, out);
         let conclusion = conclusion(record.result.as_deref());
 
-        // Only a code worth complaining about is said out loud, so a step that came back at
-        // all and did not complain came back with nothing to say. One that was killed never
-        // came back, and one that was skipped never went.
+        // Only a code worth complaining about is said out loud, so a step that came back
+        // and did not complain came back with 0. One that was killed never came back, and
+        // one that was skipped never went.
         let code = match (code, conclusion) {
             (Some(code), _) => Some(code),
             (None, Conclusion::Skipped) => None,
@@ -206,8 +198,6 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
     }
 }
 
-/// What a step printed, as the run reports it: the lines it said, the levels it raised,
-/// and the code it came back with.
 fn printed(said: &str, out: &mut dyn Reporter) -> (Option<i32>, bool) {
     let (mut code, mut killed, mut echoing) = (None, false, false);
 
@@ -245,9 +235,7 @@ enum Said {
     Nothing,
 }
 
-/// What a runner says about getting ready rather than about the step it is running. It
-/// puts these against a step's log even though no step printed them, so they are the one
-/// thing a step's output has to be read past.
+/// What a runner puts against a step's log although no step printed it.
 const CHATTER: [&str; 8] = [
     "Post job cleanup.",
     "Prepare all required actions",
@@ -259,12 +247,9 @@ const CHATTER: [&str; 8] = [
     "Machine name:",
 ];
 
-/// What a record is a step of ours by, and what to call it.
-///
-/// The steps we handed over carry the ids we gave them. A runner adds its own: `Set up job`
-/// and `Complete job`, which canopy has no counterpart for and which are dropped, and the
-/// `post` hook of every action that has one, which canopy does run and names the other way
-/// round.
+/// The steps handed over carry the ids they were given. A runner adds its own: `Set up job`
+/// and `Complete job`, which canopy has no counterpart for, and the hooks of every action
+/// that has them, which canopy names the other way round.
 fn named(record: &Record) -> Option<String> {
     if record.id.starts_with(message::STEPS) {
         return Some(record.name.clone());
@@ -279,7 +264,6 @@ fn named(record: &Record) -> Option<String> {
     None
 }
 
-/// A line of an uploaded log, which is stamped with when it was printed.
 fn without_timestamp(line: &str) -> String {
     match line.split_once(' ') {
         Some((stamp, rest)) if stamp.ends_with('Z') && stamp.contains('T') => rest.to_owned(),
@@ -324,7 +308,6 @@ fn reported(line: &str) -> Said {
     })
 }
 
-/// The runner the job is run on, which takes it and stops.
 struct Agent {
     child: std::process::Child,
 }
@@ -338,7 +321,6 @@ impl Agent {
     }
 }
 
-/// Taken down before the next one, since they answer to the same name.
 impl Drop for Agent {
     fn drop(&mut self) {
         let _ = Command::new("docker")
@@ -358,7 +340,6 @@ fn start() -> Result<Agent, String> {
         // At the same path inside as out, since a runner starting a container of its own
         // hands the daemon the paths it sees, and the daemon looks for them out here.
         .args(["--volume", &format!("{WORK}:{WORK}")])
-        // The daemon it asks, which is the one running it.
         .args(["--volume", "/var/run/docker.sock:/var/run/docker.sock"])
         .arg("--entrypoint")
         .arg("/bin/bash")

@@ -7,15 +7,12 @@ use gh_actions_services::Services;
 use gh_actions_spec::Workflow;
 use local_runner::{Config, Local};
 
-/// What running one planned job came to: what happened, and what each step printed.
 #[derive(Debug, Default)]
 pub struct Outcome {
     pub events: Vec<Event>,
-    /// One log per step, in the order the steps ran.
     pub logs: Vec<Printed>,
 }
 
-/// What one step printed, kept apart from the next one's.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Printed {
     pub step: String,
@@ -24,34 +21,28 @@ pub struct Printed {
 
 impl Reporter for Outcome {
     fn report(&mut self, event: Event) {
-        // How a runner goes about running a step is its own business: only the groups a
-        // workflow asks for, which are named in brackets, are the run saying something.
+        // Only the groups a workflow asked for, which a runner names in brackets.
         if let Event::Progress { text } = &event
             && !text.starts_with('[')
         {
             return;
         }
 
-        // What the node an action runs on says about itself, which is about the node and
-        // not the action: a runner carries its own, and whatever is here is another.
+        // What the node an action runs on says about itself, not what the action said.
         if let Event::StepOutput { line, .. } = &event
             && (line.contains("DeprecationWarning:") || line.starts_with("(Use `node"))
         {
             return;
         }
 
-        // How a container was built and started is the runner's own business again, and no
-        // two builds tell it the same way: what a step is, is what it ran, not what docker
-        // said while it was got ready.
         if let Event::StepOutput { line, .. } = &event
             && got_ready(line)
         {
             return;
         }
 
-        // What a composite action is made of is canopy's own telling: the runner GitHub
-        // ships keeps an action's inner steps to itself. What they print is the step's all
-        // the same, so only the boundaries go.
+        // The runner GitHub ships keeps a composite action's inner steps to itself, so only
+        // their boundaries go: what they printed is the step's all the same.
         let nested = match &event {
             Event::StepStarted { depth, .. } | Event::StepFinished { depth, .. } => *depth > 0,
             _ => false,
@@ -61,9 +52,6 @@ impl Reporter for Outcome {
         }
 
         match event {
-            // Under the step that printed it, which is the one still open. What a line
-            // ends in is a runner's, not a step's: one of them uploads what it was given
-            // and the other hands it over as it read it.
             Event::StepOutput { line, .. } => {
                 if let Some(printed) = self.logs.last_mut() {
                     printed.lines.push(line.trim_end().to_owned());
@@ -86,8 +74,6 @@ impl Reporter for Outcome {
 }
 
 impl Outcome {
-    /// What is only true of this run, under the name every run knows it by: where it
-    /// happened, and which commit of what it happened on.
     pub fn rewrite(&mut self, from: &str, name: &str) {
         let path = from.to_owned();
 
@@ -96,8 +82,7 @@ impl Outcome {
         }
     }
 
-    /// What no two runs agree on and neither is wrong about: the ids given to the files a
-    /// run makes as it goes, and how many bytes something it packed came to.
+    /// What no two runs agree on and neither is wrong about.
     pub fn settle(&mut self) {
         for said in self.said() {
             *said = settled(said);
@@ -120,8 +105,6 @@ impl Outcome {
         messages.chain(self.logs.iter_mut().flat_map(|printed| &mut printed.lines))
     }
 
-    /// The same run, or the first thing the two do not agree on: what happened first, and
-    /// then what was said while it happened.
     pub fn matches(&self, other: &Self) -> Result<(), String> {
         for (at, (mine, theirs)) in self.events.iter().zip(&other.events).enumerate() {
             if mine != theirs {
@@ -166,7 +149,6 @@ impl Outcome {
         Ok(())
     }
 
-    /// Read back from where it was written down: what happened, and a log for each step.
     pub fn read(at: &Path) -> Result<Self, String> {
         let happened = at.join("steps.json");
 
@@ -190,8 +172,6 @@ impl Outcome {
         Ok(outcome)
     }
 
-    /// Written down under a name of its own, so what one runner did sits beside what
-    /// another did rather than over it.
     pub fn write(&self, at: &Path, called: &str) -> Result<(), String> {
         std::fs::create_dir_all(at).map_err(|err| format!("{}: {err}", at.display()))?;
         clear(at, called);
@@ -232,7 +212,6 @@ fn clear(at: &Path, called: &str) {
     }
 }
 
-/// Which step is which, in the order they ran.
 fn named(events: &[Event]) -> Vec<(usize, String)> {
     events
         .iter()
@@ -243,7 +222,6 @@ fn named(events: &[Event]) -> Vec<(usize, String)> {
         .collect()
 }
 
-/// Where one step's log is kept, named after the step so a folder reads as the run did.
 fn log(at: &Path, called: &str, of: usize, step: &str) -> PathBuf {
     let sanitised: String = step
         .chars()
@@ -257,8 +235,7 @@ fn log(at: &Path, called: &str, of: usize, step: &str) -> PathBuf {
     at.join(format!("{called}{:02}-{step}.log", of + 1))
 }
 
-/// What a runner says while it gets a container ready: the file it builds from, the
-/// commands it runs, what the build says as it goes, and the image it comes out with.
+/// What a runner says while it builds and starts a container, which no two runs say alike.
 fn got_ready(line: &str) -> bool {
     let building = line.starts_with('#')
         && line[1..].starts_with(|it: char| it.is_ascii_digit())
@@ -271,8 +248,6 @@ fn got_ready(line: &str) -> bool {
         || line.strip_prefix("sha256:").is_some_and(hexadecimal)
 }
 
-/// By the piece: what one run and the next say differently is a word of its own, part of
-/// a path, or the tail of a name.
 fn settled(line: &str) -> String {
     line.split(' ')
         .map(|word| word.split('/').map(piece).collect::<Vec<_>>().join("/"))
@@ -280,8 +255,6 @@ fn settled(line: &str) -> String {
         .join(" ")
 }
 
-/// An id given to something a run made, a digest of what it packed, or the port whatever
-/// served it was told to listen on: none of them is the same twice.
 fn piece(part: &str) -> String {
     const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
     const DIGEST: usize = 64;
@@ -321,7 +294,6 @@ fn one(event: &Event) -> String {
     serde_json::to_string(event).unwrap_or_default()
 }
 
-/// A case to run, with what it did the last time the runner GitHub ships ran it.
 pub struct TargetFile {
     pub path: PathBuf,
     pub outcome: Option<Outcome>,
@@ -340,9 +312,8 @@ impl TargetFile {
         outcome.write(&expected(&self.path), "")
     }
 
-    /// What canopy did, beside what the runner GitHub ships did, so the two can be read
-    /// against each other rather than one difference at a time. Under a name of its own,
-    /// since only what the runner did is kept.
+    /// Beside what the runner GitHub ships did, under a name of its own: only what the
+    /// runner did is kept.
     pub fn ours(&self, outcome: &Outcome) -> Result<(), String> {
         outcome.write(&expected(&self.path), "cnp_")
     }
@@ -352,7 +323,6 @@ fn expected(case: &Path) -> PathBuf {
     outputs(case)
 }
 
-/// Where a case's outcome is kept: a folder of its own, named after the case.
 fn outputs(case: &Path) -> PathBuf {
     let testdata = testdata();
     let named = case
@@ -368,7 +338,6 @@ pub struct Case {
     pub artifacts: PathBuf,
     pub workspace: PathBuf,
     pub temp: PathBuf,
-    /// The commit and branch the run is on, which is whatever the repository is on today.
     pub sha: String,
     pub branch: String,
     pub workflow: Workflow,
@@ -389,8 +358,8 @@ impl Default for Harness {
 
 impl Harness {
     pub fn new(prefix: &str) -> Self {
-        // The same run wherever it is run: who committed and what they called it is the
-        // machine's to say, and a recording made on one is read on another.
+        // Who committed and what they called it is the machine's to say, and a recording
+        // made on one machine is read on another.
         unsafe {
             std::env::set_var("GITHUB_ACTOR", "canopy");
             std::env::set_var("GITHUB_COMMIT_AUTHOR", "canopy");
@@ -445,8 +414,6 @@ impl Harness {
         let case = self.prepare(file)?;
         let mut outcome = run(&case)?;
 
-        // Under the names a run knows them by, so what one runner did reads the same as
-        // what another did somewhere else, on another commit of another branch.
         outcome.rewrite(&case.temp.display().to_string(), "$RUNNER_TEMP");
         outcome.rewrite(&case.workspace.display().to_string(), "$GITHUB_WORKSPACE");
         outcome.rewrite(&case.sha, "$GITHUB_SHA");

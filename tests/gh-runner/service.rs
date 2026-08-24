@@ -1,4 +1,7 @@
 //! What the runner talks to: the listener's server, with the one job there is to hand over.
+//!
+//! Port 80, because a runner rebuilds the url it was given as `{scheme}://{host}`: whatever
+//! port it was told about is lost before it asks for anything.
 
 use std::collections::BTreeMap;
 use std::sync::mpsc::Sender;
@@ -8,10 +11,6 @@ use gh_actions_listener::client::types::{JobEnded, Lines, Record};
 use gh_actions_listener::server::{Asking, JobServer, Jobs, Message, Plan};
 use tracing::debug;
 
-/// Where the runner is told the service is.
-///
-/// Port 80: it rebuilds the url it was given as `{scheme}://{host}`, so whatever port it
-/// was told about is lost before it asks for anything.
 pub const BASE: &str = "http://127.0.0.1/canopy/tests/";
 
 pub enum Update {
@@ -21,7 +20,6 @@ pub enum Update {
         step: String,
         text: String,
     },
-    /// How the job went and what it came out with, said once it is over.
     Ended {
         result: String,
         outputs: BTreeMap<String, String>,
@@ -30,9 +28,7 @@ pub enum Update {
 
 #[derive(Clone, Default)]
 pub struct Service {
-    /// The one job there is to hand over, taken by the runner that asks for it.
     job: Arc<Mutex<Option<String>>>,
-    /// Where what the runner says goes, while it is still saying it.
     updates: Arc<Mutex<Option<Sender<Update>>>>,
 }
 
@@ -50,7 +46,6 @@ impl Service {
         }
     }
 
-    /// Serves until the handle it returns is dropped.
     pub fn start(&self) -> Result<Listening, String> {
         let serving = self.clone();
         let (ready, wait) = std::sync::mpsc::channel();
@@ -107,8 +102,7 @@ impl Jobs for Service {
         self.send(Update::Records(records));
     }
 
-    /// Nothing: what a step says as it goes is the same as what it uploads when it stops,
-    /// and the upload is the whole of it.
+    /// Nothing: what a step says as it goes is the same as what it uploads when it stops.
     fn printed(&self, _plan: &Plan, _timeline: &str, _lines: Lines) {}
 
     fn log(&self, _plan: &Plan, _log: i64, step: &str, text: String) {
@@ -137,7 +131,6 @@ impl Jobs for Service {
     }
 }
 
-/// Stops the service when it goes.
 pub struct Listening {
     stop: Option<tokio::sync::oneshot::Sender<()>>,
     thread: Option<std::thread::JoinHandle<()>>,

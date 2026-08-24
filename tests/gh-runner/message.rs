@@ -1,8 +1,4 @@
 //! A planned job, in the shape the runner is handed one.
-//!
-//! What a service does when it compiles a workflow: the steps as references and tokens,
-//! the contexts in the encoding they travel in, and the endpoints pointing back at
-//! whoever is serving it.
 
 use std::collections::BTreeMap;
 
@@ -10,10 +6,6 @@ use gh_actions_context::RunContext;
 use gh_actions_plan::PlannedJob;
 use gh_actions_spec::{Container, Defaults, Expr, RunDefaults, Scalar, Step, Uses, Workflow};
 
-/// A planned job as the runner expects to be handed one.
-///
-/// Straight to what goes over the wire: the two encodings the service wraps things in are
-/// applied where they belong, since plain JSON does not say which of them a map wants.
 pub fn encode(
     workflow: &Workflow,
     job: &PlannedJob,
@@ -57,8 +49,8 @@ pub fn encode(
 
             serde_json::json!({
                 "type": "action",
-                // A group of its own, so a step is told apart from the job whatever it
-                // was called, and never all zeroes, which is the empty guid.
+                // Never all zeroes, which is the empty guid, and a group of its own so a
+                // step is told apart from the job.
                 "id": format!("{STEPS}{nth:04}-{:012}", at + 1),
                 "name": step.id.clone().unwrap_or_else(|| format!("__step_{at}")),
                 "contextName": step.id,
@@ -68,16 +60,12 @@ pub fn encode(
                 "continueOnError": flag(step.continue_on_error.as_ref()),
                 "timeoutInMinutes": flag(step.timeout_minutes.as_ref()),
                 "inputs": mapping(&inputs),
-                // The nearest `env` wins, so what the workflow and the job set is
-                // folded in underneath the step's own.
                 "environment": mapping(&env_of(workflow, job, step, services)),
             })
         })
         .collect();
 
-    // The contexts as an expression sees them, which is what the runner is handed.
     let mut contexts = serde_json::to_value(run).unwrap_or_default();
-    // Which job of which workflow is only known once one is picked to run.
     if let Some(github) = contexts.get_mut("github").and_then(|it| it.as_object_mut()) {
         github.insert("job".to_owned(), job.id.clone().into());
         github.insert(
@@ -93,8 +81,6 @@ pub fn encode(
             }
         }
     }
-    // Which combination of a matrix this job is, which is settled by planning it rather
-    // than by anything the run as a whole knows.
     if !job.matrix.is_empty()
         && let Ok(matrix) = serde_json::to_value(&job.matrix)
     {
@@ -114,18 +100,14 @@ pub fn encode(
             "scopeIdentifier": "00000000-0000-0000-0000-000000000010",
             "planId": id(0x11, nth),
             "planType": "Build",
-            // Without one a runner keeps to itself what a job ended up with, which is what
-            // the jobs after it are given.
+            // Without one a runner keeps to itself what a job ended up with.
             "version": 12,
         },
         "timeline": { "id": id(0x12, nth) },
         "jobId": id(0x13, nth),
         "jobDisplayName": job.label,
         "jobName": job.id,
-        // What the job is to come out with, which a runner works out at the end from what
-        // its steps left behind.
         "jobOutputs": mapping(&job.spec.outputs.clone().unwrap_or_default()),
-        // Where the steps run, and what runs alongside them.
         "jobContainer": job.spec.container.as_ref().map(container),
         "jobServiceContainers": job.spec.services.as_ref().map(|services| {
             let alongside: Vec<serde_json::Value> = services
@@ -152,11 +134,8 @@ pub fn encode(
     })
 }
 
-/// A token shaped the way the runner insists on, which is a JWT it can read the life of.
-///
-/// It hands this to the actions it runs as `ACTIONS_RUNTIME_TOKEN`, over whatever else the
-/// job was given, so it carries the claims the results service is read with: an action
-/// that cannot read a run and a job out of it will not upload anything.
+/// Handed to the actions as `ACTIONS_RUNTIME_TOKEN`: one that cannot read a run and a job
+/// out of the claims will not upload anything.
 fn token() -> String {
     #[derive(serde::Serialize)]
     struct Claims {
@@ -187,11 +166,9 @@ fn token() -> String {
     .expect("the claims are serialisable")
 }
 
-/// What a `uses:` step points at, however it was written.
 fn reference(uses: &Uses) -> serde_json::Value {
     match uses {
-        // In the repository the job belongs to: what it is called is the path to it,
-        // which the runner reads from `path` rather than from the name.
+        // A local action is named by `path` rather than by its name.
         Uses::Local(path) => serde_json::json!({
             "type": "repository",
             "name": "",
@@ -218,17 +195,11 @@ fn reference(uses: &Uses) -> serde_json::Value {
     }
 }
 
-/// A container as the runner is handed one: a name on its own, or everything beside it.
 fn container(container: &Container) -> serde_json::Value {
     let settings = match container {
         Container::Image(image) => return literal(image.clone()),
         Container::Settings(settings) => settings,
     };
-
-    let mut said = BTreeMap::from([("image".to_owned(), settings.image.clone())]);
-    if let Some(options) = &settings.options {
-        said.insert("options".to_owned(), options.clone());
-    }
 
     let mut of = vec![
         serde_json::json!({ "Key": literal("image".to_owned()), "Value": literal(settings.image.clone()) }),
@@ -287,7 +258,6 @@ fn nearest(
         .find_map(|run| of(run).clone())
 }
 
-/// The inputs an action was given, as strings, since that is all a token carries.
 fn with(step: &Step) -> BTreeMap<String, String> {
     step.with
         .iter()
@@ -323,11 +293,8 @@ fn scalar(value: &Scalar) -> String {
     }
 }
 
-/// A value that may carry expressions, in the encoding steps arrive in.
-///
-/// The runner evaluates expressions, but only where it is told there are any: a literal is
-/// taken as it is, `${{ }}` and all. What the service does is compile an interpolated
-/// string into a `format` call, which is what this does too.
+/// A runner evaluates expressions only where it is told there are any: a literal is taken
+/// as it is, `${{ }}` and all, so an interpolated string is compiled into a `format` call.
 fn interpolated(text: &str) -> serde_json::Value {
     let Some((before, rest)) = text.split_once("${{") else {
         return literal(text.to_owned());
@@ -339,7 +306,6 @@ fn interpolated(text: &str) -> serde_json::Value {
 
     loop {
         let Some((expression, after)) = rest.split_once("}}") else {
-            // Nothing closes it, so there is nothing to compile.
             return literal(text.to_owned());
         };
         shape.push_str(&format!("{{{}}}", arguments.len()));
@@ -361,20 +327,16 @@ fn interpolated(text: &str) -> serde_json::Value {
     serde_json::json!({ "type": 3, "expr": call })
 }
 
-/// Text inside an expression's single quotes, where a quote is written twice.
 fn quoted(text: &str) -> String {
     text.replace('\'', "''")
 }
 
-/// A literal, in the encoding steps arrive in.
 fn literal(value: impl Into<serde_json::Value>) -> serde_json::Value {
     serde_json::json!({ "type": 0, "lit": value.into() })
 }
 
-/// What a step said, when it said it plainly.
-///
-/// An expression either way: these are evaluated rather than read, and a literal token is
-/// refused with `Unexpected value 'true'` however it is spelled.
+/// An expression either way: a literal token is refused with `Unexpected value 'true'`
+/// however it is spelled.
 fn flag<T: ToString>(value: Option<&Expr<T>>) -> serde_json::Value {
     match value {
         Some(Expr::Value(value)) => serde_json::json!({ "type": 3, "expr": value.to_string() }),
@@ -383,7 +345,6 @@ fn flag<T: ToString>(value: Option<&Expr<T>>) -> serde_json::Value {
     }
 }
 
-/// A mapping, in the encoding steps arrive in.
 fn mapping(values: &BTreeMap<String, String>) -> serde_json::Value {
     let pairs: Vec<serde_json::Value> = values
         .iter()
@@ -395,7 +356,7 @@ fn mapping(values: &BTreeMap<String, String>) -> serde_json::Value {
     serde_json::json!({ "type": 2, "map": pairs })
 }
 
-/// A value, in the other encoding: the one the contexts arrive in.
+/// The encoding the contexts arrive in, which is not the one the steps arrive in.
 fn context(value: &serde_json::Value) -> serde_json::Value {
     match value {
         serde_json::Value::Array(items) => {
@@ -413,10 +374,8 @@ fn context(value: &serde_json::Value) -> serde_json::Value {
     }
 }
 
-/// What the ids of the steps this hands over start with.
 pub const STEPS: &str = "00000000-0000-0001-";
 
-/// One of the ids a job is known by, which no two jobs on one runner may share.
 fn id(kind: u16, nth: u64) -> String {
     format!("00000000-0000-{kind:04x}-{nth:04}-000000000000")
 }
