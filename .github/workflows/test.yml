@@ -52,7 +52,7 @@ jobs:
           docker pull redis:7-alpine
 
       - name: Run integration tests
-        run: cargo test --test integration -- --nocapture
+        run: just integration
 
   extension-tests:
     name: Run VS Code extension tests
