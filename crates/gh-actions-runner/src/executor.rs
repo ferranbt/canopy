@@ -207,8 +207,17 @@ pub struct ExecResult {
     pub commands: Vec<WorkflowCommand>,
 }
 
+/// How a machine came up for the job it was given.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Started {
+    Ready,
+    /// The machine is there but something the job asked for is not, so its steps run and the
+    /// job is failing before the first of them.
+    Missing,
+}
+
 pub trait Machine {
-    fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<(), Error>;
+    fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<Started, Error>;
 
     fn finish(&mut self) -> Result<(), Error>;
 
@@ -275,8 +284,8 @@ pub trait Machine {
 pub struct HostMachine;
 
 impl Machine for HostMachine {
-    fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<(), Error> {
-        Ok(())
+    fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<Started, Error> {
+        Ok(Started::Ready)
     }
 
     fn finish(&mut self) -> Result<(), Error> {

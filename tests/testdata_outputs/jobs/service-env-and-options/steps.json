@@ -1,0 +1,27 @@
+[
+  {
+    "event": "job-started",
+    "id": "a-service-that-needs-its-environment",
+    "label": "a-service-that-needs-its-environment"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Reach the service that only starts when it was told a password",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Reach the service that only starts when it was told a password",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "a-service-that-needs-its-environment",
+    "label": "a-service-that-needs-its-environment",
+    "conclusion": "success"
+  }
+]

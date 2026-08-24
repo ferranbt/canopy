@@ -10,7 +10,7 @@ use std::process::Command;
 
 use gh_actions_plan::PlannedJob;
 use gh_actions_runner::report::{Event, Level, Reporter};
-use gh_actions_runner::{At, Error, ExecRequest, ExecResult, Machine, run_until};
+use gh_actions_runner::{At, Error, ExecRequest, ExecResult, Machine, Started, run_until};
 use gh_actions_spec::{Container, ContainerSettings, OneOrMany, RunsOn, Scalar};
 
 pub type Images = BTreeMap<String, String>;
@@ -65,14 +65,18 @@ impl Containers {
 
     /// They share this machine's network, so each is reached at its workflow name, as
     /// GitHub promises. Nothing waits for one to be ready; a step that needs one should.
+    ///
+    /// One that will not start does not stop the job: its steps run, and the job is failing
+    /// before the first of them, which is what GitHub does with it.
     fn start_services(
         &mut self,
         job: &PlannedJob,
         out: &mut dyn Reporter,
-    ) -> Result<Vec<String>, Error> {
+    ) -> Result<(Vec<String>, Started), Error> {
         let mut names = Vec::new();
+        let mut started = Started::Ready;
         let Some(services) = &job.spec.services else {
-            return Ok(names);
+            return Ok((names, started));
         };
 
         for (label, container) in services {
@@ -99,18 +103,34 @@ impl Containers {
 
             let output = command.output().at("docker")?;
             if !output.status.success() {
-                return Err(Error::Plan(format!(
-                    "cannot start service {label} ({image}): {}",
-                    String::from_utf8_lossy(&output.stderr).trim()
-                )));
+                out.report(Event::Message {
+                    level: Level::Error,
+                    text: format!(
+                        "cannot start service {label} ({image}): {}",
+                        String::from_utf8_lossy(&output.stderr).trim()
+                    ),
+                });
+                started = Started::Missing;
+                continue;
             }
 
-            self.services
-                .push(String::from_utf8_lossy(&output.stdout).trim().to_owned());
+            let id = String::from_utf8_lossy(&output.stdout).trim().to_owned();
+            self.services.push(id.clone());
+
+            // A name belongs to a service that is there to answer to it: one that has already
+            // stopped is not reached under it, the way it would not be on a network of its own.
+            if !running(&id) {
+                out.report(Event::Message {
+                    level: Level::Warning,
+                    text: format!("service {label} ({image}) stopped as soon as it was started"),
+                });
+                continue;
+            }
+
             names.push(label.clone());
         }
 
-        Ok(names)
+        Ok((names, started))
     }
 
     fn remove_current(&mut self) -> Result<(), Error> {
@@ -128,7 +148,7 @@ impl Containers {
 }
 
 impl Machine for Containers {
-    fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<(), Error> {
+    fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<Started, Error> {
         // Better than quietly running a `macos-latest` job on whatever this is.
         let image = self.image_for(job).ok_or_else(|| {
             Error::Unsupported(format!(
@@ -138,7 +158,7 @@ impl Machine for Containers {
             ))
         })?;
 
-        let services = self.start_services(job, out)?;
+        let (services, started) = self.start_services(job, out)?;
 
         out.report(Event::Progress {
             text: format!("starting {image}"),
@@ -179,7 +199,7 @@ impl Machine for Containers {
         }
 
         self.current = Some(String::from_utf8_lossy(&output.stdout).trim().to_owned());
-        Ok(())
+        Ok(started)
     }
 
     /// Every kind runs the same way here: inside the container this job was given.
@@ -217,6 +237,14 @@ impl Drop for Containers {
     fn drop(&mut self) {
         let _ = self.remove_current();
     }
+}
+
+fn running(id: &str) -> bool {
+    let looked = Command::new("docker")
+        .args(["inspect", "--format", "{{.State.Running}}", id])
+        .output();
+
+    looked.is_ok_and(|output| String::from_utf8_lossy(&output.stdout).trim() == "true")
 }
 
 fn image_of(container: &Container) -> &str {

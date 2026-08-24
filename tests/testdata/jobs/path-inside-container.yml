@@ -1,0 +1,30 @@
+name: Path inside a container
+
+on: push
+
+jobs:
+  adding-to-the-path:
+    runs-on: ubuntu-latest
+    container: debian:bookworm-slim
+    steps:
+      - name: Put a command somewhere and add it to the path
+        run: |
+          mkdir -p tools
+          printf '#!/bin/sh\necho "found inside the container"\n' > tools/greet
+          chmod +x tools/greet
+          echo "$PWD/tools" >> "$GITHUB_PATH"
+
+      - name: A later run step finds it
+        run: |
+          greet
+          echo "the run step had it on the path"
+
+      - name: And so does an action
+        uses: ./actions/finds-on-path
+        with:
+          command: greet
+
+      - name: What is on the path was not lost on the way
+        run: |
+          command -v sh >/dev/null
+          echo "the rest of the path survived"

@@ -15,7 +15,7 @@ use gh_actions_plan::{Plan, PlannedJob, scalar_value};
 use crate::actions::{self, ResolvedAction};
 use crate::commands::{self, Command};
 use crate::error::{At, Error};
-use crate::executor::{Exec, ExecRequest, ExecResult, Image, Machine};
+use crate::executor::{Exec, ExecRequest, ExecResult, Image, Machine, Started};
 use crate::report::{Event, Level, PassedOver, Reporter};
 use crate::steps::{self, Phase, PlannedStep};
 use crate::validate;
@@ -146,7 +146,7 @@ pub fn run_steps(
     let steps = job.spec.steps.clone().unwrap_or_default();
     let planned = steps::plan(&steps, &options.workspace, &options.cache, false)?;
 
-    machine.start(job, out)?;
+    let started = machine.start(job, out)?;
     let outcome = run_prepared(
         job,
         &planned,
@@ -154,6 +154,7 @@ pub fn run_steps(
         run.clone(),
         defaults,
         deadline,
+        started == Started::Missing,
         machine,
         out,
     );
@@ -260,9 +261,10 @@ fn run_job(
         Err(err) => return Ok(abandoned(job, &[], err, fail_fast, out, results)),
     };
 
-    if let Err(err) = machine.start(job, out) {
-        return Ok(abandoned(job, &planned, err, fail_fast, out, results));
-    }
+    let started = match machine.start(job, out) {
+        Ok(started) => started,
+        Err(err) => return Ok(abandoned(job, &planned, err, fail_fast, out, results)),
+    };
 
     let defaults = run_defaults(workflow, job);
     let outcome = run_prepared(
@@ -272,6 +274,7 @@ fn run_job(
         run,
         defaults,
         job_deadline,
+        started == Started::Missing,
         machine,
         out,
     );
@@ -377,6 +380,7 @@ fn run_prepared(
     run: RunContext,
     defaults: RunDefaults,
     job_deadline: Instant,
+    failing: bool,
     machine: &mut dyn Machine,
     out: &mut dyn Reporter,
 ) -> Result<(Conclusion, BTreeMap<String, String>), Error> {
@@ -412,7 +416,7 @@ fn run_prepared(
     // An image a step will want is got before the first of them runs, and a job that cannot
     // have one is failing before it starts: what is left of it is passed over, bar the steps
     // that run whatever happened.
-    let mut missing = false;
+    let mut missing = failing;
     for image in wanted(planned) {
         if !runner.fetch(&image)? {
             runner.out.report(Event::Message {
@@ -1424,9 +1428,9 @@ mod tests {
     }
 
     impl Machine for Recorder {
-        fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<(), Error> {
+        fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<Started, Error> {
             self.started += 1;
-            Ok(())
+            Ok(Started::Ready)
         }
 
         fn exec(
