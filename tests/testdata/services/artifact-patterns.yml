@@ -1,0 +1,65 @@
+name: Artifacts of more than one shape
+
+on: push
+
+jobs:
+  more-than-one:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A tree worth uploading, hidden files and all
+        run: |
+          rm -rf out restored gathered
+          mkdir -p out/nested/deeper
+          echo "at the top" > out/top.txt
+          echo "further in" > out/nested/inside.txt
+          echo "further still" > out/nested/deeper/bottom.txt
+          echo "kept out of sight" > out/.hidden
+
+      - name: The first artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shape-one
+          path: out
+
+      - name: A second one, so there is something to tell apart
+        run: |
+          mkdir -p other
+          echo "from the other one" > other/note.txt
+
+      - name: The second artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shape-two
+          path: other
+
+      - name: Throw the local copies away
+        run: rm -rf out other
+
+      - name: Download the first one back
+        uses: actions/download-artifact@v4
+        with:
+          name: shape-one
+          path: restored
+
+      - name: The tree came back as it went
+        run: |
+          find restored -type f | sort
+          test "$(cat restored/top.txt)" = "at the top"
+          test "$(cat restored/nested/deeper/bottom.txt)" = "further still"
+
+      - name: Whether the hidden file came with it
+        run: |
+          echo "hidden=$(test -f restored/.hidden && echo yes || echo no)"
+
+      - name: Download every artifact matching a pattern, merged together
+        uses: actions/download-artifact@v4
+        with:
+          pattern: shape-*
+          merge-multiple: true
+          path: gathered
+
+      - name: What the pattern gathered
+        run: |
+          find gathered -type f | sort
+          test -f gathered/top.txt
+          test -f gathered/note.txt

@@ -135,12 +135,29 @@ async fn list_artifacts<A: Artifacts>(
     let job = request["workflowJobRunBackendId"]
         .as_str()
         .unwrap_or_default();
-    let filter = request["nameFilter"]["value"].as_str();
+    // A `StringValue` is written as the string itself, and as an object by whoever wrote it
+    // by hand; either name a field goes by is the same field.
+    let asked = |names: [&str; 2]| {
+        names.into_iter().find_map(|key| {
+            request[key]
+                .as_str()
+                .map(str::to_owned)
+                .or_else(|| request[key]["value"].as_str().map(str::to_owned))
+                .or_else(|| request[key].as_i64().map(|id| id.to_string()))
+        })
+    };
+
+    let named = asked(["nameFilter", "name_filter"]);
+    let only = asked(["idFilter", "id_filter"]);
 
     let artifacts: Vec<Value> = server
         .artifacts
-        .list(filter)
+        .list(named.as_deref())
         .into_iter()
+        .filter(|artifact| {
+            only.as_ref()
+                .is_none_or(|id| *id == artifact.id.to_string())
+        })
         .map(|artifact| {
             json!({
                 "workflowRunBackendId": run,

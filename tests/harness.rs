@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use gh_actions_context::Conclusion;
 use gh_actions_plan::Plan;
 use gh_actions_runner::report::{Event, Reporter, Stream};
 use gh_actions_services::Services;
@@ -83,6 +84,24 @@ impl Reporter for Outcome {
                 if let Some(printed) = self.logs.last_mut() {
                     printed.lines.push(line.trim_end().to_owned());
                 }
+            }
+            // What a step that failed came back with is only in the log of the runner GitHub
+            // ships when a shell was what ran, so it is not something to hold either to.
+            Event::StepFinished {
+                index,
+                name,
+                depth,
+                conclusion: Conclusion::Failure,
+                ..
+            } => {
+                self.inside = false;
+                self.events.push(Event::StepFinished {
+                    index,
+                    name,
+                    depth,
+                    conclusion: Conclusion::Failure,
+                    code: None,
+                });
             }
             Event::StepStarted { name, .. } => {
                 self.inside = true;
@@ -387,11 +406,11 @@ pub struct Case {
     pub workflow: Workflow,
     pub plan: Plan,
     pub service_env: BTreeMap<String, String>,
+    _services: Services,
 }
 
 pub struct Harness {
     artifacts: PathBuf,
-    services: Services,
 }
 
 impl Default for Harness {
@@ -417,10 +436,7 @@ impl Harness {
             .join("artifacts")
             .join(format!("{prefix}{at}"));
 
-        Self {
-            services: Services::start(artifacts.join("services")).expect("the services start"),
-            artifacts,
-        }
+        Self { artifacts }
     }
 
     pub fn get_test_files(&self, target: Option<&str>) -> Vec<TargetFile> {
@@ -499,6 +515,9 @@ impl Harness {
             .plan(file)
             .map_err(|err| format!("cannot plan: {err}"))?;
 
+        let services = Services::start(artifacts.join("services"))
+            .map_err(|err| format!("cannot start the services: {err}"))?;
+
         Ok(Case {
             name,
             artifacts,
@@ -508,7 +527,8 @@ impl Harness {
             branch: planner.context().github.ref_name.clone(),
             workflow,
             plan,
-            service_env: self.services.env(),
+            service_env: services.env(),
+            _services: services,
         })
     }
 }

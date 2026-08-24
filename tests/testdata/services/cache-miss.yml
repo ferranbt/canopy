@@ -1,0 +1,69 @@
+name: Cache misses
+
+on: push
+
+jobs:
+  nothing-to-restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Something to key a cache on
+        run: |
+          mkdir -p keyed
+          printf 'the same bytes on either runner\n' > keyed/lock.txt
+
+      - id: keyed
+        name: The key it is saved under, worked out while the file is still there
+        run: echo "key=${{ hashFiles('keyed/lock.txt') }}" >> "$GITHUB_OUTPUT"
+
+      - id: cold
+        name: Restoring a key nothing was ever saved under
+        uses: actions/cache/restore@v4
+        with:
+          path: keyed
+          key: nothing-was-saved-under-this-${{ runner.os }}
+
+      - name: What a miss came to
+        run: |
+          echo "cache-hit=[${{ steps.cold.outputs.cache-hit }}]"
+          echo "matched-key=[${{ steps.cold.outputs.cache-matched-key }}]"
+
+      - name: Save one under the key
+        uses: actions/cache/save@v4
+        with:
+          path: keyed
+          key: ${{ steps.keyed.outputs.key }}
+
+      - name: Throw the local copy away
+        run: rm -rf keyed
+
+      - id: exact
+        name: Restoring it by the same key
+        uses: actions/cache/restore@v4
+        with:
+          path: keyed
+          key: ${{ steps.keyed.outputs.key }}
+
+      - name: An exact hit brings the file back
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.exact.outputs.cache-hit }} == true
+            $(cat keyed/lock.txt) == the same bytes on either runner
+
+      - name: And away again
+        run: rm -rf keyed
+
+      - id: prefix
+        name: Restoring by a prefix rather than the whole key
+        uses: actions/cache/restore@v4
+        with:
+          path: keyed
+          key: a-key-that-was-never-saved
+          restore-keys: |
+            ${{ steps.keyed.outputs.key }}
+
+      - name: What a prefix match came to
+        run: |
+          echo "cache-hit=[${{ steps.prefix.outputs.cache-hit }}]"
+          test "$(cat keyed/lock.txt)" = "the same bytes on either runner"
+          echo "the file came back all the same"

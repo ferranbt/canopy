@@ -1,0 +1,167 @@
+[
+  {
+    "event": "job-started",
+    "id": "nothing-to-restore",
+    "label": "nothing-to-restore"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Something to key a cache on",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Something to key a cache on",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The key it is saved under, worked out while the file is still there",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The key it is saved under, worked out while the file is still there",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Restoring a key nothing was ever saved under",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Restoring a key nothing was ever saved under",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "What a miss came to",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "What a miss came to",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "Save one under the key",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "Save one under the key",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "Throw the local copy away",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "Throw the local copy away",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "Restoring it by the same key",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "Restoring it by the same key",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 7,
+    "name": "An exact hit brings the file back",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 7,
+    "name": "An exact hit brings the file back",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 8,
+    "name": "And away again",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 8,
+    "name": "And away again",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 9,
+    "name": "Restoring by a prefix rather than the whole key",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 9,
+    "name": "Restoring by a prefix rather than the whole key",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 10,
+    "name": "What a prefix match came to",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 10,
+    "name": "What a prefix match came to",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "nothing-to-restore",
+    "label": "nothing-to-restore",
+    "conclusion": "success"
+  }
+]
