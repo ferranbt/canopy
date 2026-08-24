@@ -10,6 +10,7 @@ pub enum Error {
     Expr(gh_actions_expr::Error),
     Invalid(gh_actions_plan::Diagnostic),
     Plan(String),
+    Refused(String),
     Unsupported(String),
 }
 
@@ -25,6 +26,7 @@ impl fmt::Display for Error {
                 finding.location, finding.rule, finding.message
             ),
             Self::Plan(msg) => write!(f, "cannot plan workflow: {msg}"),
+            Self::Refused(msg) => write!(f, "{msg}"),
             Self::Unsupported(what) => write!(f, "not supported yet: {what}"),
         }
     }

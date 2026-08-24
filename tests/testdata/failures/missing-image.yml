@@ -1,0 +1,28 @@
+name: Missing image
+
+on: push
+
+jobs:
+  an-image-with-no-such-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Something before it, so the job is known to have started
+        run: echo "the job got this far"
+
+      - id: pulled
+        name: An image that cannot be pulled
+        continue-on-error: true
+        uses: docker://alpine:no-such-tag-exists
+
+      - name: What the step that could not be pulled came to
+        if: always()
+        run: |
+          echo "outcome=${{ steps.pulled.outcome }}"
+          echo "conclusion=${{ steps.pulled.conclusion }}"
+
+  a-job-container-with-no-such-tag:
+    runs-on: ubuntu-latest
+    container: alpine:no-such-tag-exists
+    steps:
+      - name: A step in a container that never started
+        run: echo "this never prints"

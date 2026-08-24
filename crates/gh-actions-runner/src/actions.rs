@@ -17,7 +17,21 @@ pub fn resolve(reference: &Uses, workspace: &Path, cache: &Path) -> Result<Resol
     let path = match reference {
         // Without the `./` a local reference is written with, which is how the path reads
         // everywhere it is handed on, `github.action_path` included.
-        Uses::Local(path) => workspace.join(path.strip_prefix("./").unwrap_or(path)),
+        Uses::Local(path) => {
+            let path = workspace.join(path.strip_prefix("./").unwrap_or(path));
+            if !["action.yml", "action.yaml", "Dockerfile"]
+                .iter()
+                .any(|name| path.join(name).is_file())
+            {
+                return Err(Error::Refused(format!(
+                    "Can't find 'action.yml', 'action.yaml' or 'Dockerfile' under '{}'. \
+                     Did you forget to run actions/checkout before running your local action?",
+                    path.display()
+                )));
+            }
+
+            path
+        }
         Uses::Remote {
             owner,
             repo,

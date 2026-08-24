@@ -1,0 +1,21 @@
+name: Missing action
+
+on: push
+
+jobs:
+  a-path-with-nothing-at-it:
+    runs-on: ubuntu-latest
+    steps:
+      - id: local
+        name: A local action that was never written
+        continue-on-error: true
+        uses: ./actions/nowhere
+
+      - name: What the step it could not resolve came to
+        if: always()
+        run: |
+          echo "outcome=${{ steps.local.outcome }}"
+          echo "conclusion=${{ steps.local.conclusion }}"
+
+      - name: And the job carried on without it
+        run: echo "still going"

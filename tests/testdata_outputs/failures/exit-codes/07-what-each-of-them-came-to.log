@@ -1,0 +1,8 @@
+ok    check 1
+ok    check 2
+ok    check 3
+ok    check 4
+ok    check 5
+ok    `-e` stops at the failing line
+ok    every one of them was forgiven
+7 check(s), 0 failed

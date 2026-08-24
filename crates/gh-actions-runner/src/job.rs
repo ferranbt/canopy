@@ -143,8 +143,20 @@ pub fn run_steps(
         .and_then(|defaults| defaults.run.clone())
         .unwrap_or_default();
 
+    let steps = job.spec.steps.clone().unwrap_or_default();
+    let planned = steps::plan(&steps, &options.workspace, &options.cache)?;
+
     machine.start(job, out)?;
-    let outcome = run_prepared(job, options, run.clone(), defaults, deadline, machine, out);
+    let outcome = run_prepared(
+        job,
+        &planned,
+        options,
+        run.clone(),
+        defaults,
+        deadline,
+        machine,
+        out,
+    );
     let cleaned = machine.finish();
 
     let (conclusion, _) = outcome?;
@@ -240,16 +252,38 @@ fn run_job(
 
     let job_deadline = Instant::now() + minutes(job_timeout(&job.spec, &run.to_expr_context())?);
 
-    machine.start(job, out)?;
+    // Resolved before the machine is asked for, so a job that names an action nobody has
+    // is over before anything was started for it.
+    let steps = job.spec.steps.clone().unwrap_or_default();
+    let planned = match steps::plan(&steps, &options.workspace, &options.cache) {
+        Ok(planned) => planned,
+        Err(err) => return Ok(abandoned(job, &[], err, fail_fast, out, results)),
+    };
+
+    if let Err(err) = machine.start(job, out) {
+        return Ok(abandoned(job, &planned, err, fail_fast, out, results));
+    }
 
     let defaults = run_defaults(workflow, job);
-    let outcome = run_prepared(job, options, run, defaults, job_deadline, machine, out);
+    let outcome = run_prepared(
+        job,
+        &planned,
+        options,
+        run,
+        defaults,
+        job_deadline,
+        machine,
+        out,
+    );
 
     // Collected rather than raised, so a machine that will not go away cannot hide why the
     // job stopped.
     let cleaned = machine.finish();
 
-    let (conclusion, outputs) = outcome?;
+    let (conclusion, outputs) = match outcome {
+        Ok(outcome) => outcome,
+        Err(err) => return Ok(abandoned(job, &[], err, fail_fast, out, results)),
+    };
     cleaned?;
 
     // A job that failed says so however it was allowed to: what `continue-on-error` buys
@@ -285,8 +319,60 @@ fn run_job(
     })
 }
 
+/// A job nothing could be run for: the run carries on without it, the way GitHub leaves the
+/// rest of a workflow alone when one job cannot be set up.
+fn abandoned(
+    job: &PlannedJob,
+    planned: &[PlannedStep],
+    err: Error,
+    fail_fast: bool,
+    out: &mut dyn Reporter,
+    results: &mut BTreeMap<String, JobResult>,
+) -> JobOutcome {
+    out.report(Event::Message {
+        level: Level::Error,
+        text: err.to_string(),
+    });
+
+    for (index, step) in planned.iter().filter(|step| !step.is_hook()).enumerate() {
+        let name = step.step.name.clone().unwrap_or_default();
+        out.report(Event::StepStarted {
+            index,
+            name: name.clone(),
+            depth: 0,
+        });
+        out.report(Event::StepFinished {
+            index,
+            name,
+            depth: 0,
+            conclusion: Conclusion::Skipped,
+            code: None,
+        });
+    }
+
+    out.report(Event::JobFinished {
+        id: job.id.clone(),
+        label: job.label.clone(),
+        conclusion: Conclusion::Failure,
+    });
+    results.insert(
+        job.id.clone(),
+        JobResult {
+            conclusion: Conclusion::Failure,
+            outputs: BTreeMap::new(),
+        },
+    );
+
+    JobOutcome {
+        conclusion: Conclusion::Failure,
+        fail_fast,
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn run_prepared(
     job: &PlannedJob,
+    planned: &[PlannedStep],
     options: &Options,
     run: RunContext,
     defaults: RunDefaults,
@@ -310,22 +396,28 @@ fn run_prepared(
         masks: options.masks.clone(),
     };
 
-    // Everything is resolved up front, because a `pre` hook runs before the first step.
-    let steps = job.spec.steps.clone().unwrap_or_default();
-    let planned = steps::plan(&steps, &options.workspace, &options.cache)?;
-
-    for finding in validate::inputs(&planned) {
+    for finding in validate::inputs(planned) {
         runner.out.report(Event::Message {
             level: Level::Warning,
             text: finding.message(),
         });
     }
 
-    for image in wanted(&planned) {
-        runner.fetch(&image)?;
+    // An image a step will want is got before the first of them runs, and a job that cannot
+    // have one is failing before it starts: what is left of it is passed over, bar the steps
+    // that run whatever happened.
+    let mut missing = false;
+    for image in wanted(planned) {
+        if !runner.fetch(&image)? {
+            runner.out.report(Event::Message {
+                level: Level::Error,
+                text: format!("cannot pull {image}"),
+            });
+            missing = true;
+        }
     }
 
-    let failed = runner.run_steps(&planned, 0)?;
+    let failed = runner.run_steps(planned, 0, missing)?;
     let conclusion = if failed {
         Conclusion::Failure
     } else {
@@ -352,8 +444,13 @@ struct JobRunner<'a> {
 }
 
 impl JobRunner<'_> {
-    fn run_steps(&mut self, steps: &[PlannedStep], depth: usize) -> Result<bool, Error> {
-        let mut failed = false;
+    fn run_steps(
+        &mut self,
+        steps: &[PlannedStep],
+        depth: usize,
+        failing: bool,
+    ) -> Result<bool, Error> {
+        let mut failed = failing;
         // Counted as they run rather than as they were written: a hook is a step of its own
         // by the time it runs, and comes after everything the job did before it.
         let mut index = 0;
@@ -379,6 +476,17 @@ impl JobRunner<'_> {
             // A step whose condition says no is still a step of the job, and is reported as
             // one that was skipped rather than left out of what happened.
             if !should_run(condition, &context, !failed)? {
+                // A step that was passed over is still one the job had, and what follows can
+                // read how it went.
+                if !planned.is_hook()
+                    && let Some(id) = &step.id
+                {
+                    self.run.steps.insert(
+                        id.clone(),
+                        step_result(Conclusion::Skipped, Conclusion::Skipped, &BTreeMap::new()),
+                    );
+                }
+
                 self.out.report(Event::StepStarted {
                     index,
                     name: name.clone(),
@@ -437,9 +545,7 @@ impl JobRunner<'_> {
 
     /// A step gets the sooner of its own limit and the job's: a job that has run out of
     /// time cannot be rescued by a step that was given longer.
-    /// Whether it came is the step's to find out: one that is there already is run from
-    /// what the machine has, and one that is not says so when it is run.
-    fn fetch(&mut self, image: &str) -> Result<(), Error> {
+    fn fetch(&mut self, image: &str) -> Result<bool, Error> {
         let request = ExecRequest::new(
             Exec::Fetch {
                 image: image.to_owned(),
@@ -447,8 +553,7 @@ impl JobRunner<'_> {
             &self.options.workspace,
         );
 
-        self.exec(&request)?;
-        Ok(())
+        Ok(self.exec(&request)?.status.success)
     }
 
     fn exec(&mut self, request: &ExecRequest) -> Result<ExecResult, Error> {
@@ -527,6 +632,21 @@ impl JobRunner<'_> {
         let files = self.step_files()?;
         let cwd = self.script_directory(step, context)?;
 
+        if !cwd.is_dir() {
+            let (program, _) = Exec::Script {
+                shell: shell.clone(),
+                script: files.script.clone(),
+            }
+            .to_command(&BTreeMap::new())?;
+
+            return Ok(self.refused(Error::Refused(format!(
+                "An error occurred trying to start process '{}' with working directory '{}'. \
+                 No such file or directory",
+                found(&program),
+                cwd.display()
+            ))));
+        }
+
         let request = ExecRequest::new(
             Exec::Script {
                 shell,
@@ -565,7 +685,10 @@ impl JobRunner<'_> {
             );
         }
 
-        let resolved = actions::resolve(uses, &self.options.workspace, &self.options.cache)?;
+        let resolved = match actions::resolve(uses, &self.options.workspace, &self.options.cache) {
+            Ok(resolved) => resolved,
+            Err(err) => return Ok(self.refused(err)),
+        };
         let inputs = self.inputs_for(Some(&resolved.action), step, context)?;
 
         match resolved.action.runs.clone() {
@@ -591,6 +714,21 @@ impl JobRunner<'_> {
         }
     }
 
+    /// A step the runner would not start: it says why, and only that step fails.
+    fn refused(&mut self, err: Error) -> StepOutcome {
+        self.out.report(Event::Message {
+            level: Level::Error,
+            text: err.to_string(),
+        });
+
+        StepOutcome {
+            succeeded: false,
+            code: Some(0),
+            outputs: BTreeMap::new(),
+            state: BTreeMap::new(),
+        }
+    }
+
     fn run_composite(
         &mut self,
         resolved: &ResolvedAction,
@@ -604,7 +742,7 @@ impl JobRunner<'_> {
         let caller_state = std::mem::take(&mut self.state);
 
         let planned = steps::plan(steps, &self.options.workspace, &self.options.cache)?;
-        let failed = self.run_steps(&planned, depth + 1)?;
+        let failed = self.run_steps(&planned, depth + 1, false)?;
 
         self.run.job.status = conclusion_of(failed);
         let context = self.run.to_expr_context();
@@ -904,6 +1042,15 @@ struct StepOutcome {
     code: Option<i32>,
     outputs: BTreeMap<String, String>,
     state: BTreeMap<String, String>,
+}
+
+fn found(program: &str) -> String {
+    std::env::var("PATH")
+        .unwrap_or_default()
+        .split(':')
+        .map(|directory| Path::new(directory).join(program))
+        .find(|path| path.is_file())
+        .map_or_else(|| program.to_owned(), |path| path.display().to_string())
 }
 
 fn conclusion_of(failed: bool) -> Conclusion {
@@ -1207,16 +1354,21 @@ mod tests {
         let (workflow, plan) = plan_of(Step::default());
         let mut machine = Recorder::default();
 
-        let result = run(
+        let summary = run(
             &workflow,
             &plan,
             &context(),
             &options(),
             &mut machine,
             &mut Collected::default(),
-        );
+        )
+        .expect("the run carries on without the job it could not run");
 
-        assert!(result.is_err(), "the job should not have run");
+        assert_eq!(
+            summary.jobs,
+            vec![("build".to_owned(), Conclusion::Failure)],
+            "the job it could not run is the job that failed"
+        );
         assert_eq!(machine.started, 1);
         assert_eq!(
             machine.finished, 1,

@@ -97,7 +97,23 @@ pub fn plan(steps: &[Step], workspace: &Path, cache: &Path) -> Result<Vec<Planne
             continue;
         }
 
-        let action = actions::resolve(uses, workspace, cache)?;
+        // A local action is looked for again when the step runs, which is where GitHub
+        // reports one that is not there: the job starts, and only that step fails.
+        let action = match actions::resolve(uses, workspace, cache) {
+            Ok(action) => action,
+            Err(_) if matches!(uses, Uses::Local(_)) => {
+                main.push(PlannedStep {
+                    step: step.clone(),
+                    position,
+                    phase: Phase::Main,
+                    action: None,
+                    script: None,
+                    condition: None,
+                });
+                continue;
+            }
+            Err(err) => return Err(err),
+        };
         for phase in [Phase::Pre, Phase::Main, Phase::Post] {
             let script = phase.script(&action.action.runs);
             if phase != Phase::Main && script.is_none() {

@@ -1,0 +1,28 @@
+name: Timeout leaves state
+
+on: push
+
+jobs:
+  cut-short:
+    runs-on: ubuntu-latest
+    steps:
+      - id: overrun
+        name: Writes to the state files, then outstays its welcome
+        timeout-minutes: 1
+        continue-on-error: true
+        run: |
+          echo "EARLY=written before the kill" >> "$GITHUB_ENV"
+          echo "value=written before the kill" >> "$GITHUB_OUTPUT"
+          echo "$PWD/nowhere-in-particular" >> "$GITHUB_PATH"
+          echo "said everything it had to say"
+          sleep 400
+
+      - name: What survived the kill
+        run: |
+          echo "outcome=${{ steps.overrun.outcome }}"
+          echo "output=${{ steps.overrun.outputs.value }}"
+          echo "env=$EARLY"
+          case ":$PATH:" in
+            *":$PWD/nowhere-in-particular:"*) echo "path=added" ;;
+            *) echo "path=dropped" ;;
+          esac

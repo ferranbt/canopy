@@ -11,6 +11,7 @@ use local_runner::{Config, Local};
 pub struct Outcome {
     pub events: Vec<Event>,
     pub logs: Vec<Printed>,
+    inside: bool,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -41,6 +42,13 @@ impl Reporter for Outcome {
             return;
         }
 
+        // What a runner says between steps goes to the job's own log rather than a step's,
+        // and the runner GitHub ships keeps that to itself.
+        let between = matches!(&event, Event::Message { .. } | Event::StepOutput { .. });
+        if between && !self.inside {
+            return;
+        }
+
         // The runner GitHub ships keeps a composite action's inner steps to itself, so only
         // their boundaries go: what they printed is the step's all the same.
         let nested = match &event {
@@ -58,6 +66,7 @@ impl Reporter for Outcome {
                 }
             }
             Event::StepStarted { name, .. } => {
+                self.inside = true;
                 self.logs.push(Printed {
                     step: name.clone(),
                     lines: Vec::new(),
@@ -68,7 +77,10 @@ impl Reporter for Outcome {
                     depth: 0,
                 });
             }
-            event => self.events.push(event),
+            event => {
+                self.inside &= !matches!(event, Event::StepFinished { .. });
+                self.events.push(event);
+            }
         }
     }
 }
