@@ -24,15 +24,16 @@ pub struct Job<'a> {
     pub workflow: &'a Workflow,
     pub planned: &'a PlannedJob,
     pub context: &'a RunContext,
+    /// How the jobs it waited for went, and what they came out with.
+    pub needs: &'a BTreeMap<String, serde_json::Value>,
     pub services: &'a BTreeMap<String, String>,
 }
 
 pub struct GhRunner {
     service: Service,
-    agent: Agent,
-    /// How many jobs this runner has been given, since no two may look alike to it.
+    /// How many jobs have been run, since no two may look alike to a runner.
     jobs: AtomicU64,
-    /// The one workspace the container has, which each case is copied into in turn.
+    /// What the container mounts as the repository, which each case is copied into in turn.
     workspace: PathBuf,
     _listening: Listening,
 }
@@ -44,28 +45,24 @@ impl GhRunner {
         let workspace = std::env::temp_dir().join("canopy-gh-runner");
 
         std::fs::create_dir_all(&workspace).map_err(|err| format!("cannot make a mount: {err}"))?;
-        let agent = start(&workspace)?;
 
         Ok(Self {
             service,
-            agent,
             jobs: AtomicU64::new(0),
             workspace,
             _listening: listening,
         })
     }
 
-    /// The case's files, where the one container can see them.
+    /// The case's files, where the containers running it can see them.
     ///
     /// Once per case rather than once per job: what a job leaves behind is what the next
     /// one finds, the same as a run on one machine.
     pub fn place(&self, case: &std::path::Path) -> Result<(), String> {
-        let held = std::fs::read_dir(&self.workspace)
-            .map_err(|err| format!("cannot read a mount: {err}"))?;
-
-        // What is in the mount changes, never the mount itself: the container is holding it
-        // open, and a directory put back in its place is not the one it is looking at.
-        for entry in held.flatten() {
+        for entry in std::fs::read_dir(&self.workspace)
+            .map_err(|err| format!("cannot read a mount: {err}"))?
+            .flatten()
+        {
             let _ = match entry.path().is_dir() {
                 true => std::fs::remove_dir_all(entry.path()),
                 false => std::fs::remove_file(entry.path()),
@@ -85,12 +82,17 @@ impl GhRunner {
         }
     }
 
+    /// Runs one job on a runner of its own.
+    ///
+    /// A container per job: a runner takes one job and stops, which is the only thing it
+    /// does without being asked to wait for work.
     pub fn run(&self, job: Job<'_>, out: &mut dyn Reporter) -> Result<(), String> {
         let nth = self.jobs.fetch_add(1, Ordering::Relaxed) + 1;
         let message = message::encode(
             job.workflow,
             job.planned,
             job.context,
+            job.needs,
             job.services,
             service::BASE,
             nth,
@@ -98,18 +100,24 @@ impl GhRunner {
         let (updates, arriving) = channel();
         self.service.hand_over(message, updates);
 
-        let mut reported = Reported::new(WORKSPACE);
-        while !reported.done() {
+        let agent = start(&self.workspace)?;
+        let mut reported = Reported::new(WORKSPACE, &job.planned.id);
+
+        // Until the runner is gone rather than until the job is written down as over: what
+        // the job came out with is the last thing it says, after both.
+        while !agent.finished()? {
             match arriving.recv_timeout(Duration::from_millis(100)) {
                 Ok(update) => reported.take(update, out),
                 Err(RecvTimeoutError::Disconnected) => break,
-                Err(RecvTimeoutError::Timeout) => {
-                    if self.agent.finished()? {
-                        return Err("the runner stopped".to_owned());
-                    }
-                }
+                Err(RecvTimeoutError::Timeout) => {}
             }
         }
+        for update in arriving.try_iter() {
+            reported.take(update, out);
+        }
+
+        // Taken down before the next one, since they answer to the same name.
+        drop(agent);
 
         match reported.steps.is_empty() {
             true => Err("the runner ran no step".to_owned()),
@@ -120,6 +128,7 @@ impl GhRunner {
 
 struct Reported {
     workspace: String,
+    id: String,
     job: Option<String>,
     steps: Vec<String>,
     finished: Vec<String>,
@@ -129,15 +138,18 @@ struct Reported {
     said: Vec<String>,
     /// The steps that ran out of time, which came back with no code of their own.
     killed: Vec<String>,
+    /// What a step uploaded at the end, until it is known whether it said it as it went.
+    uploads: HashMap<String, String>,
     /// The step that is over, kept open until nothing more can arrive for it.
     ending: Option<(usize, Record)>,
     echoing: bool,
 }
 
 impl Reported {
-    fn new(workspace: &str) -> Self {
+    fn new(workspace: &str, id: &str) -> Self {
         Self {
             workspace: workspace.to_owned(),
+            id: id.to_owned(),
             job: None,
             steps: Vec::new(),
             finished: Vec::new(),
@@ -145,31 +157,26 @@ impl Reported {
             codes: HashMap::new(),
             said: Vec::new(),
             killed: Vec::new(),
+            uploads: HashMap::new(),
             ending: None,
             echoing: false,
         }
-    }
-
-    fn done(&self) -> bool {
-        self.job
-            .as_ref()
-            .is_some_and(|job| self.finished.contains(job))
     }
 
     fn take(&mut self, update: Update, out: &mut dyn Reporter) {
         match update {
             Update::Records(records) => self.timeline(records, out),
             Update::Printed(lines) => self.printed(lines, out),
-            // Only where nothing was said as it went: the upload is the same output, and
-            // the two together would say everything twice.
-            Update::Log { step, text } if !self.said.contains(&step) => {
-                let lines = Lines {
-                    value: text.lines().map(without_timestamp).collect(),
-                    step_id: step,
-                };
-                self.printed(lines, out);
+            // Kept rather than read: it is the same output the step sent as it went, and
+            // whether it sent any is only settled when the step is over.
+            Update::Log { step, text } => {
+                self.uploads.insert(step, text);
             }
-            Update::Log { .. } => {}
+            Update::Outputs(outputs) if !outputs.is_empty() => {
+                let id = self.id.clone();
+                self.report(Event::JobOutputs { id, outputs }, out);
+            }
+            Update::Outputs(_) => {}
         }
     }
 
@@ -183,7 +190,7 @@ impl Reported {
             self.job = Some(job.id.clone());
             self.report(
                 Event::JobStarted {
-                    id: job.name.clone(),
+                    id: self.id.clone(),
                     label: job.name.clone(),
                 },
                 out,
@@ -202,7 +209,7 @@ impl Reported {
             self.finished.push(job.id.clone());
             self.report(
                 Event::JobFinished {
-                    id: job.name.clone(),
+                    id: self.id.clone(),
                     label: job.name.clone(),
                     conclusion: conclusion(job.result.as_deref()),
                 },
@@ -252,9 +259,22 @@ impl Reported {
 
     /// Closes the step that was waiting to be closed, now that nothing more can be said of it.
     fn ended(&mut self, out: &mut dyn Reporter) {
-        let Some((index, record)) = self.ending.take() else {
+        let Some((index, record)) = self.ending.clone() else {
             return;
         };
+
+        // What was uploaded, for a step that said nothing as it went: the upload is the same
+        // output, so reading both would say everything twice.
+        let uploaded = self.uploads.remove(&record.id);
+        if let Some(text) = uploaded.filter(|_| !self.said.contains(&record.id)) {
+            let lines = Lines {
+                value: text.lines().map(without_timestamp).collect(),
+                step_id: record.id.clone(),
+            };
+            self.printed(lines, out);
+        }
+
+        self.ending = None;
 
         let conclusion = conclusion(record.result.as_deref());
         // Only a code worth complaining about is said out loud, so a step that came back at
@@ -321,7 +341,8 @@ impl Reported {
             self.said.push(lines.step_id.clone());
         }
 
-        if self.steps.contains(&lines.step_id) && (ending || !self.finished.contains(&lines.step_id))
+        if self.steps.contains(&lines.step_id)
+            && (ending || !self.finished.contains(&lines.step_id))
         {
             for event in said {
                 self.report(event, out);
@@ -462,7 +483,7 @@ fn start(workspace: &std::path::Path) -> Result<Agent, String> {
         .arg("-c")
         .arg(format!(
             "./config.sh --unattended --url {} --token canopy \
-             --name canopy --labels canopy --work _work >/dev/null && ./run.sh",
+             --name canopy --labels canopy --work _work >/dev/null && ./run.sh --once",
             service::BASE
         ))
         .stdout(Stdio::null())

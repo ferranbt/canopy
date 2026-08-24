@@ -208,32 +208,38 @@ fn run_job(
     // job stopped.
     let cleaned = machine.finish();
 
-    let (mut conclusion, outputs) = outcome?;
+    let (conclusion, outputs) = outcome?;
     cleaned?;
 
-    // The job saying its failure should not count.
-    if conclusion == Conclusion::Failure && allowed_to_fail {
-        out.report(Event::Progress {
-            text: format!("{} failed, and `continue-on-error` allows it", job.label),
-        });
-        conclusion = Conclusion::Success;
-    }
-
+    // A job that failed says so however it was allowed to: what `continue-on-error` buys
+    // it is that the run carries on, not that it did something else.
+    let forgiven = conclusion == Conclusion::Failure && allowed_to_fail;
     out.report(Event::JobFinished {
         id: job.id.clone(),
         label: job.label.clone(),
         conclusion,
     });
+    if !outputs.is_empty() {
+        out.report(Event::JobOutputs {
+            id: job.id.clone(),
+            outputs: outputs.clone(),
+        });
+    }
+
+    let counted = match forgiven {
+        true => Conclusion::Success,
+        false => conclusion,
+    };
 
     results.insert(
         job.id.clone(),
         JobResult {
-            conclusion,
+            conclusion: counted,
             outputs,
         },
     );
     Ok(JobOutcome {
-        conclusion,
+        conclusion: counted,
         fail_fast,
     })
 }
@@ -323,11 +329,28 @@ impl JobRunner<'_> {
 
             let context = self.run.to_expr_context();
             let condition = planned.condition.as_deref().or(step.r#if.as_deref());
+            let name = step_name(planned, &context)?;
+
+            // A step whose condition says no is still a step of the job, and is reported as
+            // one that was skipped rather than left out of what happened.
             if !should_run(condition, &context, !failed)? {
+                self.out.report(Event::StepStarted {
+                    index,
+                    name: name.clone(),
+                    depth,
+                });
+                self.out.report(Event::StepFinished {
+                    index,
+                    name,
+                    depth,
+                    conclusion: Conclusion::Skipped,
+                    code: None,
+                });
+                index += 1;
+
                 continue;
             }
 
-            let name = step_name(planned, &context)?;
             self.out.report(Event::StepStarted {
                 index,
                 name: name.clone(),

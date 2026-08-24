@@ -137,7 +137,7 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "##[command]/usr/bin/docker build -t 6116a6:3c653d4b8c9b4cdba59276a4d9e5fa8b -f \"$GITHUB_WORKSPACE/actions/state-docker/Dockerfile\" \"$GITHUB_WORKSPACE/actions/state-docker\""
+    "line": "##[command]/usr/bin/docker build -t 6116a6:c2d0672d470243e1b4002481b186c6cd -f \"$GITHUB_WORKSPACE/actions/state-docker/Dockerfile\" \"$GITHUB_WORKSPACE/actions/state-docker\""
   },
   {
     "event": "output",

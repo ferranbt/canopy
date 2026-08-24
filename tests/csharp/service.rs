@@ -18,6 +18,7 @@ use gh_actions_listener::client::types::{
     ActionDownload, ActionDownloads, ActionReference, ActionReferences, Agent, AgentAuthorization,
     ConnectionData, Envelope, Lines, Pool, Record, ResourceLocation, Session,
 };
+use tracing::{debug, trace, warn};
 
 /// Where the runner is told the service is.
 ///
@@ -30,20 +31,22 @@ const TOKEN: &str = "canopy";
 
 const SESSION: &str = "00000000-0000-0000-0000-000000000005";
 
-
 pub enum Update {
     Records(Vec<Record>),
     Printed(Lines),
     /// A step's whole log, uploaded once it is over rather than as it goes.
-    Log { step: String, text: String },
+    Log {
+        step: String,
+        text: String,
+    },
+    /// What the job came out with, which the jobs after it are given.
+    Outputs(BTreeMap<String, String>),
 }
 
 #[derive(Clone, Default)]
 pub struct Service {
-    /// The job to hand over, taken by whoever polls for one first.
+    /// The one job there is to hand over, taken by the runner that asks for it.
     job: Arc<Mutex<Option<serde_json::Value>>>,
-    /// Which message the job goes out as, since a runner ignores one it has already had.
-    message: Arc<Mutex<i64>>,
     /// Whose log is whose: a runner asks for one per step, named after the step.
     logs: Arc<Mutex<BTreeMap<i64, String>>>,
     /// Where what the runner says goes, while it is still saying it.
@@ -53,8 +56,9 @@ pub struct Service {
 impl Service {
     pub fn hand_over(&self, job: serde_json::Value, updates: Sender<Update>) {
         *self.job.lock().expect("the job") = Some(job);
-        *self.message.lock().expect("the message") += 1;
         *self.updates.lock().expect("the updates") = Some(updates);
+
+        debug!("a job is ready to be picked up");
     }
 
     fn send(&self, update: Update) {
@@ -131,9 +135,21 @@ struct Records {
     value: Vec<Record>,
 }
 
+/// What a runner says when a job is over, of which only what it came out with is of use.
+#[derive(serde::Deserialize)]
+struct Ended {
+    outputs: BTreeMap<String, Said>,
+}
+
+#[derive(serde::Deserialize)]
+struct Said {
+    value: String,
+}
+
 async fn answer(State(service): State<Service>, method: Method, uri: Uri, body: Bytes) -> Response {
     let path = uri.path().to_owned();
     let body = String::from_utf8_lossy(&body).to_string();
+    trace!(%method, %uri, bytes = body.len(), "asked");
 
     // What it reports: the timeline it writes a run down on, and what a step printed.
     if path.contains("/timelines") {
@@ -145,6 +161,8 @@ async fn answer(State(service): State<Service>, method: Method, uri: Uri, body: 
         {
             service.send(Update::Printed(lines));
         }
+
+        return axum::Json(serde_json::json!({ "count": 0, "value": [] })).into_response();
     }
 
     // What a step printed, uploaded whole once it is over rather than line by line.
@@ -193,19 +211,37 @@ async fn answer(State(service): State<Service>, method: Method, uri: Uri, body: 
         return axum::Json(downloads).into_response();
     }
 
+    // How a job ended, which is where what it came out with is said.
+    if path.ends_with("/events") {
+        if let Ok(ended) = serde_json::from_str::<Ended>(&body) {
+            let outputs: BTreeMap<String, String> = ended
+                .outputs
+                .into_iter()
+                .map(|(name, said)| (name, said.value))
+                .collect();
+
+            debug!(?outputs, "the runner says what the job came out with");
+            service.send(Update::Outputs(outputs));
+        }
+
+        return axum::Json(serde_json::json!({})).into_response();
+    }
+
     // A poll answered with a body reads as a message, so having nothing has to be a status.
-    // Answered at once, whether or not there is a job: a runner holding this open is a
-    // runner that will not talk to us about the job it is already running.
+    // There is only ever the one job: the runner that takes it runs it and stops.
     if path.ends_with("/messages") && method == Method::GET {
         return match service.job.lock().expect("the job").take() {
             None => StatusCode::NO_CONTENT.into_response(),
-            Some(job) => axum::Json(Envelope {
-                message_id: Some(*service.message.lock().expect("the message")),
-                message_type: "PipelineAgentJobRequest".to_owned(),
-                body: job.to_string(),
-                iv: None,
-            })
-            .into_response(),
+            Some(job) => {
+                debug!("handing the job over");
+                axum::Json(Envelope {
+                    message_id: Some(1),
+                    message_type: "PipelineAgentJobRequest".to_owned(),
+                    body: job.to_string(),
+                    iv: None,
+                })
+                .into_response()
+            }
         };
     }
 
@@ -230,7 +266,10 @@ fn log(id: i64, path: &str) -> serde_json::Value {
 
 /// Whose log it is, which is what the runner named it after.
 fn step_of(path: &str) -> String {
-    path.rsplit(['\\', '/']).next().unwrap_or_default().to_owned()
+    path.rsplit(['\\', '/'])
+        .next()
+        .unwrap_or_default()
+        .to_owned()
 }
 
 /// Where one action comes from: GitHub itself, which is where canopy fetches it too.
@@ -297,7 +336,6 @@ fn canned(path: &str, method: &Method) -> serde_json::Value {
             encryption_key: None,
             use_fips_encryption: false,
         }),
-        // Keeping the job: a runner will not start one it cannot hold on to.
         // Keeping the job: a runner will not start one it cannot hold on to, and it holds
         // on to the request it was given rather than to whichever one it is told about.
         path if path.contains("/jobrequests") => serde_json::json!({
@@ -307,7 +345,12 @@ fn canned(path: &str, method: &Method) -> serde_json::Value {
                 .format("%Y-%m-%dT%H:%M:%S%.3fZ")
                 .to_string(),
         }),
-        _ => serde_json::json!({}),
+        // Nothing, which is an answer a runner has taken so far but is worth hearing about:
+        // a call that matters and is answered with nothing is a runner that stops.
+        _ => {
+            warn!(%method, path, "asked for something this service does not know");
+            serde_json::json!({})
+        }
     }
 }
 
@@ -346,6 +389,13 @@ fn locations() -> Vec<ResourceLocation> {
         ResourceLocation::new(
             "27d7f831-88c1-4719-8ca1-6a061dad90eb",
             "actiondownloadinfo",
+            &format!("{plans}/{{resource}}"),
+        ),
+        // What a job ended up with, which a runner only says once it is told the plan is
+        // real enough to say it to.
+        ResourceLocation::new(
+            "557624af-b29e-4c20-8ab0-0399d2204f3f",
+            "events",
             &format!("{plans}/{{resource}}"),
         ),
         ResourceLocation::new(

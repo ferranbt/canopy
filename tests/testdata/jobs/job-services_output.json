@@ -43,12 +43,12 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "$RUNNER_TEMP/49a9854c-e406-4f2a-b130-3598b40ccdde.sh: line 8: cache: Name or service not known"
+    "line": "$RUNNER_TEMP/18477d1f-dc59-431f-aa4a-f2c777617940.sh: line 8: cache: Name or service not known"
   },
   {
     "event": "output",
     "stream": "stdout",
-    "line": "$RUNNER_TEMP/49a9854c-e406-4f2a-b130-3598b40ccdde.sh: line 8: /dev/tcp/cache/6379: Invalid argument"
+    "line": "$RUNNER_TEMP/18477d1f-dc59-431f-aa4a-f2c777617940.sh: line 8: /dev/tcp/cache/6379: Invalid argument"
   },
   {
     "event": "step-finished",

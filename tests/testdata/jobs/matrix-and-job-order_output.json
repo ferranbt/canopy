@@ -1,19 +1,19 @@
 [
   {
     "event": "job-started",
-    "id": "build (debug)",
+    "id": "build",
     "label": "build (debug)"
   },
   {
     "event": "step-started",
     "index": 0,
-    "name": "run",
+    "name": "echo \"version=1.2.3\" >> \"$GITHUB_OUTPUT\"",
     "depth": 0
   },
   {
     "event": "step-finished",
     "index": 0,
-    "name": "run",
+    "name": "echo \"version=1.2.3\" >> \"$GITHUB_OUTPUT\"",
     "depth": 0,
     "conclusion": "success",
     "code": 0
@@ -23,11 +23,6 @@
     "index": 1,
     "name": "The combination this job is",
     "depth": 0
-  },
-  {
-    "event": "output",
-    "stream": "stdout",
-    "line": "Prepare all required actions"
   },
   {
     "event": "output",
@@ -82,25 +77,25 @@
   },
   {
     "event": "job-finished",
-    "id": "build (debug)",
+    "id": "build",
     "label": "build (debug)",
     "conclusion": "success"
   },
   {
     "event": "job-started",
-    "id": "build (true, release)",
+    "id": "build",
     "label": "build (true, release)"
   },
   {
     "event": "step-started",
     "index": 0,
-    "name": "run",
+    "name": "echo \"version=1.2.3\" >> \"$GITHUB_OUTPUT\"",
     "depth": 0
   },
   {
     "event": "step-finished",
     "index": 0,
-    "name": "run",
+    "name": "echo \"version=1.2.3\" >> \"$GITHUB_OUTPUT\"",
     "depth": 0,
     "conclusion": "success",
     "code": 0
@@ -110,11 +105,6 @@
     "index": 1,
     "name": "The combination this job is",
     "depth": 0
-  },
-  {
-    "event": "output",
-    "stream": "stdout",
-    "line": "Prepare all required actions"
   },
   {
     "event": "output",
@@ -169,7 +159,7 @@
   },
   {
     "event": "job-finished",
-    "id": "build (true, release)",
+    "id": "build",
     "label": "build (true, release)",
     "conclusion": "success"
   },
@@ -183,11 +173,6 @@
     "index": 0,
     "name": "What the job we needed left behind",
     "depth": 0
-  },
-  {
-    "event": "output",
-    "stream": "stdout",
-    "line": "Prepare all required actions"
   },
   {
     "event": "output",
@@ -226,7 +211,7 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "run",
+    "name": "echo \"only on releases\"",
     "depth": 0
   },
   {
@@ -237,7 +222,7 @@
   {
     "event": "step-finished",
     "index": 0,
-    "name": "run",
+    "name": "echo \"only on releases\"",
     "depth": 0,
     "conclusion": "success",
     "code": 0

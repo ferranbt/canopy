@@ -424,7 +424,13 @@ fn handle_line(
             other => other,
         };
 
-        let quiet = matches!(hidden, Event::Message { level: Level::Debug, .. }) && !switches.debug;
+        let quiet = matches!(
+            hidden,
+            Event::Message {
+                level: Level::Debug,
+                ..
+            }
+        ) && !switches.debug;
         if !quiet {
             out.report(hidden);
         }

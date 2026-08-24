@@ -23,7 +23,7 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "  \"after\": \"57c69b68708f658daa701ca96a33a08d6eea6cfa\","
+    "line": "  \"after\": \"$GITHUB_SHA\","
   },
   {
     "event": "output",
@@ -73,12 +73,12 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "      \"id\": \"57c69b68708f658daa701ca96a33a08d6eea6cfa\","
+    "line": "      \"id\": \"$GITHUB_SHA\","
   },
   {
     "event": "output",
     "stream": "stdout",
-    "line": "      \"message\": \"Group tests\","
+    "line": "      \"message\": \"Save known copy\","
   },
   {
     "event": "output",
@@ -158,12 +158,12 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "    \"id\": \"57c69b68708f658daa701ca96a33a08d6eea6cfa\","
+    "line": "    \"id\": \"$GITHUB_SHA\","
   },
   {
     "event": "output",
     "stream": "stdout",
-    "line": "    \"message\": \"Group tests\","
+    "line": "    \"message\": \"Save known copy\","
   },
   {
     "event": "output",
@@ -213,7 +213,7 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "  \"ref\": \"refs/heads/group-tests\","
+    "line": "  \"ref\": \"refs/heads/$GITHUB_REF_NAME\","
   },
   {
     "event": "output",
@@ -223,7 +223,7 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "    \"default_branch\": \"group-tests\","
+    "line": "    \"default_branch\": \"$GITHUB_REF_NAME\","
   },
   {
     "event": "output",

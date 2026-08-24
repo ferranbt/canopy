@@ -26,7 +26,7 @@
   },
   {
     "event": "job-started",
-    "id": "combinations (linux, 1)",
+    "id": "combinations",
     "label": "combinations (linux, 1)"
   },
   {
@@ -45,13 +45,13 @@
   },
   {
     "event": "job-finished",
-    "id": "combinations (linux, 1)",
+    "id": "combinations",
     "label": "combinations (linux, 1)",
     "conclusion": "success"
   },
   {
     "event": "job-started",
-    "id": "combinations (extended, linux, 2)",
+    "id": "combinations",
     "label": "combinations (extended, linux, 2)"
   },
   {
@@ -70,13 +70,13 @@
   },
   {
     "event": "job-finished",
-    "id": "combinations (extended, linux, 2)",
+    "id": "combinations",
     "label": "combinations (extended, linux, 2)",
     "conclusion": "success"
   },
   {
     "event": "job-started",
-    "id": "combinations (mac, 2)",
+    "id": "combinations",
     "label": "combinations (mac, 2)"
   },
   {
@@ -95,7 +95,7 @@
   },
   {
     "event": "job-finished",
-    "id": "combinations (mac, 2)",
+    "id": "combinations",
     "label": "combinations (mac, 2)",
     "conclusion": "success"
   },

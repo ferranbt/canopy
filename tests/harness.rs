@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use gh_actions_plan::Plan;
-use gh_actions_runner::report::{Event, Reporter};
+use gh_actions_runner::report::{Event, Reporter, Stream};
 use gh_actions_services::Services;
 use gh_actions_spec::Workflow;
 use local_runner::{Config, Local};
@@ -21,6 +21,16 @@ impl Reporter for Outcome {
         {
             return;
         }
+
+        // Which stream a line came out of is lost on the way to a timeline, so it is not
+        // something one run can be held to against another.
+        let event = match event {
+            Event::StepOutput { line, .. } => Event::StepOutput {
+                stream: Stream::Out,
+                line,
+            },
+            event => event,
+        };
 
         // What a composite action is made of is canopy's own telling: the runner GitHub
         // ships keeps an action's inner steps to itself.
@@ -47,9 +57,10 @@ impl Outcome {
             .collect()
     }
 
-    /// Where this run happened, under the name every run knows that place by.
-    pub fn rewrite(&mut self, path: &Path, name: &str) {
-        let path = path.display().to_string();
+    /// What is only true of this run, under the name every run knows it by: where it
+    /// happened, and which commit of what it happened on.
+    pub fn rewrite(&mut self, from: &str, name: &str) {
+        let path = from.to_owned();
 
         for event in &mut self.events {
             let said = match event {
@@ -123,13 +134,23 @@ impl TargetFile {
     }
 
     pub fn record(&self, outcome: &Outcome) -> Result<(), String> {
-        outcome.write(&expected(&self.path))
+        outcome.write(&beside(&self.path, "_output.json"))
+    }
+
+    /// What canopy did, beside what the runner GitHub ships did, so the two can be read
+    /// against each other rather than one difference at a time.
+    pub fn ours(&self, outcome: &Outcome) -> Result<(), String> {
+        outcome.write(&beside(&self.path, "_output_us.json"))
     }
 }
 
 fn expected(case: &Path) -> PathBuf {
+    beside(case, "_output.json")
+}
+
+fn beside(case: &Path, suffix: &str) -> PathBuf {
     case.with_file_name(format!(
-        "{}_output.json",
+        "{}{suffix}",
         case.file_stem().unwrap_or_default().to_string_lossy()
     ))
 }
@@ -139,6 +160,9 @@ pub struct Case {
     pub artifacts: PathBuf,
     pub workspace: PathBuf,
     pub temp: PathBuf,
+    /// The commit and branch the run is on, which is whatever the repository is on today.
+    pub sha: String,
+    pub branch: String,
     pub workflow: Workflow,
     pub plan: Plan,
     pub service_env: BTreeMap<String, String>,
@@ -205,9 +229,11 @@ impl Harness {
         let mut outcome = run(&case)?;
 
         // Under the names a run knows them by, so what one runner did reads the same as
-        // what another did somewhere else.
-        outcome.rewrite(&case.temp, "$RUNNER_TEMP");
-        outcome.rewrite(&case.workspace, "$GITHUB_WORKSPACE");
+        // what another did somewhere else, on another commit of another branch.
+        outcome.rewrite(&case.temp.display().to_string(), "$RUNNER_TEMP");
+        outcome.rewrite(&case.workspace.display().to_string(), "$GITHUB_WORKSPACE");
+        outcome.rewrite(&case.sha, "$GITHUB_SHA");
+        outcome.rewrite(&case.branch, "$GITHUB_REF_NAME");
 
         outcome.write(&case.artifacts.join("events.json"))?;
         well_formed(&outcome)?;
@@ -248,6 +274,8 @@ impl Harness {
             artifacts,
             workspace,
             temp,
+            sha: planner.context().github.sha.clone(),
+            branch: planner.context().github.ref_name.clone(),
             workflow,
             plan,
             service_env: self.services.env(),

@@ -39,6 +39,13 @@
     "conclusion": "failure"
   },
   {
+    "event": "job-outputs",
+    "id": "allowed-to-fail",
+    "outputs": {
+      "reached": "yes"
+    }
+  },
+  {
     "event": "job-started",
     "id": "after-it",
     "label": "after-it"
@@ -52,25 +59,30 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "reached="
+    "line": "reached=yes"
+  },
+  {
+    "event": "output",
+    "stream": "stdout",
+    "line": "the failure did not hold this back"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A job needing one that was allowed to fail still runs",
     "depth": 0,
-    "conclusion": "failure",
-    "code": 1
+    "conclusion": "success",
+    "code": 0
   },
   {
     "event": "job-finished",
     "id": "after-it",
     "label": "after-it",
-    "conclusion": "failure"
+    "conclusion": "success"
   },
   {
     "event": "job-started",
-    "id": "matrix-allowed-to-fail (steady)",
+    "id": "matrix-allowed-to-fail",
     "label": "matrix-allowed-to-fail (steady)"
   },
   {
@@ -82,25 +94,25 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "value= experimental="
+    "line": "value=steady experimental="
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "The experimental one fails and is forgiven",
     "depth": 0,
-    "conclusion": "failure",
-    "code": 1
+    "conclusion": "success",
+    "code": 0
   },
   {
     "event": "job-finished",
-    "id": "matrix-allowed-to-fail (steady)",
+    "id": "matrix-allowed-to-fail",
     "label": "matrix-allowed-to-fail (steady)",
-    "conclusion": "failure"
+    "conclusion": "success"
   },
   {
     "event": "job-started",
-    "id": "matrix-allowed-to-fail (true, risky)",
+    "id": "matrix-allowed-to-fail",
     "label": "matrix-allowed-to-fail (true, risky)"
   },
   {
@@ -112,7 +124,7 @@
   {
     "event": "output",
     "stream": "stdout",
-    "line": "value= experimental="
+    "line": "value=risky experimental=true"
   },
   {
     "event": "step-finished",
@@ -124,7 +136,7 @@
   },
   {
     "event": "job-finished",
-    "id": "matrix-allowed-to-fail (true, risky)",
+    "id": "matrix-allowed-to-fail",
     "label": "matrix-allowed-to-fail (true, risky)",
     "conclusion": "failure"
   }

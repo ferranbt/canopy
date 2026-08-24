@@ -26,7 +26,7 @@
   },
   {
     "event": "job-started",
-    "id": "called-off (1)",
+    "id": "called-off",
     "label": "called-off (1)"
   },
   {
@@ -40,64 +40,24 @@
     "index": 0,
     "name": "Record the run and fail the first",
     "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "failure",
+    "code": 1
   },
   {
     "event": "job-finished",
-    "id": "called-off (1)",
+    "id": "called-off",
     "label": "called-off (1)",
-    "conclusion": "success"
+    "conclusion": "failure"
   },
   {
-    "event": "job-started",
-    "id": "called-off (2)",
-    "label": "called-off (2)"
-  },
-  {
-    "event": "step-started",
-    "index": 0,
-    "name": "Record the run and fail the first",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 0,
-    "name": "Record the run and fail the first",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
-  },
-  {
-    "event": "job-finished",
-    "id": "called-off (2)",
+    "event": "job-passed-over",
     "label": "called-off (2)",
-    "conclusion": "success"
+    "reason": "cancelled"
   },
   {
-    "event": "job-started",
-    "id": "called-off (3)",
-    "label": "called-off (3)"
-  },
-  {
-    "event": "step-started",
-    "index": 0,
-    "name": "Record the run and fail the first",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 0,
-    "name": "Record the run and fail the first",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
-  },
-  {
-    "event": "job-finished",
-    "id": "called-off (3)",
+    "event": "job-passed-over",
     "label": "called-off (3)",
-    "conclusion": "success"
+    "reason": "cancelled"
   },
   {
     "event": "job-started",
@@ -150,33 +110,13 @@
     "conclusion": "success"
   },
   {
-    "event": "job-started",
-    "id": "dependent",
-    "label": "dependent"
-  },
-  {
-    "event": "step-started",
-    "index": 0,
-    "name": "A job that needed the failure should never get here",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 0,
-    "name": "A job that needed the failure should never get here",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
-  },
-  {
-    "event": "job-finished",
-    "id": "dependent",
+    "event": "job-passed-over",
     "label": "dependent",
-    "conclusion": "success"
+    "reason": "skipped"
   },
   {
     "event": "job-started",
-    "id": "keeps-going (1)",
+    "id": "keeps-going",
     "label": "keeps-going (1)"
   },
   {
@@ -195,13 +135,13 @@
   },
   {
     "event": "job-finished",
-    "id": "keeps-going (1)",
+    "id": "keeps-going",
     "label": "keeps-going (1)",
     "conclusion": "success"
   },
   {
     "event": "job-started",
-    "id": "keeps-going (2)",
+    "id": "keeps-going",
     "label": "keeps-going (2)"
   },
   {
@@ -215,18 +155,18 @@
     "index": 0,
     "name": "Record the run and fail one of them",
     "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "failure",
+    "code": 1
   },
   {
     "event": "job-finished",
-    "id": "keeps-going (2)",
+    "id": "keeps-going",
     "label": "keeps-going (2)",
-    "conclusion": "success"
+    "conclusion": "failure"
   },
   {
     "event": "job-started",
-    "id": "keeps-going (3)",
+    "id": "keeps-going",
     "label": "keeps-going (3)"
   },
   {
@@ -245,7 +185,7 @@
   },
   {
     "event": "job-finished",
-    "id": "keeps-going (3)",
+    "id": "keeps-going",
     "label": "keeps-going (3)",
     "conclusion": "success"
   },
@@ -266,12 +206,17 @@
     "line": "an unrelated job still ran"
   },
   {
+    "event": "output",
+    "stream": "stdout",
+    "line": "a job needing the failure was skipped"
+  },
+  {
     "event": "step-finished",
     "index": 0,
     "name": "The failure was contained",
     "depth": 0,
-    "conclusion": "failure",
-    "code": 1
+    "conclusion": "success",
+    "code": 0
   },
   {
     "event": "step-started",
@@ -280,12 +225,17 @@
     "depth": 0
   },
   {
+    "event": "output",
+    "stream": "stdout",
+    "line": "keeps-going ran 3 of 3"
+  },
+  {
     "event": "step-finished",
     "index": 1,
     "name": "fail-fast false let the whole matrix run",
     "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "success",
+    "code": 0
   },
   {
     "event": "step-started",
@@ -294,17 +244,22 @@
     "depth": 0
   },
   {
+    "event": "output",
+    "stream": "stdout",
+    "line": "called-off ran 1 of 3"
+  },
+  {
     "event": "step-finished",
     "index": 2,
     "name": "fail-fast true called the rest of the matrix off",
     "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "success",
+    "code": 0
   },
   {
     "event": "job-finished",
     "id": "check",
     "label": "check",
-    "conclusion": "failure"
+    "conclusion": "success"
   }
 ]

@@ -129,33 +129,8 @@
     "conclusion": "failure"
   },
   {
-    "event": "job-started",
-    "id": "never-runs",
-    "label": "never-runs"
-  },
-  {
-    "event": "step-started",
-    "index": 0,
-    "name": "echo \"this job never starts\"",
-    "depth": 0
-  },
-  {
-    "event": "output",
-    "stream": "stdout",
-    "line": "this job never starts"
-  },
-  {
-    "event": "step-finished",
-    "index": 0,
-    "name": "echo \"this job never starts\"",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
-  },
-  {
-    "event": "job-finished",
-    "id": "never-runs",
+    "event": "job-passed-over",
     "label": "never-runs",
-    "conclusion": "success"
+    "reason": "skipped"
   }
 ]

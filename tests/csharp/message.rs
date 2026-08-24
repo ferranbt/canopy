@@ -18,6 +18,7 @@ pub fn encode(
     workflow: &Workflow,
     job: &PlannedJob,
     run: &RunContext,
+    needs: &BTreeMap<String, serde_json::Value>,
     services: &BTreeMap<String, String>,
     base: &str,
     nth: u64,
@@ -85,6 +86,22 @@ pub fn encode(
             workflow.name.clone().unwrap_or_default().into(),
         );
     }
+    // What the jobs this one waited for came out with, which the service keeps rather than
+    // any one runner.
+    if !needs.is_empty()
+        && let Ok(needs) = serde_json::to_value(needs)
+    {
+        contexts["needs"] = needs;
+    }
+
+    // Which combination of a matrix this job is, which is settled by planning it rather
+    // than by anything the run as a whole knows.
+    if !job.matrix.is_empty()
+        && let Ok(matrix) = serde_json::to_value(&job.matrix)
+    {
+        contexts["matrix"] = matrix;
+    }
+
     let context_data: serde_json::Map<String, serde_json::Value> = contexts
         .as_object()
         .into_iter()
@@ -98,11 +115,17 @@ pub fn encode(
             "scopeIdentifier": "00000000-0000-0000-0000-000000000010",
             "planId": id(0x11, nth),
             "planType": "Build",
+            // Without one a runner keeps to itself what a job ended up with, which is what
+            // the jobs after it are given.
+            "version": 12,
         },
         "timeline": { "id": id(0x12, nth) },
         "jobId": id(0x13, nth),
         "jobDisplayName": job.label,
         "jobName": job.id,
+        // What the job is to come out with, which a runner works out at the end from what
+        // its steps left behind.
+        "jobOutputs": mapping(&job.spec.outputs.clone().unwrap_or_default()),
         "requestId": nth,
         "steps": steps,
         "contextData": context_data,

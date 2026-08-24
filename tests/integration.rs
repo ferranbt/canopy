@@ -35,6 +35,8 @@ fn main() -> Result<()> {
         });
 
         let checked = ran.and_then(|outcome| {
+            file.ours(&outcome)?;
+
             let recorded = file.outcome.as_ref().ok_or("nothing recorded to match")?;
             recorded.matches(&outcome)
         });
