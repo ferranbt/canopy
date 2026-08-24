@@ -6,12 +6,12 @@ The event payload: {
     {
       "added": [],
       "author": {
-        "email": "ferran.borreguero@gmail.com",
-        "name": "Ferran",
-        "username": "Ferran"
+        "email": "canopy@example.com",
+        "name": "canopy",
+        "username": "canopy"
       },
       "id": "$GITHUB_SHA",
-      "message": "$GITHUB_COMMIT_MESSAGE",
+      "message": "a commit",
       "modified": [],
       "removed": [],
       "timestamp": ""
@@ -23,19 +23,19 @@ The event payload: {
   "head_commit": {
     "added": [],
     "author": {
-      "email": "ferran.borreguero@gmail.com",
-      "name": "Ferran",
-      "username": "Ferran"
+      "email": "canopy@example.com",
+      "name": "canopy",
+      "username": "canopy"
     },
     "id": "$GITHUB_SHA",
-    "message": "$GITHUB_COMMIT_MESSAGE",
+    "message": "a commit",
     "modified": [],
     "removed": [],
     "timestamp": ""
   },
   "pusher": {
     "email": "",
-    "name": "Ferran",
+    "name": "canopy",
     "username": null
   },
   "ref": "refs/heads/$GITHUB_REF_NAME",
@@ -55,7 +55,7 @@ The event payload: {
   },
   "sender": {
     "id": 0,
-    "login": "Ferran",
+    "login": "canopy",
     "site_admin": false,
     "type": ""
   }
