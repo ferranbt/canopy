@@ -43,6 +43,10 @@ pub enum Exec {
     Node {
         entrypoint: PathBuf,
     },
+    /// An image a step will want, got before any of them runs.
+    Fetch {
+        image: String,
+    },
     Container {
         image: Image,
         entrypoint: Option<String>,
@@ -73,6 +77,9 @@ impl Exec {
             // does from the copies it carries.
             Self::Node { entrypoint } => {
                 Ok(("node".to_owned(), vec![entrypoint.display().to_string()]))
+            }
+            Self::Fetch { image } => {
+                Ok(("docker".to_owned(), vec!["pull".to_owned(), image.clone()]))
             }
             Self::Container {
                 image,
@@ -257,7 +264,7 @@ pub trait Machine {
 
     fn exec(&mut self, request: &ExecRequest, out: &mut dyn Reporter) -> Result<ExecResult, Error> {
         match &request.exec {
-            Exec::Script { .. } => self.script(request, out),
+            Exec::Script { .. } | Exec::Fetch { .. } => self.script(request, out),
             Exec::Node { .. } => self.node(request, out),
             Exec::Container { .. } => self.container(request, out),
         }

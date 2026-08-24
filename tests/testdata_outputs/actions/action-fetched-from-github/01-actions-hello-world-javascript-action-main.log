@@ -11,7 +11,7 @@ The event payload: {
         "username": "Ferran"
       },
       "id": "$GITHUB_SHA",
-      "message": "New batch done",
+      "message": "$GITHUB_COMMIT_MESSAGE",
       "modified": [],
       "removed": [],
       "timestamp": ""
@@ -28,7 +28,7 @@ The event payload: {
       "username": "Ferran"
     },
     "id": "$GITHUB_SHA",
-    "message": "New batch done",
+    "message": "$GITHUB_COMMIT_MESSAGE",
     "modified": [],
     "removed": [],
     "timestamp": ""

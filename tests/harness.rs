@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use gh_actions_context::Payload;
 use gh_actions_plan::Plan;
 use gh_actions_runner::report::{Event, Reporter};
 use gh_actions_services::Services;
@@ -368,9 +369,11 @@ pub struct Case {
     pub artifacts: PathBuf,
     pub workspace: PathBuf,
     pub temp: PathBuf,
-    /// The commit and branch the run is on, which is whatever the repository is on today.
+    /// The commit and branch the run is on, which is whatever the repository is on today,
+    /// and what that commit was made for.
     pub sha: String,
     pub branch: String,
+    pub said: String,
     pub workflow: Workflow,
     pub plan: Plan,
     pub service_env: BTreeMap<String, String>,
@@ -442,6 +445,7 @@ impl Harness {
         outcome.rewrite(&case.workspace.display().to_string(), "$GITHUB_WORKSPACE");
         outcome.rewrite(&case.sha, "$GITHUB_SHA");
         outcome.rewrite(&case.branch, "$GITHUB_REF_NAME");
+        outcome.rewrite(&case.said, "$GITHUB_COMMIT_MESSAGE");
         outcome.settle();
 
         outcome.write(&case.artifacts.join("outcome"), "")?;
@@ -485,11 +489,25 @@ impl Harness {
             temp,
             sha: planner.context().github.sha.clone(),
             branch: planner.context().github.ref_name.clone(),
+            said: committed(&planner.context().github.event),
             workflow,
             plan,
             service_env: self.services.env(),
         })
     }
+}
+
+/// What the commit a run is on was made for, which is a new thing every commit and says
+/// nothing about the run.
+fn committed(event: &Payload) -> String {
+    let Payload::Push(push) = event else {
+        return String::new();
+    };
+
+    push.head_commit
+        .as_ref()
+        .map(|commit| commit.message.clone())
+        .unwrap_or_default()
 }
 
 fn testdata() -> PathBuf {

@@ -152,6 +152,26 @@ pub fn run_steps(
     Ok(conclusion)
 }
 
+/// The images the steps of a job are run from, which are pulled rather than built. An
+/// action built from a `Dockerfile` is not one: that is built when the step gets there.
+fn wanted(planned: &[PlannedStep]) -> BTreeSet<String> {
+    let mut images = BTreeSet::new();
+
+    for step in planned {
+        if let Some(Uses::Image(image)) = &step.step.uses {
+            images.insert(image.clone());
+        }
+        if let Some(resolved) = &step.action
+            && let Runs::Docker(docker) = &resolved.action.runs
+            && let Some(image) = docker.image.strip_prefix("docker://")
+        {
+            images.insert(image.to_owned());
+        }
+    }
+
+    images
+}
+
 struct JobOutcome {
     conclusion: Conclusion,
     fail_fast: bool,
@@ -301,6 +321,10 @@ fn run_prepared(
         });
     }
 
+    for image in wanted(&planned) {
+        runner.fetch(&image)?;
+    }
+
     let failed = runner.run_steps(&planned, 0)?;
     let conclusion = if failed {
         Conclusion::Failure
@@ -405,6 +429,20 @@ impl JobRunner<'_> {
 
     /// A step gets the sooner of its own limit and the job's: a job that has run out of
     /// time cannot be rescued by a step that was given longer.
+    /// Whether it came is the step's to find out: one that is there already is run from
+    /// what the machine has, and one that is not says so when it is run.
+    fn fetch(&mut self, image: &str) -> Result<(), Error> {
+        let request = ExecRequest::new(
+            Exec::Fetch {
+                image: image.to_owned(),
+            },
+            &self.options.workspace,
+        );
+
+        self.exec(&request)?;
+        Ok(())
+    }
+
     fn exec(&mut self, request: &ExecRequest) -> Result<ExecResult, Error> {
         let deadline = match self.step_deadline {
             Some(step) => step.min(self.job_deadline),
