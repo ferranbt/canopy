@@ -41,9 +41,30 @@ fn write_event_file(temp: &Path, event: &Payload) -> Result<PathBuf, Error> {
     fs::create_dir_all(&directory).at(&directory)?;
 
     let path = directory.join("event.json");
-    let payload = serde_json::to_string_pretty(event).unwrap_or_else(|_| "{}".to_owned());
+    let event = serde_json::to_value(event).map(by_name).unwrap_or_default();
+    let payload = serde_json::to_string_pretty(&event).unwrap_or_else(|_| "{}".to_owned());
     fs::write(&path, payload).at(&path)?;
     Ok(path)
+}
+
+fn by_name(value: serde_json::Value) -> serde_json::Value {
+    match value {
+        serde_json::Value::Object(fields) => {
+            let mut named: Vec<(String, serde_json::Value)> = fields.into_iter().collect();
+            named.sort_by(|(one, _), (other, _)| one.cmp(other));
+
+            serde_json::Value::Object(
+                named
+                    .into_iter()
+                    .map(|(name, value)| (name, by_name(value)))
+                    .collect(),
+            )
+        }
+        serde_json::Value::Array(items) => {
+            serde_json::Value::Array(items.into_iter().map(by_name).collect())
+        }
+        scalar => scalar,
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -621,11 +642,11 @@ impl JobRunner<'_> {
         let inner = inner.to_expr_context();
         let files = self.step_files()?;
 
-        // The temp directory is mounted at `/github/files`, so the state files a step
-        // exchanges through are named from there rather than by where they are on the host.
+        // The files a step exchanges state through are mounted at `/github/file_commands`,
+        // so they are named from there rather than by where they sit on the host.
         let mut container_vars = self.base_env(&files, |path| {
             let name = path.file_name().unwrap_or_default().to_string_lossy();
-            format!("/github/files/{name}")
+            format!("/{INSIDE}/{name}")
         });
         container_vars.insert(
             "GITHUB_WORKSPACE".to_owned(),
@@ -652,7 +673,14 @@ impl JobRunner<'_> {
                         self.options.workspace.clone(),
                         PathBuf::from("/github/workspace"),
                     ),
-                    (self.options.temp.clone(), PathBuf::from("/github/files")),
+                    (
+                        self.options.temp.join(COMMANDS),
+                        PathBuf::from(format!("/{INSIDE}")),
+                    ),
+                    (
+                        self.options.temp.clone(),
+                        PathBuf::from("/github/runner_temp"),
+                    ),
                 ],
                 workdir: PathBuf::from("/github/workspace"),
             },
@@ -844,6 +872,11 @@ fn input_variable(name: &str) -> String {
     format!("INPUT_{}", name.to_uppercase().replace(' ', "_"))
 }
 
+/// Where the files a step exchanges state through are kept, and where a container reaches
+/// them from.
+const COMMANDS: &str = "_runner_file_commands";
+const INSIDE: &str = "github/file_commands";
+
 struct StepFiles {
     script: PathBuf,
     env: PathBuf,
@@ -855,13 +888,15 @@ struct StepFiles {
 
 impl StepFiles {
     fn at(temp: &Path, position: usize) -> Self {
+        let commands = temp.join(COMMANDS);
+
         Self {
             script: temp.join(format!("step-{position}.sh")),
-            env: temp.join(format!("step-{position}.env")),
-            output: temp.join(format!("step-{position}.output")),
-            path: temp.join(format!("step-{position}.path")),
-            summary: temp.join(format!("step-{position}.summary")),
-            state: temp.join(format!("step-{position}.state")),
+            env: commands.join(format!("step-{position}.env")),
+            output: commands.join(format!("step-{position}.output")),
+            path: commands.join(format!("step-{position}.path")),
+            summary: commands.join(format!("step-{position}.summary")),
+            state: commands.join(format!("step-{position}.state")),
         }
     }
 

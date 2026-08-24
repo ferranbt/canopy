@@ -24,7 +24,7 @@
     "index": 0,
     "name": "./actions/state-docker",
     "depth": 0,
-    "conclusion": "failure",
+    "conclusion": "success",
     "code": 0
   },
   {
@@ -38,8 +38,8 @@
     "index": 1,
     "name": "What the container wrote comes back",
     "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "success",
+    "code": 0
   },
   {
     "event": "step-started",
@@ -61,13 +61,13 @@
     "index": 2,
     "name": "./actions/state-docker (post)",
     "depth": 0,
-    "conclusion": "failure",
+    "conclusion": "success",
     "code": 0
   },
   {
     "event": "job-finished",
     "id": "state",
     "label": "state",
-    "conclusion": "failure"
+    "conclusion": "success"
   }
 ]

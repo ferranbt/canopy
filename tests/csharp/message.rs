@@ -84,6 +84,14 @@ pub fn encode(
             "workflow".to_owned(),
             workflow.name.clone().unwrap_or_default().into(),
         );
+
+        // What a run is numbered is said in words: a runner passes this context on to the
+        // steps as it was given it, and a number reaches them as nothing at all.
+        for value in github.values_mut() {
+            if let Some(number) = value.as_u64() {
+                *value = number.to_string().into();
+            }
+        }
     }
     // Which combination of a matrix this job is, which is settled by planning it rather
     // than by anything the run as a whole knows.

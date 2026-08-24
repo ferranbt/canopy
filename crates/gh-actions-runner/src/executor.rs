@@ -241,6 +241,10 @@ pub trait Machine {
         out: &mut dyn Reporter,
     ) -> Result<ExecResult, Error> {
         if let Some((program, args)) = request.exec.build() {
+            out.report(Event::Progress {
+                text: "[Building docker image]".to_owned(),
+            });
+
             let built = self.run(&program, &args, request, out)?;
             if !built.status.success {
                 return Ok(built);

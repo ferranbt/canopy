@@ -40,6 +40,15 @@ impl Reporter for Outcome {
             return;
         }
 
+        // How a container was built and started is the runner's own business again, and no
+        // two builds tell it the same way: what a step is, is what it ran, not what docker
+        // said while it was got ready.
+        if let Event::StepOutput { line, .. } = &event
+            && got_ready(line)
+        {
+            return;
+        }
+
         // What a composite action is made of is canopy's own telling: the runner GitHub
         // ships keeps an action's inner steps to itself. What they print is the step's all
         // the same, so only the boundaries go.
@@ -52,10 +61,12 @@ impl Reporter for Outcome {
         }
 
         match event {
-            // Under the step that printed it, which is the one still open.
+            // Under the step that printed it, which is the one still open. What a line
+            // ends in is a runner's, not a step's: one of them uploads what it was given
+            // and the other hands it over as it read it.
             Event::StepOutput { line, .. } => {
                 if let Some(printed) = self.logs.last_mut() {
-                    printed.lines.push(line);
+                    printed.lines.push(line.trim_end().to_owned());
                 }
             }
             Event::StepStarted { name, .. } => {
@@ -89,7 +100,7 @@ impl Outcome {
     /// run makes as it goes, and how many bytes something it packed came to.
     pub fn settle(&mut self) {
         for said in self.said() {
-            *said = ids(said);
+            *said = settled(said);
 
             if let Some((before, rest)) = said.split_once(" B)")
                 && let Some((head, bytes)) = before.rsplit_once('(')
@@ -246,33 +257,64 @@ fn log(at: &Path, called: &str, of: usize, step: &str) -> PathBuf {
     at.join(format!("{called}{:02}-{step}.log", of + 1))
 }
 
-fn ids(line: &str) -> String {
-    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
+/// What a runner says while it gets a container ready: the file it builds from, the
+/// commands it runs, what the build says as it goes, and the image it comes out with.
+fn got_ready(line: &str) -> bool {
+    let building = line.starts_with('#')
+        && line[1..].starts_with(|it: char| it.is_ascii_digit())
+        && !line.starts_with("##[");
 
-    // By the piece: an id is a word of its own, part of a path, or the tail of a name.
+    line.is_empty()
+        || building
+        || line.starts_with("Dockerfile for action:")
+        || line.starts_with("##[command]/usr/bin/docker")
+        || line.strip_prefix("sha256:").is_some_and(hexadecimal)
+}
+
+/// By the piece: what one run and the next say differently is a word of its own, part of
+/// a path, or the tail of a name.
+fn settled(line: &str) -> String {
     line.split(' ')
-        .map(|word| {
-            word.split('/')
-                .map(|part| {
-                    let id = part.rsplit('_').next().unwrap_or(part);
-                    let shape: Vec<&str> = id.split('-').collect();
-
-                    let shaped = shape.len() == SHAPE.len()
-                        && shape.iter().enumerate().all(|(at, piece)| {
-                            piece.len() == SHAPE[at]
-                                && piece.chars().all(|it| it.is_ascii_hexdigit())
-                        });
-
-                    match shaped {
-                        true => part.replace(id, "<id>"),
-                        false => part.to_owned(),
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("/")
-        })
+        .map(|word| word.split('/').map(piece).collect::<Vec<_>>().join("/"))
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+/// An id given to something a run made, a digest of what it packed, or the port whatever
+/// served it was told to listen on: none of them is the same twice.
+fn piece(part: &str) -> String {
+    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
+    const DIGEST: usize = 64;
+
+    let id = part.rsplit('_').next().unwrap_or(part);
+    let shape: Vec<&str> = id.split('-').collect();
+    let shaped = shape.len() == SHAPE.len()
+        && shape
+            .iter()
+            .enumerate()
+            .all(|(at, piece)| piece.len() == SHAPE[at] && hexadecimal(piece));
+
+    if shaped {
+        return part.replace(id, "<id>");
+    }
+
+    if part.len() == DIGEST && hexadecimal(part) {
+        return "<digest>".to_owned();
+    }
+
+    if let Some((host, port)) = part.rsplit_once(':')
+        && host.ends_with("127.0.0.1")
+        && !port.is_empty()
+        && port.chars().all(|it| it.is_ascii_digit())
+    {
+        return format!("{host}:<port>");
+    }
+
+    part.to_owned()
+}
+
+fn hexadecimal(word: &str) -> bool {
+    word.chars().all(|it| it.is_ascii_hexdigit())
 }
 
 fn one(event: &Event) -> String {

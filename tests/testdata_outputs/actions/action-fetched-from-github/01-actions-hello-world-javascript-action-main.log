@@ -11,7 +11,7 @@ The event payload: {
         "username": "Ferran"
       },
       "id": "$GITHUB_SHA",
-      "message": "Add types and server to listener",
+      "message": "New batch done",
       "modified": [],
       "removed": [],
       "timestamp": ""
@@ -28,7 +28,7 @@ The event payload: {
       "username": "Ferran"
     },
     "id": "$GITHUB_SHA",
-    "message": "Add types and server to listener",
+    "message": "New batch done",
     "modified": [],
     "removed": [],
     "timestamp": ""

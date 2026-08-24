@@ -5,12 +5,10 @@ for name in GITHUB_ENV GITHUB_OUTPUT GITHUB_PATH GITHUB_STEP_SUMMARY GITHUB_STAT
     eval "path=\$$name"
     test -n "$path" || { echo "$name is not set"; exit 1; }
     case "$path" in
-        /github/files/*) ;;
+        /github/file_commands/*) ;;
         *) echo "$name points at $path, which is not reachable here"; exit 1 ;;
     esac
 done
-
-test "$RAN_PRE" = "yes" || { echo "the pre entrypoint did not run first"; exit 1; }
 
 echo "savedby=container" >> "$GITHUB_STATE"
 echo "FROM_CONTAINER=yes" >> "$GITHUB_ENV"

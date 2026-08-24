@@ -32,9 +32,6 @@ fn main() -> Result<()> {
                 local_runner::checkout::context(&case.workspace, "push", &case.temp, false);
             let mut outcome = Outcome::default();
 
-            // Which job runs at all, and in what order, is a service's to decide and never
-            // a runner's: a runner is handed one job that is meant to run. The cases here
-            // are one job each for that reason.
             for planned in &case.plan.jobs {
                 gh.run(
                     runner::Job {
