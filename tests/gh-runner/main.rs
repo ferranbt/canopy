@@ -66,8 +66,6 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-/// What the run says about itself, which `RUST_LOG` asks for: `RUST_LOG=csharp=debug` for
-/// what the runner is told, `trace` for every call it makes.
 fn tracing() {
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())

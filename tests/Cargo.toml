@@ -13,8 +13,8 @@ name = "integration"
 path = "integration.rs"
 
 [[bin]]
-name = "csharp"
-path = "csharp/main.rs"
+name = "gh-runner"
+path = "gh-runner/main.rs"
 
 [dependencies]
 local-runner.workspace = true

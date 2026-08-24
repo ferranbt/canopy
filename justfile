@@ -17,10 +17,10 @@ release version *args:
     cargo release {{version}} {{args}}
 
 build-runner-image:
-    docker build -q -f tests/csharp/runner.Dockerfile -t gh-runner tests/csharp
+    docker build -q -f tests/gh-runner/runner.Dockerfile -t gh-runner tests/gh-runner
 
-csharp file="": build-runner-image
-    cargo run --bin csharp -- {{ if file == "" { "" } else { "--test " + file } }}
+gh-runner file="": build-runner-image
+    cargo run --bin gh-runner -- {{ if file == "" { "" } else { "--test " + file } }}
 
 integration file="":
     cargo run --bin integration -- {{ if file == "" { "" } else { "--test " + file } }}
