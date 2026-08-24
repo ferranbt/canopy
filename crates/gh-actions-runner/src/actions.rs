@@ -13,12 +13,22 @@ pub struct ResolvedAction {
     pub path: PathBuf,
 }
 
-pub fn resolve(reference: &Uses, workspace: &Path, cache: &Path) -> Result<ResolvedAction, Error> {
+pub fn resolve(
+    reference: &Uses,
+    workspace: &Path,
+    cache: &Path,
+    nested: bool,
+) -> Result<ResolvedAction, Error> {
     let path = match reference {
         // Without the `./` a local reference is written with, which is how the path reads
-        // everywhere it is handed on, `github.action_path` included.
+        // everywhere it is handed on, `github.action_path` included. Inside a composite
+        // action it is kept, which is where GitHub leaves it.
         Uses::Local(path) => {
-            let path = workspace.join(path.strip_prefix("./").unwrap_or(path));
+            let written = match nested {
+                true => path.as_path(),
+                false => path.strip_prefix("./").unwrap_or(path),
+            };
+            let path = workspace.join(written);
             if !["action.yml", "action.yaml", "Dockerfile"]
                 .iter()
                 .any(|name| path.join(name).is_file())

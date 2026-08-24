@@ -1,0 +1,2 @@
+Hello, alone!
+action_path=$GITHUB_WORKSPACE/actions/greet-composite

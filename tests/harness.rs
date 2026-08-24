@@ -275,6 +275,8 @@ fn got_ready(line: &str) -> bool {
     line.is_empty()
         || building
         || line.starts_with("Dockerfile for action:")
+        || line.starts_with("Getting action download info")
+        || line.starts_with("Download action repository")
         || line.starts_with("##[command]/usr/bin/docker")
         || line.strip_prefix("sha256:").is_some_and(hexadecimal)
 }
@@ -287,18 +289,17 @@ fn settled(line: &str) -> String {
 }
 
 fn piece(part: &str) -> String {
-    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
     const DIGEST: usize = 64;
 
-    let id = part.rsplit('_').next().unwrap_or(part);
-    let shape: Vec<&str> = id.split('-').collect();
-    let shaped = shape.len() == SHAPE.len()
-        && shape
-            .iter()
-            .enumerate()
-            .all(|(at, piece)| piece.len() == SHAPE[at] && hexadecimal(piece));
+    // The script a `run:` step is handed is named by whichever runner wrote it.
+    if let Some((name, rest)) = part.split_once(".sh")
+        && (shaped_like_an_id(name) || name.starts_with("step-"))
+    {
+        return format!("<script>.sh{rest}");
+    }
 
-    if shaped {
+    let id = part.rsplit('_').next().unwrap_or(part);
+    if shaped_like_an_id(id) {
         return part.replace(id, "<id>");
     }
 
@@ -315,6 +316,18 @@ fn piece(part: &str) -> String {
     }
 
     part.to_owned()
+}
+
+fn shaped_like_an_id(word: &str) -> bool {
+    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
+
+    let shape: Vec<&str> = word.split('-').collect();
+
+    shape.len() == SHAPE.len()
+        && shape
+            .iter()
+            .enumerate()
+            .all(|(at, piece)| piece.len() == SHAPE[at] && hexadecimal(piece))
 }
 
 fn hexadecimal(word: &str) -> bool {

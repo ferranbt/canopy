@@ -42,6 +42,41 @@ impl Finding {
     }
 }
 
+/// What GitHub says when a step passes an action something it never declared, word for word,
+/// and only that: it says nothing about a `required` input that was left out.
+pub fn unexpected(
+    step: &gh_actions_spec::Step,
+    action: &gh_actions_spec::Action,
+) -> Option<String> {
+    let declared = action.inputs.clone().unwrap_or_default();
+    let given: Vec<String> = step
+        .with
+        .iter()
+        .flatten()
+        .map(|(name, _)| name.clone())
+        .filter(|name| !declared.contains_key(name))
+        .collect();
+
+    if given.is_empty() {
+        return None;
+    }
+
+    let quoted = |names: &[String]| {
+        names
+            .iter()
+            .map(|name| format!("'{name}'"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    let valid: Vec<String> = declared.keys().cloned().collect();
+
+    Some(format!(
+        "Unexpected input(s) {}, valid inputs are [{}]",
+        quoted(&given),
+        quoted(&valid)
+    ))
+}
+
 /// Nothing here fails a run: GitHub warns about unexpected inputs and does not enforce
 /// `required` at all, leaving that to the action itself.
 pub fn inputs(steps: &[PlannedStep]) -> Vec<Finding> {

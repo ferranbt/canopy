@@ -1,0 +1,28 @@
+name: Nested composite actions
+
+on: push
+
+jobs:
+  one-inside-another:
+    runs-on: ubuntu-latest
+    steps:
+      - id: inner_first
+        name: The inner action on its own, so the two are told apart
+        uses: ./actions/greet-composite
+        with:
+          who-to-greet: alone
+
+      - id: outer
+        name: The outer action, which uses the inner one
+        uses: ./actions/outer-composite
+        with:
+          who-to-greet: nested
+
+      - name: What crossed between them
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.outer.outputs.own-input }} == nested            # its own input
+            ${{ steps.outer.outputs.passed-on }} == Hey, nested!      # and the inner one's output
+            ${{ steps.inner_first.outputs.message }} == Hello, alone! # untouched by the nesting
+            ${{ steps.inner.outputs.message }} ==                     # an inner id is not the job's

@@ -1,0 +1,8 @@
+name: Post only on failure (node)
+description: Has a post step that says it only runs when something has gone wrong.
+
+runs:
+  using: node20
+  main: index.js
+  post: post.js
+  post-if: failure()

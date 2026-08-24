@@ -144,7 +144,7 @@ pub fn run_steps(
         .unwrap_or_default();
 
     let steps = job.spec.steps.clone().unwrap_or_default();
-    let planned = steps::plan(&steps, &options.workspace, &options.cache)?;
+    let planned = steps::plan(&steps, &options.workspace, &options.cache, false)?;
 
     machine.start(job, out)?;
     let outcome = run_prepared(
@@ -255,7 +255,7 @@ fn run_job(
     // Resolved before the machine is asked for, so a job that names an action nobody has
     // is over before anything was started for it.
     let steps = job.spec.steps.clone().unwrap_or_default();
-    let planned = match steps::plan(&steps, &options.workspace, &options.cache) {
+    let planned = match steps::plan(&steps, &options.workspace, &options.cache, false) {
         Ok(planned) => planned,
         Err(err) => return Ok(abandoned(job, &[], err, fail_fast, out, results)),
     };
@@ -388,6 +388,7 @@ fn run_prepared(
         path_entries: Vec::new(),
         state: BTreeMap::new(),
         saved: BTreeMap::new(),
+        deferred: BTreeMap::new(),
         counter: 0,
         job_deadline,
         step_deadline: None,
@@ -396,7 +397,12 @@ fn run_prepared(
         masks: options.masks.clone(),
     };
 
+    // What a step passed that its action never declared is said when the step runs, the way
+    // GitHub says it, so it is not said twice.
     for finding in validate::inputs(planned) {
+        if matches!(finding.problem, validate::Problem::Unexpected { .. }) {
+            continue;
+        }
         runner.out.report(Event::Message {
             level: Level::Warning,
             text: finding.message(),
@@ -417,7 +423,7 @@ fn run_prepared(
         }
     }
 
-    let failed = runner.run_steps(planned, 0, missing)?;
+    let (failed, _) = runner.run_steps(planned, 0, missing)?;
     let conclusion = if failed {
         Conclusion::Failure
     } else {
@@ -425,6 +431,15 @@ fn run_prepared(
     };
 
     Ok((conclusion, runner.job_outputs(job)?))
+}
+
+/// The post steps of the actions a composite action used, and what they need to see.
+struct Deferred {
+    steps: Vec<PlannedStep>,
+    inputs: BTreeMap<String, String>,
+    path: PathBuf,
+    state: BTreeMap<usize, BTreeMap<String, String>>,
+    theirs: BTreeMap<usize, Deferred>,
 }
 
 struct JobRunner<'a> {
@@ -435,6 +450,9 @@ struct JobRunner<'a> {
     path_entries: Vec<String>,
     state: BTreeMap<usize, BTreeMap<String, String>>,
     saved: BTreeMap<String, String>,
+    /// What a composite action left for its own post step to run, by the position of the
+    /// step that used it.
+    deferred: BTreeMap<usize, Deferred>,
     counter: usize,
     job_deadline: Instant,
     step_deadline: Option<Instant>,
@@ -444,13 +462,15 @@ struct JobRunner<'a> {
 }
 
 impl JobRunner<'_> {
+    /// Whether anything failed, and what the first thing to do so came back with.
     fn run_steps(
         &mut self,
         steps: &[PlannedStep],
         depth: usize,
         failing: bool,
-    ) -> Result<bool, Error> {
+    ) -> Result<(bool, Option<i32>), Error> {
         let mut failed = failing;
+        let mut code = None;
         // Counted as they run rather than as they were written: a hook is a step of its own
         // by the time it runs, and comes after everything the job did before it.
         let mut index = 0;
@@ -527,8 +547,11 @@ impl JobRunner<'_> {
                 self.state.insert(planned.position, outcome.state.clone());
             }
 
-            if !outcome.succeeded && !forgiven {
-                failed = true;
+            // Whatever it was forgiven, a step that failed is what the action it belongs to
+            // came back with.
+            if !outcome.succeeded {
+                code = code.or(outcome.code);
+                failed |= !forgiven;
             }
             self.out.report(Event::StepFinished {
                 index,
@@ -540,7 +563,7 @@ impl JobRunner<'_> {
             index += 1;
         }
 
-        Ok(failed)
+        Ok((failed, code))
     }
 
     /// A step gets the sooner of its own limit and the job's: a job that has run out of
@@ -588,6 +611,15 @@ impl JobRunner<'_> {
             });
         }
 
+        // A composite action has no script to hook into: what it left is the post steps of
+        // the actions it used.
+        if planned.phase == Phase::Post
+            && let Some(resolved) = &planned.action
+            && matches!(resolved.action.runs, Runs::Composite(_))
+        {
+            return self.run_deferred(planned.position, depth);
+        }
+
         if let (Some(hook), Some(resolved)) = (&planned.script, &planned.action) {
             let inputs = self.inputs_for(Some(&resolved.action), step, context)?;
 
@@ -610,7 +642,7 @@ impl JobRunner<'_> {
 
         match (&step.run, &step.uses) {
             (Some(script), _) => self.run_script(step, script, context),
-            (None, Some(uses)) => self.run_action(step, uses, context, depth),
+            (None, Some(uses)) => self.run_action(step, uses, context, depth, planned.position),
             (None, None) => Err(Error::Plan(
                 "a step needs either `run:` or `uses:`".to_owned(),
             )),
@@ -668,6 +700,7 @@ impl JobRunner<'_> {
         uses: &Uses,
         context: &Context,
         depth: usize,
+        position: usize,
     ) -> Result<StepOutcome, Error> {
         if let Uses::Image(image) = uses {
             let image = image.clone();
@@ -685,14 +718,28 @@ impl JobRunner<'_> {
             );
         }
 
-        let resolved = match actions::resolve(uses, &self.options.workspace, &self.options.cache) {
-            Ok(resolved) => resolved,
-            Err(err) => return Ok(self.refused(err)),
-        };
+        // A step of a composite action keeps the path it was written with, which is where
+        // GitHub leaves `github.action_path` for one.
+        let inside = depth > 0;
+        let resolved =
+            match actions::resolve(uses, &self.options.workspace, &self.options.cache, inside) {
+                Ok(resolved) => resolved,
+                Err(err) => return Ok(self.refused(err)),
+            };
+
+        if let Some(text) = validate::unexpected(step, &resolved.action) {
+            self.out.report(Event::Message {
+                level: Level::Warning,
+                text,
+            });
+        }
+
         let inputs = self.inputs_for(Some(&resolved.action), step, context)?;
 
         match resolved.action.runs.clone() {
-            Runs::Composite(runs) => self.run_composite(&resolved, &runs.steps, &inputs, depth),
+            Runs::Composite(runs) => {
+                self.run_composite(&resolved, &runs.steps, &inputs, depth, position)
+            }
             Runs::Node16(runs) | Runs::Node20(runs) | Runs::Node24(runs) => {
                 self.run_node(&resolved, &runs.main, &inputs, step, context)
             }
@@ -712,6 +759,40 @@ impl JobRunner<'_> {
                 )
             }
         }
+    }
+
+    /// The post step of a composite action: what the actions it used left to be done.
+    fn run_deferred(&mut self, position: usize, depth: usize) -> Result<StepOutcome, Error> {
+        let Some(deferred) = self.deferred.remove(&position) else {
+            return Ok(StepOutcome {
+                succeeded: true,
+                code: Some(0),
+                outputs: BTreeMap::new(),
+                state: BTreeMap::new(),
+            });
+        };
+
+        let caller_inputs = std::mem::replace(&mut self.run.inputs, deferred.inputs);
+        let caller_steps = std::mem::take(&mut self.run.steps);
+        let caller_path = self.run.github.action_path.replace(deferred.path);
+        let caller_state = std::mem::replace(&mut self.state, deferred.state);
+        let caller_deferred = std::mem::replace(&mut self.deferred, deferred.theirs);
+
+        let ran = self.run_steps(&deferred.steps, depth + 1, false);
+
+        self.run.inputs = caller_inputs;
+        self.run.steps = caller_steps;
+        self.run.github.action_path = caller_path;
+        self.state = caller_state;
+        self.deferred = caller_deferred;
+
+        let (failed, code) = ran?;
+        Ok(StepOutcome {
+            succeeded: !failed,
+            code: code.or(Some(i32::from(failed))),
+            outputs: BTreeMap::new(),
+            state: BTreeMap::new(),
+        })
     }
 
     /// A step the runner would not start: it says why, and only that step fails.
@@ -735,14 +816,21 @@ impl JobRunner<'_> {
         steps: &[Step],
         inputs: &BTreeMap<String, String>,
         depth: usize,
+        position: usize,
     ) -> Result<StepOutcome, Error> {
         let caller_inputs = std::mem::replace(&mut self.run.inputs, inputs.clone());
         let caller_steps = std::mem::take(&mut self.run.steps);
         let caller_path = self.run.github.action_path.replace(resolved.path.clone());
         let caller_state = std::mem::take(&mut self.state);
+        let caller_deferred = std::mem::take(&mut self.deferred);
 
-        let planned = steps::plan(steps, &self.options.workspace, &self.options.cache)?;
-        let failed = self.run_steps(&planned, depth + 1, false)?;
+        // An action this one uses is cleaned up at the end of the job rather than the end of
+        // this step, which is what the post step of a composite action is for.
+        let planned = steps::plan(steps, &self.options.workspace, &self.options.cache, true)?;
+        let (later, now): (Vec<_>, Vec<_>) = planned
+            .into_iter()
+            .partition(|step| step.phase == Phase::Post);
+        let (failed, code) = self.run_steps(&now, depth + 1, false)?;
 
         self.run.job.status = conclusion_of(failed);
         let context = self.run.to_expr_context();
@@ -753,14 +841,29 @@ impl JobRunner<'_> {
             }
         }
 
+        let theirs = std::mem::replace(&mut self.deferred, caller_deferred);
+        if !later.is_empty() {
+            self.deferred.insert(
+                position,
+                Deferred {
+                    steps: later,
+                    inputs: inputs.clone(),
+                    path: resolved.path.clone(),
+                    state: self.state.clone(),
+                    theirs,
+                },
+            );
+        }
+
         self.run.inputs = caller_inputs;
         self.run.steps = caller_steps;
         self.run.github.action_path = caller_path;
         self.state = caller_state;
 
+        // What the step it gave up in came back with, since that is what the action came to.
         Ok(StepOutcome {
             succeeded: !failed,
-            code: Some(i32::from(failed)),
+            code: code.or(Some(i32::from(failed))),
             outputs,
             state: BTreeMap::new(),
         })

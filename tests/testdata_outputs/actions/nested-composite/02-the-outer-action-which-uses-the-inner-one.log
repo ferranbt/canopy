@@ -1,0 +1,6 @@
+outer input=nested
+outer path is this action=yes
+Hey, nested!
+action_path=$GITHUB_WORKSPACE/./actions/greet-composite
+inner message=Hey, nested!
+outer input again=nested

@@ -1,0 +1,38 @@
+name: Awkward inputs
+description: Declares inputs whose names and values do not travel well.
+
+inputs:
+  UPPER:
+    description: A name already in upper case.
+    required: false
+    default: shouted
+  needed:
+    description: An input with nothing to fall back on.
+    required: true
+  two words:
+    description: A name with a space in it.
+    required: false
+    default: spaced
+  who-to-greet:
+    description: A name with a dash in it.
+    required: false
+    default: dashed
+
+runs:
+  using: composite
+  steps:
+    - name: What arrived in the environment
+      shell: bash
+      run: |
+        echo "dashed=[${INPUT_WHO-TO-GREET:-}]"
+        echo "spaced=[${INPUT_TWO_WORDS:-}]"
+        echo "upper=[${INPUT_UPPER:-}]"
+        echo "needed=[${INPUT_NEEDED:-}]"
+        echo "undeclared=[${INPUT_NOBODY_ASKED_FOR_THIS:-}]"
+
+    - name: And what the inputs context says
+      shell: bash
+      run: |
+        echo "context dashed=[${{ inputs.who-to-greet }}]"
+        echo "context upper=[${{ inputs.UPPER }}]"
+        echo "context needed=[${{ inputs.needed }}]"

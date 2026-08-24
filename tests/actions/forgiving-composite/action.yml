@@ -1,0 +1,14 @@
+name: Forgiving (composite)
+description: Says a step of its own may fail, which is not a thing a composite action can say.
+
+runs:
+  using: composite
+  steps:
+    - name: A failure the action asks to be forgiven
+      shell: bash
+      continue-on-error: true
+      run: exit 5
+
+    - name: The one after it
+      shell: bash
+      run: echo "the composite carried on"

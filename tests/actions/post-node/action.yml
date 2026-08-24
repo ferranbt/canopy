@@ -1,0 +1,12 @@
+name: Post (node)
+description: Saves state in its main step and reads it back in its post step.
+
+inputs:
+  mark:
+    description: What this use of the action calls itself.
+    required: true
+
+runs:
+  using: node20
+  main: index.js
+  post: post.js
