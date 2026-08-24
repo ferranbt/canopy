@@ -1,0 +1,17 @@
+# A job that names its own container runs in that image, not the one `runs-on` implies.
+name: Job container
+
+on: push
+
+jobs:
+  bare-image:
+    runs-on: ubuntu-latest
+    # Written as just a name. Debian rather than the Ubuntu `runs-on` would have picked,
+    # so a job that ignored this would fail the check below.
+    container: debian:bookworm-slim
+    steps:
+      - name: Check which image the steps are in
+        run: |
+          . /etc/os-release
+          echo "running on $ID"
+          test "$ID" = debian

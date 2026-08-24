@@ -1,0 +1,27 @@
+# A job that runs on the machine rather than in a container reaches a service through the
+# port it publishes, at `localhost`: the label is a name on the runner's own network, which
+# a job outside that network cannot look up.
+name: Job services by port
+
+on: push
+
+jobs:
+  talks-to-a-published-port:
+    runs-on: ubuntu-latest
+    services:
+      cache:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - name: Reach the service where it was published
+        run: |
+          for attempt in $(seq 30); do
+            (exec 3<>/dev/tcp/localhost/6379) 2>/dev/null && break
+            sleep 1
+          done
+
+          exec 3<>/dev/tcp/localhost/6379
+          printf 'PING\r\n' >&3
+          head -c 7 <&3 | grep -q PONG
+          echo "localhost:6379 answered"

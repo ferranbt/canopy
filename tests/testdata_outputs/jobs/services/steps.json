@@ -1,0 +1,27 @@
+[
+  {
+    "event": "job-started",
+    "id": "talks-to-a-service",
+    "label": "talks-to-a-service"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Reach the service by its label",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Reach the service by its label",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "talks-to-a-service",
+    "label": "talks-to-a-service",
+    "conclusion": "success"
+  }
+]

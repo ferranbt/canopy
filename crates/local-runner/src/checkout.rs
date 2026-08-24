@@ -7,7 +7,7 @@ use gh_actions_context::{
     Author, Commit, Github, Payload, Push, Repository, RunContext, Runner, User,
 };
 
-pub fn context(workspace: &Path, event_name: &str, temp: &Path) -> RunContext {
+pub fn context(workspace: &Path, event_name: &str, temp: &Path, debug: bool) -> RunContext {
     let git = Git::new(workspace.to_path_buf());
     let branch = git.branch().unwrap_or_default();
     let repository = git
@@ -15,17 +15,33 @@ pub fn context(workspace: &Path, event_name: &str, temp: &Path) -> RunContext {
         .unwrap_or_else(|| "local/workspace".to_owned());
 
     let owner = repository.split('/').next().unwrap_or_default().to_owned();
-    let actor = git.actor().unwrap_or_else(|| "canopy".to_owned());
+    let actor = std::env::var("GITHUB_ACTOR")
+        .ok()
+        .filter(|said| !said.is_empty())
+        .or_else(|| git.actor())
+        .unwrap_or_else(|| "canopy".to_owned());
     let sha = git.sha().unwrap_or_default();
 
     let event = match event_name {
         "push" => {
             let commit = Commit {
                 id: sha.clone(),
-                message: git.log("%B").unwrap_or_default(),
+                message: std::env::var("GITHUB_COMMIT_MESSAGE")
+                    .ok()
+                    .filter(|said| !said.is_empty())
+                    .or_else(|| git.log("%B"))
+                    .unwrap_or_default(),
                 author: Author {
-                    name: git.log("%an").unwrap_or_default(),
-                    email: git.log("%ae").unwrap_or_default(),
+                    name: std::env::var("GITHUB_COMMIT_AUTHOR")
+                        .ok()
+                        .filter(|said| !said.is_empty())
+                        .or_else(|| git.log("%an"))
+                        .unwrap_or_default(),
+                    email: std::env::var("GITHUB_COMMIT_EMAIL")
+                        .ok()
+                        .filter(|said| !said.is_empty())
+                        .or_else(|| git.log("%ae"))
+                        .unwrap_or_default(),
                     username: Some(actor.clone()),
                     ..Author::default()
                 },
@@ -82,7 +98,10 @@ pub fn context(workspace: &Path, event_name: &str, temp: &Path) -> RunContext {
             workspace: workspace.display().to_string(),
             ..Github::default()
         },
-        runner: Runner::host(temp),
+        runner: Runner {
+            debug,
+            ..Runner::host(temp)
+        },
         ..RunContext::default()
     }
 }

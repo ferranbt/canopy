@@ -1,0 +1,83 @@
+[
+  {
+    "event": "job-started",
+    "id": "expressions",
+    "label": "expressions"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Write a step output",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Write a step output",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Export environment variables, one of them over several lines",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Export environment variables, one of them over several lines",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Skipped, because the condition is false",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Skipped, because the condition is false",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Runs, because the condition holds",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Runs, because the condition holds",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "./actions/expect",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "./actions/expect",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "expressions",
+    "label": "expressions",
+    "conclusion": "success"
+  }
+]

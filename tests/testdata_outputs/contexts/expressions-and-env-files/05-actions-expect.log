@@ -1,0 +1,12 @@
+ok    the workflow env reaches the shell
+ok    and an expression sees the same
+ok    the event that started the run
+ok    check 4
+ok    a step output, written to the output file
+ok    an env file export reaches a later step
+ok    and the context it builds
+ok    a multi-line export keeps its lines
+ok    check 9
+ok    a false condition left nothing behind
+ok    and a true one ran
+11 check(s), 0 failed

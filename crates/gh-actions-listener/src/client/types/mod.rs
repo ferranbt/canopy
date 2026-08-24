@@ -5,6 +5,7 @@ pub mod encoding;
 pub mod message;
 pub mod registration;
 pub mod results;
+pub mod service;
 pub mod session;
 pub mod step;
 
@@ -15,6 +16,12 @@ pub use registration::{
     Agent, AgentAuthorization, AgentRequest, Label, Pool, Pools, PublicKey, PublicKeyRequest,
     Tenant, TenantRequest,
 };
+pub use service::{
+    ACTIONS, AccessMapping, ActionDownload, ActionDownloads, ActionReference, ActionReferences,
+    ConnectionData, Granted, Identity, JobEnded, JobRequest, Lines, LocationServiceData,
+    LogReference, Many, Record, ResourceLocation, Said, TaskLog,
+};
+
 pub use results::{
     LogsMetadata, SignedLogUrl, SignedLogUrlRequest, StepResult, StepsUpdateRequest, timestamp,
 };

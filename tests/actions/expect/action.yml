@@ -5,10 +5,10 @@ inputs:
   checks:
     description: >
       One check per line, `actual == expected` or `actual != expected`, with an optional
-      ` # label` naming it. The runner fills in any `${{ }}` before this action sees the
-      line, which is what lets the same workflow run on GitHub; the actual side is then
-      expanded by the shell, so `$LEVEL` and `$(cat out.txt)` work too. Only that side is:
-      a label or an expected value is taken as it was written.
+      ` # label` naming it. An expression is filled in by the runner before this action
+      sees the line, which is what lets the same workflow run on GitHub; the actual side
+      is then expanded by the shell, so `$LEVEL` and `$(cat out.txt)` work too. Only that
+      side is: a label or an expected value is taken as it was written.
     required: true
 
 runs:

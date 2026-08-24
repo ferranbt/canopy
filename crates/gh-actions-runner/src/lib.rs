@@ -12,8 +12,7 @@ pub mod validate;
 pub use error::{At, Error};
 
 pub use executor::{
-    Exec, ExecRequest, ExecResult, ExecStatus, HostMachine, Image, Machine, run_streaming,
-    run_until,
+    Exec, ExecRequest, ExecResult, ExecStatus, HostMachine, Image, Machine, run_until,
 };
 pub use gh_actions_report as report;
 pub use job::{Options, Summary, run, run_steps};

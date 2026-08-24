@@ -54,6 +54,10 @@ pub enum Event {
         label: String,
         conclusion: Conclusion,
     },
+    JobOutputs {
+        id: String,
+        outputs: std::collections::BTreeMap<String, String>,
+    },
     StepStarted {
         index: usize,
         name: String,
@@ -94,7 +98,7 @@ impl Reporter for Terminal {
             Event::JobPassedOver { label, reason } => {
                 println!("--- {label} ({})", reason.name());
             }
-            Event::JobFinished { .. } => {}
+            Event::JobFinished { .. } | Event::JobOutputs { .. } => {}
             Event::StepStarted { name, depth, .. } => {
                 println!("{}==> {name}", indent(depth));
             }

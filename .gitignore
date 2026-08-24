@@ -3,6 +3,7 @@ TODO.md
 credentials*
 _work
 tests/artifacts
+tests/testdata_outputs/**/cnp_*
 
 .terraform
 .terraform.lock.hcl

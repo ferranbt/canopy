@@ -1,0 +1,14 @@
+# Nothing named, so the job lands in the image `runs-on` maps to.
+name: No job container
+
+on: push
+
+jobs:
+  no-container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the default is unchanged
+        run: |
+          . /etc/os-release
+          echo "running on $ID"
+          test "$ID" = ubuntu

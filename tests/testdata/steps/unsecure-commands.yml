@@ -1,0 +1,23 @@
+# The commands GitHub took away still work for a step that asks for them by name, which it
+# does by setting `ACTIONS_ALLOW_UNSECURE_COMMANDS` in its own environment.
+name: Unsecure commands
+
+on: push
+
+jobs:
+  opted-in:
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+    steps:
+      - name: The older spelling is allowed again
+        run: |
+          mkdir -p other
+          printf '#!/bin/sh\necho "also found"\n' > other/wave
+          chmod +x other/wave
+          echo "::add-path::$PWD/other"
+
+      - name: And is on the path for what follows
+        run: |
+          wave | grep -q "also found"
+          echo "the older spelling carried over"

@@ -4,13 +4,35 @@ version.workspace = true
 edition.workspace = true
 publish = false
 
-[[test]]
+[lib]
+name = "harness"
+path = "harness.rs"
+
+[[bin]]
 name = "integration"
 path = "integration.rs"
+
+[[bin]]
+name = "gh-runner"
+path = "gh-runner/main.rs"
 
 [dependencies]
 local-runner.workspace = true
 gh-actions-runner.workspace = true
+gh-actions-listener.workspace = true
+gh-actions-context.workspace = true
+gh-actions-plan.workspace = true
+gh-actions-spec.workspace = true
+gh-actions-services.workspace = true
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+clap = { version = "4", features = ["derive"] }
+eyre = "0.6"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { workspace = true }
 serde_json = "1.0"
+glob = "0.3"
+axum = "0.8"
+jsonwebtoken = "9"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "sync", "macros", "time"] }
 

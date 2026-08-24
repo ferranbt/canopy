@@ -1,0 +1,38 @@
+# Cache round trip
+name: Cache round trip
+
+on: push
+
+jobs:
+  caching:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create something worth caching
+        run: |
+          mkdir -p deps
+          echo "an expensive dependency" > deps/lib.txt
+
+      # The explicit save action, so the round trip completes within one run.
+      - name: Save it to the cache
+        uses: actions/cache/save@v4
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-v1
+
+      - name: Throw the local copy away
+        run: rm -rf deps
+
+      - name: Restore it
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: deps
+          key: deps-${{ runner.os }}-v1
+          restore-keys: |
+            deps-${{ runner.os }}-
+
+      - name: Check the cache round trip
+        run: |
+          echo "cache-hit=${{ steps.restore.outputs.cache-hit }}"
+          cat deps/lib.txt
+          echo "cache round trip ok"

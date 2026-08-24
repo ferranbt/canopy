@@ -1,8 +1,8 @@
-# The things a step says on stdout that the runner is meant to act on, and the files it is
-# given to write into.
+# What a step says on stdout that the runner is meant to act on: the path it adds to, and
+# the levels it raises.
 #
-# The log commands cannot be checked from inside the workflow — a step cannot read the
-# runner's log — so what they print is asserted by `crates/canopy/tests/output.rs`.
+# No `::notice::` here: the runner GitHub ships takes it and leaves nothing behind — not a
+# line in the log, not an issue on the step — so there is nothing to hold a run to.
 name: Workflow commands
 
 on: push
@@ -23,16 +23,6 @@ jobs:
           greet | grep -q "found on the path"
           echo "the path carried over"
 
-      - name: The older spelling works too
-        run: |
-          mkdir -p other
-          printf '#!/bin/sh\necho "also found"\n' > other/wave
-          chmod +x other/wave
-          echo "::add-path::$PWD/other"
-
-      - name: And is on the path for what follows
-        run: wave | grep -q "also found"
-
       - name: Ordinary commands still resolve
         run: |
           # Adding to the path must not cost us what was already there.
@@ -40,9 +30,15 @@ jobs:
           command -v grep >/dev/null
           echo "the rest of the path survived"
 
-  writes_a_step_summary:
-    runs-on: ubuntu-latest
-    steps:
+      - name: Group some lines and raise the two levels
+        run: |
+          echo "::group::a group of lines"
+          echo "inside the group"
+          echo "::endgroup::"
+          echo "::warning::something worth watching"
+          echo "::error::something that went wrong"
+          echo "said everything"
+
       - name: The summary file is there and can be written
         run: |
           echo "## What happened" >> "$GITHUB_STEP_SUMMARY"
@@ -50,16 +46,3 @@ jobs:
           # Each step gets its own, so a step can read back what it wrote.
           grep -q "What happened" "$GITHUB_STEP_SUMMARY"
           echo "wrote a summary"
-
-  says_things_to_the_log:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Group some lines and raise the three levels
-        run: |
-          echo "::group::a group of lines"
-          echo "inside the group"
-          echo "::endgroup::"
-          echo "::notice::something worth knowing"
-          echo "::warning::something worth watching"
-          echo "::error::something that went wrong"
-          echo "said everything"

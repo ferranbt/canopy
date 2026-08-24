@@ -8,20 +8,32 @@ pub struct TenantRequest<'a> {
     pub runner_event: &'a str,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Tenant {
     pub url: String,
     pub token: String,
+    /// Which credential to talk with, which a client is told out of band and a service has
+    /// to say out loud.
+    #[serde(default)]
+    pub token_schema: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Pools {
     pub value: Vec<Pool>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Pool {
     pub id: i64,
+    /// What a runner looks a group up by, which a client has no use for.
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub is_hosted: bool,
+    #[serde(default)]
+    pub pool_type: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -59,13 +71,13 @@ pub struct PublicKey {
     pub modulus: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Agent {
     pub id: i64,
     pub authorization: AgentAuthorization,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentAuthorization {
     pub client_id: String,

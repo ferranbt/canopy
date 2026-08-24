@@ -1,0 +1,62 @@
+Hello, canopy!
+The event payload: {
+  "after": "$GITHUB_SHA",
+  "before": "",
+  "commits": [
+    {
+      "added": [],
+      "author": {
+        "email": "canopy@example.com",
+        "name": "canopy",
+        "username": "canopy"
+      },
+      "id": "$GITHUB_SHA",
+      "message": "a commit",
+      "modified": [],
+      "removed": [],
+      "timestamp": ""
+    }
+  ],
+  "created": false,
+  "deleted": false,
+  "forced": false,
+  "head_commit": {
+    "added": [],
+    "author": {
+      "email": "canopy@example.com",
+      "name": "canopy",
+      "username": "canopy"
+    },
+    "id": "$GITHUB_SHA",
+    "message": "a commit",
+    "modified": [],
+    "removed": [],
+    "timestamp": ""
+  },
+  "pusher": {
+    "email": "",
+    "name": "canopy",
+    "username": null
+  },
+  "ref": "refs/heads/$GITHUB_REF_NAME",
+  "repository": {
+    "default_branch": "$GITHUB_REF_NAME",
+    "full_name": "ferranbt/canopy",
+    "html_url": "",
+    "id": 0,
+    "name": "canopy",
+    "owner": {
+      "id": 0,
+      "login": "ferranbt",
+      "site_admin": false,
+      "type": ""
+    },
+    "private": false
+  },
+  "sender": {
+    "id": 0,
+    "login": "canopy",
+    "site_admin": false,
+    "type": ""
+  }
+}

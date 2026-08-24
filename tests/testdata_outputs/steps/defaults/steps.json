@@ -1,0 +1,55 @@
+[
+  {
+    "event": "job-started",
+    "id": "a_job_overrides_the_workflow",
+    "label": "a_job_overrides_the_workflow"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Make the directories the defaults point at",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Make the directories the defaults point at",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The job's defaults win",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The job's defaults win",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "A step wins over both",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "A step wins over both",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "a_job_overrides_the_workflow",
+    "label": "a_job_overrides_the_workflow",
+    "conclusion": "success"
+  }
+]

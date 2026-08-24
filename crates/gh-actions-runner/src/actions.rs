@@ -15,7 +15,9 @@ pub struct ResolvedAction {
 
 pub fn resolve(reference: &Uses, workspace: &Path, cache: &Path) -> Result<ResolvedAction, Error> {
     let path = match reference {
-        Uses::Local(path) => workspace.join(path),
+        // Without the `./` a local reference is written with, which is how the path reads
+        // everywhere it is handed on, `github.action_path` included.
+        Uses::Local(path) => workspace.join(path.strip_prefix("./").unwrap_or(path)),
         Uses::Remote {
             owner,
             repo,

@@ -847,10 +847,24 @@ dependencies = [
 name = "canopy-tests"
 version = "0.1.0"
 dependencies = [
+ "axum",
  "chrono",
+ "clap",
+ "eyre",
+ "gh-actions-context",
+ "gh-actions-listener",
+ "gh-actions-plan",
  "gh-actions-runner",
+ "gh-actions-services",
+ "gh-actions-spec",
+ "glob",
+ "jsonwebtoken 9.3.1",
  "local-runner",
+ "serde",
  "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1553,6 +1567,7 @@ name = "gh-actions-listener"
 version = "0.1.0"
 dependencies = [
  "aes",
+ "axum",
  "base64",
  "cbc",
  "chrono",
@@ -1667,6 +1682,12 @@ dependencies = [
  "clap",
  "gh-actions-listener",
 ]
+
+[[package]]
+name = "glob"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
 
 [[package]]
 name = "group"

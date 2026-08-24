@@ -1,0 +1,5 @@
+ok    an output written to the file
+ok    and an env export from inside it
+ok    which the context also sees
+ok    a local action gets no `pre` hook
+4 check(s), 0 failed

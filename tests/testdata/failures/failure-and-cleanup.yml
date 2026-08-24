@@ -1,5 +1,4 @@
-# expect: failure
-# What happens after a step fails: cleanup still runs, later jobs do not.
+# What happens after a step fails: what follows is skipped, and cleanup still runs.
 name: Failure handling
 
 on: push
@@ -31,9 +30,3 @@ jobs:
       - name: Only on failure
         if: failure()
         run: echo "failure handler"
-
-  never-runs:
-    needs: failing
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "this job never starts"

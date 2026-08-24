@@ -1,0 +1,30 @@
+# A container written in full, so the settings beside the image are honoured too.
+name: Job container settings
+
+on: push
+
+jobs:
+  with-settings:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm-slim
+      env:
+        FROM_CONTAINER: set by the container block
+        A_NUMBER: 42
+      options: --hostname canopy-container
+    steps:
+      - name: Check the image again
+        run: |
+          . /etc/os-release
+          test "$ID" = debian
+
+      - name: Check the environment the container was given
+        run: |
+          echo "FROM_CONTAINER=$FROM_CONTAINER"
+          test "$FROM_CONTAINER" = "set by the container block"
+          test "$A_NUMBER" = "42"
+
+      - name: Check the extra docker options were passed
+        run: |
+          echo "hostname=$(hostname)"
+          test "$(hostname)" = canopy-container

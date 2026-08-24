@@ -41,9 +41,30 @@ fn write_event_file(temp: &Path, event: &Payload) -> Result<PathBuf, Error> {
     fs::create_dir_all(&directory).at(&directory)?;
 
     let path = directory.join("event.json");
-    let payload = serde_json::to_string_pretty(event).unwrap_or_else(|_| "{}".to_owned());
+    let event = serde_json::to_value(event).map(by_name).unwrap_or_default();
+    let payload = serde_json::to_string_pretty(&event).unwrap_or_else(|_| "{}".to_owned());
     fs::write(&path, payload).at(&path)?;
     Ok(path)
+}
+
+fn by_name(value: serde_json::Value) -> serde_json::Value {
+    match value {
+        serde_json::Value::Object(fields) => {
+            let mut named: Vec<(String, serde_json::Value)> = fields.into_iter().collect();
+            named.sort_by(|(one, _), (other, _)| one.cmp(other));
+
+            serde_json::Value::Object(
+                named
+                    .into_iter()
+                    .map(|(name, value)| (name, by_name(value)))
+                    .collect(),
+            )
+        }
+        serde_json::Value::Array(items) => {
+            serde_json::Value::Array(items.into_iter().map(by_name).collect())
+        }
+        scalar => scalar,
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -131,6 +152,26 @@ pub fn run_steps(
     Ok(conclusion)
 }
 
+/// The images the steps of a job are run from, which are pulled rather than built. An
+/// action built from a `Dockerfile` is not one: that is built when the step gets there.
+fn wanted(planned: &[PlannedStep]) -> BTreeSet<String> {
+    let mut images = BTreeSet::new();
+
+    for step in planned {
+        if let Some(Uses::Image(image)) = &step.step.uses {
+            images.insert(image.clone());
+        }
+        if let Some(resolved) = &step.action
+            && let Runs::Docker(docker) = &resolved.action.runs
+            && let Some(image) = docker.image.strip_prefix("docker://")
+        {
+            images.insert(image.to_owned());
+        }
+    }
+
+    images
+}
+
 struct JobOutcome {
     conclusion: Conclusion,
     fail_fast: bool,
@@ -208,32 +249,38 @@ fn run_job(
     // job stopped.
     let cleaned = machine.finish();
 
-    let (mut conclusion, outputs) = outcome?;
+    let (conclusion, outputs) = outcome?;
     cleaned?;
 
-    // The job saying its failure should not count.
-    if conclusion == Conclusion::Failure && allowed_to_fail {
-        out.report(Event::Progress {
-            text: format!("{} failed, and `continue-on-error` allows it", job.label),
-        });
-        conclusion = Conclusion::Success;
-    }
-
+    // A job that failed says so however it was allowed to: what `continue-on-error` buys
+    // it is that the run carries on, not that it did something else.
+    let forgiven = conclusion == Conclusion::Failure && allowed_to_fail;
     out.report(Event::JobFinished {
         id: job.id.clone(),
         label: job.label.clone(),
         conclusion,
     });
+    if !outputs.is_empty() {
+        out.report(Event::JobOutputs {
+            id: job.id.clone(),
+            outputs: outputs.clone(),
+        });
+    }
+
+    let counted = match forgiven {
+        true => Conclusion::Success,
+        false => conclusion,
+    };
 
     results.insert(
         job.id.clone(),
         JobResult {
-            conclusion,
+            conclusion: counted,
             outputs,
         },
     );
     Ok(JobOutcome {
-        conclusion,
+        conclusion: counted,
         fail_fast,
     })
 }
@@ -258,6 +305,7 @@ fn run_prepared(
         counter: 0,
         job_deadline,
         step_deadline: None,
+        step_name: String::new(),
         defaults,
         masks: options.masks.clone(),
     };
@@ -271,6 +319,10 @@ fn run_prepared(
             level: Level::Warning,
             text: finding.message(),
         });
+    }
+
+    for image in wanted(&planned) {
+        runner.fetch(&image)?;
     }
 
     let failed = runner.run_steps(&planned, 0)?;
@@ -294,6 +346,7 @@ struct JobRunner<'a> {
     counter: usize,
     job_deadline: Instant,
     step_deadline: Option<Instant>,
+    step_name: String,
     defaults: RunDefaults,
     masks: Vec<String>,
 }
@@ -301,6 +354,9 @@ struct JobRunner<'a> {
 impl JobRunner<'_> {
     fn run_steps(&mut self, steps: &[PlannedStep], depth: usize) -> Result<bool, Error> {
         let mut failed = false;
+        // Counted as they run rather than as they were written: a hook is a step of its own
+        // by the time it runs, and comes after everything the job did before it.
+        let mut index = 0;
 
         for planned in steps {
             let step = &planned.step;
@@ -318,13 +374,30 @@ impl JobRunner<'_> {
 
             let context = self.run.to_expr_context();
             let condition = planned.condition.as_deref().or(step.r#if.as_deref());
+            let name = step_name(planned, &context)?;
+
+            // A step whose condition says no is still a step of the job, and is reported as
+            // one that was skipped rather than left out of what happened.
             if !should_run(condition, &context, !failed)? {
+                self.out.report(Event::StepStarted {
+                    index,
+                    name: name.clone(),
+                    depth,
+                });
+                self.out.report(Event::StepFinished {
+                    index,
+                    name,
+                    depth,
+                    conclusion: Conclusion::Skipped,
+                    code: None,
+                });
+                index += 1;
+
                 continue;
             }
 
-            let name = step_name(planned, &context)?;
             self.out.report(Event::StepStarted {
-                index: planned.position,
+                index,
                 name: name.clone(),
                 depth,
             });
@@ -342,12 +415,13 @@ impl JobRunner<'_> {
                 failed = true;
             }
             self.out.report(Event::StepFinished {
-                index: planned.position,
+                index,
                 name,
                 depth,
                 conclusion: conclusion_of(!outcome.succeeded && !forgiven),
                 code: outcome.code,
             });
+            index += 1;
         }
 
         Ok(failed)
@@ -355,6 +429,20 @@ impl JobRunner<'_> {
 
     /// A step gets the sooner of its own limit and the job's: a job that has run out of
     /// time cannot be rescued by a step that was given longer.
+    /// Whether it came is the step's to find out: one that is there already is run from
+    /// what the machine has, and one that is not says so when it is run.
+    fn fetch(&mut self, image: &str) -> Result<(), Error> {
+        let request = ExecRequest::new(
+            Exec::Fetch {
+                image: image.to_owned(),
+            },
+            &self.options.workspace,
+        );
+
+        self.exec(&request)?;
+        Ok(())
+    }
+
     fn exec(&mut self, request: &ExecRequest) -> Result<ExecResult, Error> {
         let deadline = match self.step_deadline {
             Some(step) => step.min(self.job_deadline),
@@ -363,6 +451,7 @@ impl JobRunner<'_> {
         let left = deadline.saturating_duration_since(Instant::now());
         let request = request
             .clone()
+            .name(self.step_name.clone())
             .timeout(Some(left))
             .masks(self.masks.clone());
 
@@ -377,6 +466,14 @@ impl JobRunner<'_> {
     ) -> Result<StepOutcome, Error> {
         let step = &planned.step;
         self.step_deadline = step_timeout(step, context)?.map(|limit| Instant::now() + limit);
+        self.step_name = step.name.clone().unwrap_or_default();
+
+        if let Some(hook) = passed_over(planned) {
+            self.out.report(Event::Message {
+                level: Level::Warning,
+                text: hook,
+            });
+        }
 
         if let (Some(hook), Some(resolved)) = (&planned.script, &planned.action) {
             let inputs = self.inputs_for(Some(&resolved.action), step, context)?;
@@ -540,8 +637,9 @@ impl JobRunner<'_> {
             },
             cwd,
         )
+        // No `GITHUB_ACTION_PATH`: where an action lives is told to a composite action,
+        // which has steps of its own to point at it, and to nothing else.
         .envs(self.step_env(&files))
-        .env("GITHUB_ACTION_PATH", resolved.path.display().to_string())
         .envs(
             inputs
                 .iter()
@@ -582,11 +680,11 @@ impl JobRunner<'_> {
         let inner = inner.to_expr_context();
         let files = self.step_files()?;
 
-        // The temp directory is mounted at `/github/files`, so the state files a step
-        // exchanges through are named from there rather than by where they are on the host.
+        // The files a step exchanges state through are mounted at `/github/file_commands`,
+        // so they are named from there rather than by where they sit on the host.
         let mut container_vars = self.base_env(&files, |path| {
             let name = path.file_name().unwrap_or_default().to_string_lossy();
-            format!("/github/files/{name}")
+            format!("/{INSIDE}/{name}")
         });
         container_vars.insert(
             "GITHUB_WORKSPACE".to_owned(),
@@ -613,7 +711,14 @@ impl JobRunner<'_> {
                         self.options.workspace.clone(),
                         PathBuf::from("/github/workspace"),
                     ),
-                    (self.options.temp.clone(), PathBuf::from("/github/files")),
+                    (
+                        self.options.temp.join(COMMANDS),
+                        PathBuf::from(format!("/{INSIDE}")),
+                    ),
+                    (
+                        self.options.temp.clone(),
+                        PathBuf::from("/github/runner_temp"),
+                    ),
                 ],
                 workdir: PathBuf::from("/github/workspace"),
             },
@@ -805,6 +910,11 @@ fn input_variable(name: &str) -> String {
     format!("INPUT_{}", name.to_uppercase().replace(' ', "_"))
 }
 
+/// Where the files a step exchanges state through are kept, and where a container reaches
+/// them from.
+const COMMANDS: &str = "_runner_file_commands";
+const INSIDE: &str = "github/file_commands";
+
 struct StepFiles {
     script: PathBuf,
     env: PathBuf,
@@ -816,13 +926,15 @@ struct StepFiles {
 
 impl StepFiles {
     fn at(temp: &Path, position: usize) -> Self {
+        let commands = temp.join(COMMANDS);
+
         Self {
             script: temp.join(format!("step-{position}.sh")),
-            env: temp.join(format!("step-{position}.env")),
-            output: temp.join(format!("step-{position}.output")),
-            path: temp.join(format!("step-{position}.path")),
-            summary: temp.join(format!("step-{position}.summary")),
-            state: temp.join(format!("step-{position}.state")),
+            env: commands.join(format!("step-{position}.env")),
+            output: commands.join(format!("step-{position}.output")),
+            path: commands.join(format!("step-{position}.path")),
+            summary: commands.join(format!("step-{position}.summary")),
+            state: commands.join(format!("step-{position}.state")),
         }
     }
 
@@ -906,6 +1018,20 @@ fn flag(
 
 fn continues_on_error(step: &Step, context: &Context) -> Result<bool, Error> {
     flag(&step.continue_on_error, false, context)
+}
+
+/// The `pre` hook that will not run, said the way GitHub says it, since an action that
+/// counts on one is worth telling about rather than quietly leaving out.
+fn passed_over(planned: &PlannedStep) -> Option<String> {
+    let (Some(Uses::Local(path)), Some(resolved)) = (&planned.step.uses, &planned.action) else {
+        return None;
+    };
+    Phase::Pre.script(&resolved.action.runs)?;
+
+    Some(format!(
+        "`pre` execution is not supported for local action from '{}'",
+        path.display().to_string().trim_start_matches("./")
+    ))
 }
 
 fn step_name(planned: &PlannedStep, context: &Context) -> Result<String, Error> {

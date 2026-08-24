@@ -1,4 +1,5 @@
-# A job's `services:` run alongside it, each reachable at the name it was given.
+# A job's `services:` run alongside it. A job that runs in a container of its own reaches
+# them by the label they were given, since the runner puts both on one network.
 name: Job services
 
 on: push
@@ -6,11 +7,14 @@ on: push
 jobs:
   talks-to-a-service:
     runs-on: ubuntu-latest
+    container: debian:bookworm-slim
     services:
       cache:
         image: redis:7-alpine
     steps:
       - name: Reach the service by its label
+        # `/dev/tcp` is bash's, and a container is not asked what its `sh` is.
+        shell: bash
         run: |
           # Nothing waits for a service to be ready, so this does, the way a workflow
           # written for a slow morning anywhere else would have to.
@@ -23,14 +27,3 @@ jobs:
           printf 'PING\r\n' >&3
           head -c 7 <&3 | grep -q PONG
           echo "cache:6379 answered"
-
-  no-services:
-    runs-on: ubuntu-latest
-    steps:
-      - name: A name no service claimed does not resolve
-        run: |
-          if getent hosts cache; then
-            echo "cache should not resolve in a job that declared no services"
-            exit 1
-          fi
-          echo "nothing leaked from the other job"

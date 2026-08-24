@@ -1,0 +1,3 @@
+cache-hit=true
+an expensive dependency
+cache round trip ok

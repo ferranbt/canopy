@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::client::types::{JobContext, PipelineStep, normalize};
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Envelope {
     /// Sent back on the next poll. Absent on a message that is not queued work.

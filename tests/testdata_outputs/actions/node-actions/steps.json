@@ -1,0 +1,65 @@
+[
+  {
+    "event": "job-started",
+    "id": "node",
+    "label": "node"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "./actions/greet-node",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "`pre` execution is not supported for local action from 'actions/greet-node'"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "./actions/greet-node",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What the JavaScript action returned",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the JavaScript action returned",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "./actions/greet-node (post)",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "`pre` execution is not supported for local action from 'actions/greet-node'"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "./actions/greet-node (post)",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "node",
+    "label": "node",
+    "conclusion": "success"
+  }
+]

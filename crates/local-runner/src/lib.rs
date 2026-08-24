@@ -24,6 +24,8 @@ pub struct Config {
     /// Outlives the run: a cache that went with it would never be read.
     pub services: PathBuf,
     pub event_name: String,
+    /// What GitHub keeps behind a secret: with it off, a step's `::debug::` is not reported.
+    pub debug: bool,
     /// Empty runs every job on this machine, with whatever it happens to have.
     pub images: Images,
 }
@@ -47,6 +49,7 @@ impl Config {
             cache,
             services,
             event_name: "push".to_owned(),
+            debug: false,
             images: default_images(),
         }
     }
@@ -66,7 +69,12 @@ pub struct Local {
 impl Local {
     pub fn start(config: Config) -> Result<Self, Error> {
         let services = Services::start(&config.services).at(&config.services)?;
-        let run = checkout::context(&config.workspace, &config.event_name, &config.temp);
+        let run = checkout::context(
+            &config.workspace,
+            &config.event_name,
+            &config.temp,
+            config.debug,
+        );
 
         Ok(Self {
             config,

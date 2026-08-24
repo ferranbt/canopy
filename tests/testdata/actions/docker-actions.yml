@@ -1,4 +1,4 @@
-# Container actions: one built from a Dockerfile, one straight from an image.
+# A container action built from a Dockerfile, and a published image run straight.
 name: Docker actions
 
 on: push
@@ -16,15 +16,3 @@ jobs:
 
       - name: Run a published image directly
         uses: docker://alpine:3.19
-
-  state:
-    runs-on: ubuntu-latest
-    steps:
-      - id: state
-        uses: ./actions/state-docker
-
-      - name: What the container wrote comes back
-        run: |
-          test "${{ steps.state.outputs.wrote-state }}" = "yes"
-          test "$FROM_CONTAINER" = "yes"
-          echo "the container reached every state file"

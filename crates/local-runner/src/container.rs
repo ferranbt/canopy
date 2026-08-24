@@ -84,11 +84,13 @@ impl Containers {
             let mut command = Command::new("docker");
             command.args(["run", "--rm", "--detach", "--network", "host"]);
             if let Some(settings) = settings_of(container) {
-                if settings.ports.is_some() {
-                    // Sharing the network puts the port where the container left it.
+                // Sharing the network already puts a service where it says it is, so a
+                // port asked for under the number it listens on is where it will be. One
+                // asked for under another number is not, and nothing here can move it.
+                for moved in remapped(settings.ports.as_deref().unwrap_or_default()) {
                     out.report(Event::Message {
                         level: Level::Warning,
-                        text: format!("`ports:` on service {label} does nothing here"),
+                        text: format!("`{moved}` on service {label} cannot be honoured here"),
                     });
                 }
                 apply(&mut command, settings);
@@ -203,7 +205,7 @@ impl Machine for Containers {
         }
         command.arg(id).arg(program).args(args);
 
-        run_until(command, request.timeout, &request.masks, out)
+        run_until(command, request, out)
     }
 
     fn finish(&mut self) -> Result<(), Error> {
@@ -222,6 +224,18 @@ fn image_of(container: &Container) -> &str {
         Container::Image(image) => image,
         Container::Settings(settings) => &settings.image,
     }
+}
+
+/// The ports a service asked to be reachable at, where that is not where it listens.
+fn remapped(ports: &[Scalar]) -> Vec<String> {
+    ports
+        .iter()
+        .map(scalar)
+        .filter(|port| match port.split_once(':') {
+            Some((outside, inside)) => outside != inside,
+            None => false,
+        })
+        .collect()
 }
 
 fn settings_of(container: &Container) -> Option<&ContainerSettings> {

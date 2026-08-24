@@ -12,7 +12,7 @@ use gh_actions_plan::PlannedJob;
 
 use crate::commands::Command as WorkflowCommand;
 use crate::error::{At, Error};
-use crate::report::{Event, Reporter, Stream};
+use crate::report::{Event, Level, Reporter, Stream};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Image {
@@ -43,6 +43,10 @@ pub enum Exec {
     Node {
         entrypoint: PathBuf,
     },
+    /// An image a step will want, got before any of them runs.
+    Fetch {
+        image: String,
+    },
     Container {
         image: Image,
         entrypoint: Option<String>,
@@ -69,8 +73,13 @@ impl Exec {
                 args.push(script.display().to_string());
                 Ok((program.to_owned(), args))
             }
+            // TODO: run it on the node major the action asks for, which is what a runner
+            // does from the copies it carries.
             Self::Node { entrypoint } => {
                 Ok(("node".to_owned(), vec![entrypoint.display().to_string()]))
+            }
+            Self::Fetch { image } => {
+                Ok(("docker".to_owned(), vec!["pull".to_owned(), image.clone()]))
             }
             Self::Container {
                 image,
@@ -132,6 +141,7 @@ impl Exec {
 #[derive(Debug, Clone)]
 pub struct ExecRequest {
     pub exec: Exec,
+    pub name: String,
     pub env: BTreeMap<String, String>,
     pub cwd: PathBuf,
     pub timeout: Option<Duration>,
@@ -142,11 +152,17 @@ impl ExecRequest {
     pub fn new(exec: Exec, cwd: impl Into<PathBuf>) -> Self {
         Self {
             exec,
+            name: String::new(),
             env: BTreeMap::new(),
             cwd: cwd.into(),
             timeout: None,
             masks: Vec::new(),
         }
+    }
+
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
     }
 
     pub fn timeout(mut self, timeout: Option<Duration>) -> Self {
@@ -209,7 +225,7 @@ pub trait Machine {
             .envs(&request.env)
             .current_dir(&request.cwd);
 
-        run_until(command, request.timeout, &request.masks, out)
+        run_until(command, request, out)
     }
 
     fn script(
@@ -232,6 +248,10 @@ pub trait Machine {
         out: &mut dyn Reporter,
     ) -> Result<ExecResult, Error> {
         if let Some((program, args)) = request.exec.build() {
+            out.report(Event::Progress {
+                text: "[Building docker image]".to_owned(),
+            });
+
             let built = self.run(&program, &args, request, out)?;
             if !built.status.success {
                 return Ok(built);
@@ -244,7 +264,7 @@ pub trait Machine {
 
     fn exec(&mut self, request: &ExecRequest, out: &mut dyn Reporter) -> Result<ExecResult, Error> {
         match &request.exec {
-            Exec::Script { .. } => self.script(request, out),
+            Exec::Script { .. } | Exec::Fetch { .. } => self.script(request, out),
             Exec::Node { .. } => self.node(request, out),
             Exec::Container { .. } => self.container(request, out),
         }
@@ -264,26 +284,26 @@ impl Machine for HostMachine {
     }
 }
 
-pub fn run_streaming(command: Command, out: &mut dyn Reporter) -> Result<ExecResult, Error> {
-    run_until(command, None, &[], out)
-}
-
 /// Killing reaches the program that was started — for a container that is the `docker exec`
 /// rather than what it is running, which the container being torn down deals with.
 pub fn run_until(
     mut command: Command,
-    timeout: Option<Duration>,
-    masks: &[String],
+    request: &ExecRequest,
     out: &mut dyn Reporter,
 ) -> Result<ExecResult, Error> {
     let program = command.get_program().to_os_string();
+    // From the request rather than from what was spawned, since a machine that runs steps
+    // somewhere else hands the environment over its own way.
+    let switches = Switches::of(&request.env);
     let mut child = command
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .at(&program)?;
+    let timeout = request.timeout;
     let mut commands = Vec::new();
-    let mut masks = masks.to_vec();
+    let mut masks = request.masks.clone();
+    let mut refused = false;
 
     let (lines, reader) = std::sync::mpsc::channel();
     let output = pump(child.stdout.take(), Stream::Out, lines.clone());
@@ -298,7 +318,9 @@ pub fn run_until(
         };
 
         match reader.recv_timeout(left) {
-            Ok((Stream::Out, line)) => handle_line(&line, &mut commands, &mut masks, out),
+            Ok((Stream::Out, line)) => {
+                refused |= handle_line(&line, &switches, &mut commands, &mut masks, out);
+            }
             Ok((Stream::Err, line)) => out.report(Event::StepOutput {
                 stream: Stream::Err,
                 line: hide(&line, &masks),
@@ -319,19 +341,45 @@ pub fn run_until(
     let _ = errors.join();
 
     if timed_out {
-        let seconds = timeout.unwrap_or_default().as_secs();
-        out.report(Event::Progress {
-            text: format!("timed out after {seconds}s"),
+        // Word for word what GitHub says, since a workflow may be reading the log for it.
+        // In whole minutes, which is the only unit the field is given in, and what was left
+        // of one is what a step was allowed.
+        let minutes = timeout.unwrap_or_default().as_secs().div_ceil(60);
+        out.report(Event::Message {
+            level: Level::Error,
+            text: format!(
+                "The action '{}' has timed out after {minutes} minutes.",
+                request.name
+            ),
         });
     }
 
     Ok(ExecResult {
         status: ExecStatus {
-            success: status.success() && !timed_out,
+            success: status.success() && !timed_out && !refused,
             code: status.code(),
         },
         commands,
     })
+}
+
+/// What a step may ask the runner for, which it says by setting it in its own environment.
+struct Switches {
+    /// `::debug::` is only shown when the run was asked for it.
+    debug: bool,
+    /// The commands GitHub took away, which a step has to opt back into by name.
+    unsecure: bool,
+}
+
+impl Switches {
+    fn of(env: &BTreeMap<String, String>) -> Self {
+        let set = |name: &str| env.get(name).is_some_and(|value| !value.is_empty());
+
+        Self {
+            debug: set("RUNNER_DEBUG"),
+            unsecure: set("ACTIONS_ALLOW_UNSECURE_COMMANDS"),
+        }
+    }
 }
 
 fn pump(
@@ -349,19 +397,31 @@ fn pump(
     })
 }
 
+/// Whether the step is to fail for having asked for a command it may not have.
 fn handle_line(
     line: &str,
+    switches: &Switches,
     commands: &mut Vec<WorkflowCommand>,
     masks: &mut Vec<String>,
     out: &mut dyn Reporter,
-) {
+) -> bool {
     let Some(command) = WorkflowCommand::parse(line) else {
         out.report(Event::StepOutput {
             stream: Stream::Out,
             line: hide(line, masks),
         });
-        return;
+        return false;
     };
+
+    if matches!(command, WorkflowCommand::AddPath(_)) && !switches.unsecure {
+        for text in refusal(line.trim()) {
+            out.report(Event::Message {
+                level: Level::Error,
+                text,
+            });
+        }
+        return true;
+    }
 
     if let WorkflowCommand::AddMask(secret) = &command
         && !secret.is_empty()
@@ -369,15 +429,41 @@ fn handle_line(
         masks.push(secret.clone());
     }
     if let Some(event) = command.to_event() {
-        out.report(match event {
+        let hidden = match event {
             Event::Message { level, text } => Event::Message {
                 level,
                 text: hide(&text, masks),
             },
             other => other,
-        });
+        };
+
+        let quiet = matches!(
+            hidden,
+            Event::Message {
+                level: Level::Debug,
+                ..
+            }
+        ) && !switches.debug;
+        if !quiet {
+            out.report(hidden);
+        }
     }
     commands.push(command);
+
+    false
+}
+
+/// What GitHub says when a step asks for a command it took away, word for word, since a
+/// workflow may well be reading the log for it.
+fn refusal(line: &str) -> [String; 2] {
+    [
+        format!("Unable to process command '{line}' successfully."),
+        "The `add-path` command is disabled. Please upgrade to using Environment Files or opt \
+         into unsecure command execution by setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` \
+         environment variable to `true`. For more information see: \
+         https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/"
+            .to_owned(),
+    ]
 }
 
 /// Only ever catches an accident: a step that means to print a secret can take it apart
