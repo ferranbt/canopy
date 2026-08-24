@@ -5,5 +5,4 @@ needed=[]
 undeclared=[]
 context dashed=[dashed]
 context upper=[shouted]
-$RUNNER_TEMP/<script>.sh: line 3: backticks: command not found
-context needed=[spaces  and quotes and /root and ]
+context needed=[spaces  and quotes and /root]
