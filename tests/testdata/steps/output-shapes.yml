@@ -1,0 +1,30 @@
+name: Output shapes
+
+on: push
+
+jobs:
+  what-a-step-can-print:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A last line with nothing after it
+        run: printf 'no newline at the end'
+
+      - name: Lines ending the way another machine ends them
+        run: printf 'one\r\ntwo\r\n'
+
+      - name: A line of its own with nothing on it
+        run: printf 'before\n\nafter\n'
+
+      - name: Bytes that are not text
+        run: printf 'before \303\050 after\n'
+
+      - name: Colours a runner may or may not keep
+        run: printf '\033[31mred\033[0m and plain\n'
+
+      - name: A line longer than a pipe will hold at once
+        run: |
+          printf 'x%.0s' $(seq 70000)
+          printf '\n'
+
+      - name: A step that says nothing at all
+        run: 'true'

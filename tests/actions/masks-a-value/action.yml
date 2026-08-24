@@ -1,0 +1,16 @@
+name: Masks a value
+description: Asks the runner to hide something, the way an action that fetched a secret would.
+
+inputs:
+  secret:
+    description: What to hide from the log.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Ask for it to be hidden
+      shell: bash
+      run: |
+        echo "::add-mask::${{ inputs.secret }}"
+        echo "an action asked for it to be hidden"

@@ -39,6 +39,10 @@ pub enum Exec {
     Script {
         shell: String,
         script: PathBuf,
+        /// Whether the workflow asked for that shell or was given it for asking for none,
+        /// which is the difference between `bash -e` and the stricter shell GitHub runs a
+        /// step in when it names one.
+        named: bool,
     },
     Node {
         entrypoint: PathBuf,
@@ -62,13 +66,26 @@ impl Exec {
         env: &BTreeMap<String, String>,
     ) -> Result<(String, Vec<String>), Error> {
         match self {
-            Self::Script { shell, script } => {
-                let (program, mut args) = match shell.as_str() {
-                    // `-e` is what the runner passes, so a failing line fails the step.
-                    "bash" => ("bash", vec!["-e".to_owned()]),
-                    "sh" => ("sh", Vec::new()),
-                    "python" => ("python3", Vec::new()),
-                    other => return Err(Error::Unsupported(format!("`shell: {other}`"))),
+            Self::Script {
+                shell,
+                script,
+                named,
+            } => {
+                let switches = |switches: &[&str]| -> Vec<String> {
+                    switches.iter().map(|it| (*it).to_owned()).collect()
+                };
+                // `-e` is what the runner passes, so a failing line fails the step. A shell
+                // a step asked for by name is given more than that: bash is run without the
+                // files it would read and with a failing half of a pipe failing the whole.
+                let (program, mut args) = match (shell.as_str(), named) {
+                    ("bash", true) => (
+                        "bash",
+                        switches(&["--noprofile", "--norc", "-e", "-o", "pipefail"]),
+                    ),
+                    ("bash", false) => ("bash", switches(&["-e"])),
+                    ("sh", _) => ("sh", switches(&["-e"])),
+                    ("python", _) => ("python3", Vec::new()),
+                    (other, _) => return Err(Error::Unsupported(format!("`shell: {other}`"))),
                 };
                 args.push(script.display().to_string());
                 Ok((program.to_owned(), args))
@@ -406,7 +423,22 @@ fn pump(
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         let Some(source) = source else { return };
-        for line in BufReader::new(source).lines().map_while(Result::ok) {
+        let mut reader = BufReader::new(source);
+        let mut read = Vec::new();
+
+        loop {
+            read.clear();
+            // Read as the bytes they are: a step that prints something that is not text has
+            // still printed it, and what it said is not thrown away for that.
+            match reader.read_until(b'\n', &mut read) {
+                Ok(0) | Err(_) => return,
+                Ok(_) => {}
+            }
+            while let Some(b'\n' | b'\r') = read.last() {
+                read.pop();
+            }
+
+            let line = String::from_utf8_lossy(&read).into_owned();
             if lines.send((stream, line)).is_err() {
                 return;
             }
@@ -555,6 +587,7 @@ mod tests {
             Exec::Script {
                 shell: "sh".to_owned(),
                 script: path,
+                named: true,
             },
             std::env::temp_dir(),
         )

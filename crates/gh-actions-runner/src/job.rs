@@ -660,11 +660,9 @@ impl JobRunner<'_> {
         context: &Context,
     ) -> Result<StepOutcome, Error> {
         let script = interpolate(script, context)?;
-        let shell = step
-            .shell
-            .clone()
-            .or_else(|| self.defaults.shell.clone())
-            .unwrap_or_else(|| "bash".to_owned());
+        let asked = step.shell.clone().or_else(|| self.defaults.shell.clone());
+        let named = asked.is_some();
+        let shell = asked.unwrap_or_else(|| "bash".to_owned());
         let files = self.step_files()?;
         let cwd = self.script_directory(step, context)?;
 
@@ -672,6 +670,7 @@ impl JobRunner<'_> {
             let (program, _) = Exec::Script {
                 shell: shell.clone(),
                 script: files.script.clone(),
+                named,
             }
             .to_command(&BTreeMap::new())?;
 
@@ -687,6 +686,7 @@ impl JobRunner<'_> {
             Exec::Script {
                 shell,
                 script: files.script.clone(),
+                named,
             },
             cwd,
         )

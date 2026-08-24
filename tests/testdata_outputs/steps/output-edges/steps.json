@@ -30,7 +30,7 @@
     "name": "What came back out",
     "depth": 0,
     "conclusion": "failure",
-    "code": 1
+    "code": null
   },
   {
     "event": "step-started",

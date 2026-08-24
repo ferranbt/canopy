@@ -135,7 +135,7 @@ impl Outcome {
     /// What no two runs agree on and neither is wrong about.
     pub fn settle(&mut self) {
         for said in self.said() {
-            *said = settled(said);
+            *said = settled(&plain(said));
 
             if let Some((before, rest)) = said.split_once(" B)")
                 && let Some((head, bytes)) = before.rsplit_once('(')
@@ -298,6 +298,23 @@ fn got_ready(line: &str) -> bool {
         || line.starts_with("Download action repository")
         || line.starts_with("##[command]/usr/bin/docker")
         || line.strip_prefix("sha256:").is_some_and(hexadecimal)
+}
+
+// Remove color from the text
+fn plain(line: &str) -> String {
+    let mut plain = String::with_capacity(line.len());
+    let mut rest = line;
+
+    while let Some(start) = rest.find('\u{1b}') {
+        plain.push_str(&rest[..start]);
+        rest = match rest[start..].find('m') {
+            Some(end) => &rest[start + end + 1..],
+            None => "",
+        };
+    }
+    plain.push_str(rest);
+
+    plain
 }
 
 fn settled(line: &str) -> String {
