@@ -1,0 +1,46 @@
+name: Expression substitution
+
+on: push
+
+jobs:
+  substitution:
+    runs-on: ubuntu-latest
+    steps:
+      - id: payload
+        name: A step output carrying shell syntax
+        run: |
+          {
+            echo 'quoted=hello"; echo pwned; #'
+            echo 'expanded=$HOME `hostname` $(id -u)'
+            echo 'spaced=one   two'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Quoted, the value arrives as it was written
+        run: |
+          printf '%s' '${{ steps.payload.outputs.quoted }}' > quoted.txt
+          cat quoted.txt
+          test "$(cat quoted.txt)" = 'hello"; echo pwned; #'
+
+      - name: The shell does not expand what the runner put there
+        run: |
+          printf '%s' '${{ steps.payload.outputs.expanded }}' > expanded.txt
+          cat expanded.txt
+          test "$(cat expanded.txt)" = '$HOME `hostname` $(id -u)'
+
+      - name: Whitespace inside a value is kept
+        run: |
+          printf '%s' '${{ steps.payload.outputs.spaced }}' > spaced.txt
+          test "$(cat spaced.txt)" = 'one   two'
+          echo "the spacing survived"
+
+      - name: The same value through the environment, which is where it belongs
+        env:
+          PAYLOAD: ${{ steps.payload.outputs.quoted }}
+        run: |
+          test "$PAYLOAD" = 'hello"; echo pwned; #'
+          echo "the environment carried it too"
+
+      - name: A value that is only a number keeps its shape
+        run: |
+          printf '%s' '${{ fromJSON('1.50') }}' > number.txt
+          cat number.txt

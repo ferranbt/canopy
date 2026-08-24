@@ -46,6 +46,7 @@ pub enum EvalError {
     Unsupported(&'static str),
     InvalidJson(String),
     InvalidFormat(String),
+    InvalidPattern(String),
 }
 
 impl fmt::Display for EvalError {
@@ -61,6 +62,7 @@ impl fmt::Display for EvalError {
             Self::Unsupported(name) => write!(f, "{name} is not supported yet"),
             Self::InvalidJson(msg) => write!(f, "invalid JSON: {msg}"),
             Self::InvalidFormat(msg) => write!(f, "invalid format string: {msg}"),
+            Self::InvalidPattern(msg) => write!(f, "cannot hash the files asked for: {msg}"),
         }
     }
 }

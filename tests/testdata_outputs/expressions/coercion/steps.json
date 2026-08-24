@@ -1,0 +1,55 @@
+[
+  {
+    "event": "job-started",
+    "id": "coercion",
+    "label": "coercion"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Comparisons across types",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Comparisons across types",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What the logical operators return",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the logical operators return",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "The ones worth recording rather than guessing at",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "The ones worth recording rather than guessing at",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "coercion",
+    "label": "coercion",
+    "conclusion": "success"
+  }
+]

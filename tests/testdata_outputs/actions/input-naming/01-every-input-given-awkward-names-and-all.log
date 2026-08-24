@@ -1,0 +1,8 @@
+dashed=[TO-GREET:-]
+spaced=[]
+upper=[]
+needed=[]
+undeclared=[]
+context dashed=[with a dash]
+context upper=[already shouted]
+context needed=[given]

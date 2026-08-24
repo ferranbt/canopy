@@ -1,0 +1,3 @@
+::stop-commands::***
+::set-output name=ignored::yes
+::***::

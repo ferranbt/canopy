@@ -7,10 +7,13 @@ pub enum Command {
     SaveState { name: String, value: String },
     SetOutput { name: String, value: String },
     AddPath(String),
+    SetEnv { name: String, value: String },
     AddMask(String),
     Message { level: Level, text: String },
     Group(String),
     EndGroup,
+    Stop(String),
+    Echo(bool),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,13 +46,15 @@ impl Command {
                 value: message,
             },
             "add-path" => Self::AddPath(message),
+            "set-env" => Self::SetEnv {
+                name: named("name"),
+                value: message,
+            },
             "add-mask" => Self::AddMask(message),
+            "stop-commands" => Self::Stop(message),
+            "echo" => Self::Echo(message == "on"),
             "debug" => Self::Message {
                 level: Level::Debug,
-                text: message,
-            },
-            "notice" => Self::Message {
-                level: Level::Notice,
                 text: message,
             },
             "warning" => Self::Message {
@@ -62,7 +67,8 @@ impl Command {
             },
             "group" => Self::Group(message),
             "endgroup" => Self::EndGroup,
-            // Anything else is a command we do not implement, and not output either.
+            // Anything else is a command the runner GitHub ships has no name for, `::notice::`
+            // among them, and what it does with those is print them.
             _ => return None,
         })
     }
@@ -71,6 +77,8 @@ impl Command {
         use crate::report::Event;
 
         match self {
+            // A level raised over nothing is raised over nothing, and is left where it was.
+            Self::Message { text, .. } if text.is_empty() => None,
             Self::Message { level, text } => Some(Event::Message {
                 level: match level {
                     Level::Debug => crate::report::Level::Debug,

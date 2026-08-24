@@ -1,0 +1,12 @@
+ok    a string and a number compare as numbers
+ok    check 2
+ok    an empty string is a zero
+ok    anything else is not a number at all
+ok    check 5
+ok    two strings, case-insensitively
+ok    check 7
+ok    check 8
+ok    check 9
+ok    an empty string is false
+ok    check 11
+11 check(s), 0 failed

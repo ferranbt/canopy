@@ -1,0 +1,4 @@
+outcome=failure
+output=written before the kill
+env=written before the kill
+path=added

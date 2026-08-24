@@ -1,0 +1,28 @@
+name: Refused commands
+
+on: push
+
+jobs:
+  without-asking-for-them:
+    runs-on: ubuntu-latest
+    steps:
+      - id: refused
+        name: The older spelling, without opting into it
+        continue-on-error: true
+        run: |
+          mkdir -p other
+          printf '#!/bin/sh\necho "should not be found"\n' > other/wave
+          chmod +x other/wave
+          echo "::add-path::$PWD/other"
+
+      - name: What the step that asked came to
+        run: |
+          echo "outcome=${{ steps.refused.outcome }}"
+          if command -v wave >/dev/null; then
+            echo "path=added"
+          else
+            echo "path=left alone"
+          fi
+
+      - name: The file it wrote is still there, whatever the command came to
+        run: test -x other/wave

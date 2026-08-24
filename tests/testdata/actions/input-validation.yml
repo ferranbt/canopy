@@ -1,0 +1,33 @@
+name: Input validation
+
+on: push
+
+jobs:
+  what-the-action-did-not-ask-for:
+    runs-on: ubuntu-latest
+    steps:
+      - id: missing
+        name: A required input nobody gave
+        continue-on-error: true
+        uses: ./actions/awkward-inputs
+
+      - name: What leaving it out came to
+        run: echo "outcome=${{ steps.missing.outcome }}"
+
+      - id: extra
+        name: An input the action never declared
+        continue-on-error: true
+        uses: ./actions/awkward-inputs
+        with:
+          needed: given
+          nobody-asked-for-this: passed anyway
+
+      - name: What passing it came to
+        run: echo "outcome=${{ steps.extra.outcome }}"
+
+      - id: deprecated
+        name: An input the action still takes
+        uses: ./actions/awkward-inputs
+        with:
+          needed: given
+          UPPER: given too

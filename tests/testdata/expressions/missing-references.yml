@@ -1,0 +1,39 @@
+name: Missing references
+
+on: push
+
+jobs:
+  nothing-there:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ran
+        name: A step that did run, and wrote one output
+        run: echo "written=yes" >> "$GITHUB_OUTPUT"
+
+      - name: What is not there reads as empty
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.ran.outputs.written }} == yes           # the one that is there
+            ${{ steps.ran.outputs.missing }} ==               # a key the step never wrote
+            ${{ steps.nope.outputs.value }} ==                # a step id that was never used
+            ${{ steps.nope.outcome }} ==
+            ${{ steps.later.outputs.value }} ==               # a step that has not run yet
+            ${{ needs.nope.result }} ==                       # a job this one does not need
+            ${{ secrets.NOPE }} ==
+            ${{ vars.NOPE }} ==
+            ${{ env.NEVER_SET }} ==
+            ${{ github.nope }} ==                             # a property the context has not got
+            ${{ github.event.nothing.deeper }} ==             # and one under it
+            ${{ runner.nope }} ==
+            ${{ job.nope }} ==
+
+      - id: later
+        name: The step referred to before it ran
+        run: echo "value=too late" >> "$GITHUB_OUTPUT"
+
+      - name: An empty reference is still a value the shell can be given
+        run: |
+          value="${{ steps.nope.outputs.value }}"
+          test -z "$value"
+          echo "nothing came through, and the step carried on"

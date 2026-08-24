@@ -1,0 +1,4 @@
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C $GITHUB_WORKSPACE --files-from manifest.txt --use-compress-program zstdmt
+Cache Size: ~0 MB (<bytes>)
+Cache saved successfully
+Cache saved with key: <digest>

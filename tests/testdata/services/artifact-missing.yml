@@ -1,0 +1,48 @@
+name: Artifacts that are not there
+
+on: push
+
+jobs:
+  a-path-nothing-matches:
+    runs-on: ubuntu-latest
+    steps:
+      - id: warned
+        name: Uploading a path nothing matches
+        uses: actions/upload-artifact@v4
+        with:
+          name: nothing-here
+          path: no-such-directory/**
+
+      - name: Which only warns
+        run: echo "outcome=${{ steps.warned.outcome }}"
+
+  told-to-treat-it-as-an-error:
+    runs-on: ubuntu-latest
+    steps:
+      - id: refused
+        name: The same, with the action told to treat it as an error
+        uses: actions/upload-artifact@v4
+        with:
+          name: nothing-here-either
+          path: no-such-directory/**
+          if-no-files-found: error
+
+      - name: What the step that would not upload came to
+        if: always()
+        run: echo "outcome=${{ steps.refused.outcome }}"
+
+  a-name-nothing-was-uploaded-under:
+    runs-on: ubuntu-latest
+    steps:
+      - id: downloaded
+        name: Downloading a name nothing was uploaded under
+        uses: actions/download-artifact@v4
+        with:
+          name: never-uploaded
+          path: restored
+
+      - name: What the download that found nothing came to
+        if: always()
+        run: |
+          echo "outcome=${{ steps.downloaded.outcome }}"
+          echo "restored=$(test -d restored && echo yes || echo no)"

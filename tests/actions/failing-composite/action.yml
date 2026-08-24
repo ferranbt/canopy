@@ -1,0 +1,17 @@
+name: Failing (composite)
+description: Fails part way through, to show what happens to the steps around it.
+
+runs:
+  using: composite
+  steps:
+    - name: The one before it
+      shell: bash
+      run: echo "the composite got this far"
+
+    - name: The one that fails
+      shell: bash
+      run: exit 4
+
+    - name: The one after it
+      shell: bash
+      run: echo "this never prints"

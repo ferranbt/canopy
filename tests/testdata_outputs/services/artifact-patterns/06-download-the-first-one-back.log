@@ -1,0 +1,9 @@
+Downloading single artifact
+Preparing to download the following artifacts:
+- shape-one (ID: 2, Size: 436, Expected Digest: undefined)
+Redirecting to blob download url: http://127.0.0.1:<port>/blob/shape-one
+Starting download of artifact to: $GITHUB_WORKSPACE/restored
+SHA256 digest of downloaded artifact is <digest>
+Artifact download completed successfully.
+Total of 1 artifact(s) downloaded
+Download artifact has finished successfully

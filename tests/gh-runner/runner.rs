@@ -179,10 +179,11 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         Some(job) => job.result.clone(),
         None => came.as_ref().map(|(result, _)| result.clone()),
     };
+    let ended = conclusion(over.as_deref());
     out.report(Event::JobFinished {
         id: id.to_owned(),
         label,
-        conclusion: conclusion(over.as_deref()),
+        conclusion: ended,
     });
 
     if let Some((_, outputs)) = came.filter(|(_, outputs)| !outputs.is_empty()) {
@@ -192,8 +193,10 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         });
     }
 
-    match ran {
-        0 => Err("the runner ran no step".to_owned()),
+    // A job that failed before its first step is a job that ran; one that says it went well
+    // without running anything is a job the runner never picked up.
+    match (ran, ended) {
+        (0, Conclusion::Success) => Err("the runner ran no step".to_owned()),
         _ => Ok(()),
     }
 }

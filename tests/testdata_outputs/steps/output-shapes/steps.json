@@ -1,0 +1,111 @@
+[
+  {
+    "event": "job-started",
+    "id": "what-a-step-can-print",
+    "label": "what-a-step-can-print"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A last line with nothing after it",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A last line with nothing after it",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Lines ending the way another machine ends them",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Lines ending the way another machine ends them",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "A line of its own with nothing on it",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "A line of its own with nothing on it",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Bytes that are not text",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Bytes that are not text",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "Colours a runner may or may not keep",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "Colours a runner may or may not keep",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "A line longer than a pipe will hold at once",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "A line longer than a pipe will hold at once",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "A step that says nothing at all",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "A step that says nothing at all",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "what-a-step-can-print",
+    "label": "what-a-step-can-print",
+    "conclusion": "success"
+  }
+]

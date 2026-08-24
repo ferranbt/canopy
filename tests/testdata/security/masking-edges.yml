@@ -1,0 +1,43 @@
+name: Masking edges
+
+on: push
+
+env:
+  FIRST_LINE: hunter2-not-a-real-secret
+  SECOND_LINE: also-not-a-real-secret
+  FROM_AN_ACTION: asked-for-by-an-action
+
+jobs:
+  hidden-wherever-it-turns-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A secret of more than one line, hidden a line at a time
+        run: |
+          echo "::add-mask::$FIRST_LINE"
+          echo "::add-mask::$SECOND_LINE"
+          printf '%s\n%s\n' "$FIRST_LINE" "$SECOND_LINE"
+
+      - name: Inside what a step says to the runner
+        run: |
+          echo "::warning::the value is $FIRST_LINE"
+          echo "::error::and so is this one: $SECOND_LINE"
+
+      - name: In the middle of a longer line, and more than once
+        run: echo "before $FIRST_LINE between $FIRST_LINE after"
+
+      - name: On standard error as well
+        run: echo "on stderr: $SECOND_LINE" >&2
+
+      - name: A mask an action asked for
+        uses: ./actions/masks-a-value
+        with:
+          secret: ${{ env.FROM_AN_ACTION }}
+
+      - name: Holds for the steps that follow it
+        run: echo "the action's value is $FROM_AN_ACTION"
+
+      - name: What is not a secret is left alone
+        run: |
+          echo "hunter3-not-a-secret-at-all"
+          echo "the step still sees the real one"
+          test "$FIRST_LINE" = hunter2-not-a-real-secret

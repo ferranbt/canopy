@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
+use gh_actions_context::Conclusion;
 use gh_actions_plan::Plan;
-use gh_actions_runner::report::{Event, Reporter};
+use gh_actions_runner::report::{Event, Reporter, Stream};
 use gh_actions_services::Services;
 use gh_actions_spec::Workflow;
 use local_runner::{Config, Local};
@@ -11,6 +12,7 @@ use local_runner::{Config, Local};
 pub struct Outcome {
     pub events: Vec<Event>,
     pub logs: Vec<Printed>,
+    inside: bool,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -41,6 +43,32 @@ impl Reporter for Outcome {
             return;
         }
 
+        // A message of several lines reaches the log of the runner GitHub ships as the first
+        // of them under the level it was raised at, and the rest as what the step printed.
+        if let Event::Message { level, text } = &event
+            && let Some((first, rest)) = text.split_once('\n')
+        {
+            let (level, rest) = (*level, rest.to_owned());
+            self.report(Event::Message {
+                level,
+                text: first.to_owned(),
+            });
+            for line in rest.lines() {
+                self.report(Event::StepOutput {
+                    stream: Stream::Out,
+                    line: line.to_owned(),
+                });
+            }
+            return;
+        }
+
+        // What a runner says between steps goes to the job's own log rather than a step's,
+        // and the runner GitHub ships keeps that to itself.
+        let between = matches!(&event, Event::Message { .. } | Event::StepOutput { .. });
+        if between && !self.inside {
+            return;
+        }
+
         // The runner GitHub ships keeps a composite action's inner steps to itself, so only
         // their boundaries go: what they printed is the step's all the same.
         let nested = match &event {
@@ -57,7 +85,26 @@ impl Reporter for Outcome {
                     printed.lines.push(line.trim_end().to_owned());
                 }
             }
+            // What a step that failed came back with is only in the log of the runner GitHub
+            // ships when a shell was what ran, so it is not something to hold either to.
+            Event::StepFinished {
+                index,
+                name,
+                depth,
+                conclusion: Conclusion::Failure,
+                ..
+            } => {
+                self.inside = false;
+                self.events.push(Event::StepFinished {
+                    index,
+                    name,
+                    depth,
+                    conclusion: Conclusion::Failure,
+                    code: None,
+                });
+            }
             Event::StepStarted { name, .. } => {
+                self.inside = true;
                 self.logs.push(Printed {
                     step: name.clone(),
                     lines: Vec::new(),
@@ -68,7 +115,10 @@ impl Reporter for Outcome {
                     depth: 0,
                 });
             }
-            event => self.events.push(event),
+            event => {
+                self.inside &= !matches!(event, Event::StepFinished { .. });
+                self.events.push(event);
+            }
         }
     }
 }
@@ -85,7 +135,7 @@ impl Outcome {
     /// What no two runs agree on and neither is wrong about.
     pub fn settle(&mut self) {
         for said in self.said() {
-            *said = settled(said);
+            *said = settled(&plain(said));
 
             if let Some((before, rest)) = said.split_once(" B)")
                 && let Some((head, bytes)) = before.rsplit_once('(')
@@ -244,8 +294,27 @@ fn got_ready(line: &str) -> bool {
     line.is_empty()
         || building
         || line.starts_with("Dockerfile for action:")
+        || line.starts_with("Getting action download info")
+        || line.starts_with("Download action repository")
         || line.starts_with("##[command]/usr/bin/docker")
         || line.strip_prefix("sha256:").is_some_and(hexadecimal)
+}
+
+// Remove color from the text
+fn plain(line: &str) -> String {
+    let mut plain = String::with_capacity(line.len());
+    let mut rest = line;
+
+    while let Some(start) = rest.find('\u{1b}') {
+        plain.push_str(&rest[..start]);
+        rest = match rest[start..].find('m') {
+            Some(end) => &rest[start + end + 1..],
+            None => "",
+        };
+    }
+    plain.push_str(rest);
+
+    plain
 }
 
 fn settled(line: &str) -> String {
@@ -256,18 +325,17 @@ fn settled(line: &str) -> String {
 }
 
 fn piece(part: &str) -> String {
-    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
     const DIGEST: usize = 64;
 
-    let id = part.rsplit('_').next().unwrap_or(part);
-    let shape: Vec<&str> = id.split('-').collect();
-    let shaped = shape.len() == SHAPE.len()
-        && shape
-            .iter()
-            .enumerate()
-            .all(|(at, piece)| piece.len() == SHAPE[at] && hexadecimal(piece));
+    // The script a `run:` step is handed is named by whichever runner wrote it.
+    if let Some((name, rest)) = part.split_once(".sh")
+        && (shaped_like_an_id(name) || name.starts_with("step-"))
+    {
+        return format!("<script>.sh{rest}");
+    }
 
-    if shaped {
+    let id = part.rsplit('_').next().unwrap_or(part);
+    if shaped_like_an_id(id) {
         return part.replace(id, "<id>");
     }
 
@@ -284,6 +352,18 @@ fn piece(part: &str) -> String {
     }
 
     part.to_owned()
+}
+
+fn shaped_like_an_id(word: &str) -> bool {
+    const SHAPE: [usize; 5] = [8, 4, 4, 4, 12];
+
+    let shape: Vec<&str> = word.split('-').collect();
+
+    shape.len() == SHAPE.len()
+        && shape
+            .iter()
+            .enumerate()
+            .all(|(at, piece)| piece.len() == SHAPE[at] && hexadecimal(piece))
 }
 
 fn hexadecimal(word: &str) -> bool {
@@ -343,11 +423,11 @@ pub struct Case {
     pub workflow: Workflow,
     pub plan: Plan,
     pub service_env: BTreeMap<String, String>,
+    _services: Services,
 }
 
 pub struct Harness {
     artifacts: PathBuf,
-    services: Services,
 }
 
 impl Default for Harness {
@@ -373,10 +453,7 @@ impl Harness {
             .join("artifacts")
             .join(format!("{prefix}{at}"));
 
-        Self {
-            services: Services::start(artifacts.join("services")).expect("the services start"),
-            artifacts,
-        }
+        Self { artifacts }
     }
 
     pub fn get_test_files(&self, target: Option<&str>) -> Vec<TargetFile> {
@@ -455,6 +532,9 @@ impl Harness {
             .plan(file)
             .map_err(|err| format!("cannot plan: {err}"))?;
 
+        let services = Services::start(artifacts.join("services"))
+            .map_err(|err| format!("cannot start the services: {err}"))?;
+
         Ok(Case {
             name,
             artifacts,
@@ -464,7 +544,8 @@ impl Harness {
             branch: planner.context().github.ref_name.clone(),
             workflow,
             plan,
-            service_env: self.services.env(),
+            service_env: services.env(),
+            _services: services,
         })
     }
 }

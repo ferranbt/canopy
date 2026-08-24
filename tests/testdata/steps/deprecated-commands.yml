@@ -1,0 +1,30 @@
+name: Deprecated commands
+
+on: push
+
+jobs:
+  the-older-spellings:
+    runs-on: ubuntu-latest
+    steps:
+      - id: set_output
+        name: The command the output file replaced
+        continue-on-error: true
+        run: echo "::set-output name=value::said the old way"
+
+      - id: save_state
+        name: And the one the state file replaced
+        continue-on-error: true
+        run: echo "::save-state name=kept::also the old way"
+
+      - id: set_env
+        name: The one that was taken away outright
+        continue-on-error: true
+        run: echo "::set-env name=SNEAKY::should not arrive"
+
+      - name: What each of them left behind
+        run: |
+          echo "set-output outcome=${{ steps.set_output.outcome }}"
+          echo "set-output value=[${{ steps.set_output.outputs.value }}]"
+          echo "save-state outcome=${{ steps.save_state.outcome }}"
+          echo "set-env outcome=${{ steps.set_env.outcome }}"
+          echo "set-env value=[$SNEAKY]"

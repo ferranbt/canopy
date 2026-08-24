@@ -1,0 +1,32 @@
+name: Failing composite action
+
+on: push
+
+jobs:
+  gives-up-part-way:
+    runs-on: ubuntu-latest
+    steps:
+      - id: failing
+        name: A composite action that fails in the middle
+        continue-on-error: true
+        uses: ./actions/failing-composite
+
+      - name: What the composite came to
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.failing.outcome }} == failure       # the step it failed in fails the action
+            ${{ steps.failing.conclusion }} == success    # forgiven where it was used
+
+      - id: forgiving
+        name: A composite action that forgives a step of its own
+        continue-on-error: true
+        uses: ./actions/forgiving-composite
+
+      - name: What that one came to
+        run: |
+          echo "outcome=${{ steps.forgiving.outcome }}"
+          echo "conclusion=${{ steps.forgiving.conclusion }}"
+
+      - name: The job is still going
+        run: echo "the failures were both forgiven"

@@ -1,0 +1,74 @@
+[
+  {
+    "event": "job-started",
+    "id": "nowhere-to-run",
+    "label": "nowhere-to-run"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A directory nothing made",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "An error occurred trying to start process '/usr/bin/bash' with working directory '$GITHUB_WORKSPACE/nowhere'. No such file or directory"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A directory nothing made",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The step never got to run",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The step never got to run",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "A directory that is there is fine",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "A directory that is there is fine",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "And a step lands in it",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "And a step lands in it",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "nowhere-to-run",
+    "label": "nowhere-to-run",
+    "conclusion": "success"
+  }
+]

@@ -1,0 +1,37 @@
+name: Outer (composite)
+description: A composite action that uses another one, to show what crosses between them.
+
+inputs:
+  who-to-greet:
+    description: Name to pass on to the action this one uses.
+    required: false
+    default: outer
+
+outputs:
+  passed-on:
+    description: What the action this one used returned.
+    value: ${{ steps.inner.outputs.message }}
+  own-input:
+    description: What this action was given.
+    value: ${{ inputs.who-to-greet }}
+
+runs:
+  using: composite
+  steps:
+    - name: What this action was given, and where it lives
+      shell: bash
+      run: |
+        echo "outer input=${{ inputs.who-to-greet }}"
+        echo "outer path is this action=$(test -f "${{ github.action_path }}/action.yml" && echo yes)"
+
+    - id: inner
+      uses: ./actions/greet-composite
+      with:
+        who-to-greet: ${{ inputs.who-to-greet }}
+        greeting: Hey
+
+    - name: What the inner action left behind
+      shell: bash
+      run: |
+        echo "inner message=${{ steps.inner.outputs.message }}"
+        echo "outer input again=${{ inputs.who-to-greet }}"

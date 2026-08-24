@@ -1,0 +1,55 @@
+[
+  {
+    "event": "job-started",
+    "id": "names-that-travel-badly",
+    "label": "names-that-travel-badly"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Every input given, awkward names and all",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Every input given, awkward names and all",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "A value of several lines",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "A value of several lines",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Values that need no quoting to survive",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Values that need no quoting to survive",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "names-that-travel-badly",
+    "label": "names-that-travel-badly",
+    "conclusion": "success"
+  }
+]

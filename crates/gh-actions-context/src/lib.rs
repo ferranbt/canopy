@@ -116,7 +116,7 @@ pub struct RunContext {
 impl RunContext {
     pub fn to_expr_context(&self) -> Context {
         let value = to_value(self).expect("a run context is always serialisable");
-        Context::from_value(value, self.job.status.status())
+        Context::from_value(value, self.job.status.status()).with_workspace(&self.github.workspace)
     }
 
     pub fn to_env(&self) -> BTreeMap<String, String> {
@@ -189,9 +189,13 @@ impl RunContext {
     }
 }
 
-pub fn step_result(conclusion: Conclusion, outputs: &BTreeMap<String, String>) -> Value {
+pub fn step_result(
+    outcome: Conclusion,
+    conclusion: Conclusion,
+    outputs: &BTreeMap<String, String>,
+) -> Value {
     let step = StepContext {
-        outcome: conclusion,
+        outcome,
         conclusion,
         outputs: outputs.clone(),
     };

@@ -32,13 +32,25 @@ impl Phase {
         }
     }
 
+    /// A composite action is torn down after the job rather than after itself, because the
+    /// actions it uses are the ones with something to clean up and theirs run at the end.
+    fn planned(self, runs: &Runs) -> bool {
+        match (self, runs) {
+            (Self::Main, _) => true,
+            (Self::Post, Runs::Composite(composite)) => {
+                composite.steps.iter().any(|step| step.uses.is_some())
+            }
+            _ => self.script(runs).is_some(),
+        }
+    }
+
     fn condition(self, runs: &Runs) -> Option<String> {
         // Hooks exist to set up and clean up, so they run whatever happened.
         let always = || Some("always()".to_owned());
         let node = match runs {
             Runs::Node16(node) | Runs::Node20(node) | Runs::Node24(node) => node,
             Runs::Docker(_) => return (self != Self::Main).then(always).flatten(),
-            Runs::Composite(_) => return None,
+            Runs::Composite(_) => return (self == Self::Post).then(always).flatten(),
         };
 
         match self {
@@ -66,7 +78,12 @@ impl PlannedStep {
 }
 
 /// Post steps come out in reverse, so the action set up last is torn down first.
-pub fn plan(steps: &[Step], workspace: &Path, cache: &Path) -> Result<Vec<PlannedStep>, Error> {
+pub fn plan(
+    steps: &[Step],
+    workspace: &Path,
+    cache: &Path,
+    nested: bool,
+) -> Result<Vec<PlannedStep>, Error> {
     let mut pre = Vec::new();
     let mut main = Vec::new();
     let mut post = Vec::new();
@@ -97,10 +114,26 @@ pub fn plan(steps: &[Step], workspace: &Path, cache: &Path) -> Result<Vec<Planne
             continue;
         }
 
-        let action = actions::resolve(uses, workspace, cache)?;
+        // A local action is looked for again when the step runs, which is where GitHub
+        // reports one that is not there: the job starts, and only that step fails.
+        let action = match actions::resolve(uses, workspace, cache, nested) {
+            Ok(action) => action,
+            Err(_) if matches!(uses, Uses::Local(_)) => {
+                main.push(PlannedStep {
+                    step: step.clone(),
+                    position,
+                    phase: Phase::Main,
+                    action: None,
+                    script: None,
+                    condition: None,
+                });
+                continue;
+            }
+            Err(err) => return Err(err),
+        };
         for phase in [Phase::Pre, Phase::Main, Phase::Post] {
             let script = phase.script(&action.action.runs);
-            if phase != Phase::Main && script.is_none() {
+            if !phase.planned(&action.action.runs) {
                 continue;
             }
             // An action in the repository being run has no `pre` hook: there is nowhere to

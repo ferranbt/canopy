@@ -1,0 +1,155 @@
+[
+  {
+    "event": "job-started",
+    "id": "annotating",
+    "label": "annotating"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A file to point the annotations at",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A file to point the annotations at",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "An error against a place in a file",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "something went wrong there"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "An error against a place in a file",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "With an end and a title as well",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "from the first line to the third"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "With an end and a title as well",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "A warning the same way",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "worth a look"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "A warning the same way",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "A notice, which the runner takes and says nothing about",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "A notice, which the runner takes and says nothing about",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "The levels with nothing attached",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "a bare warning"
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "a bare error"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "The levels with nothing attached",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "A property the runner has no use for",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "said anyway"
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "A property the runner has no use for",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 7,
+    "name": "The step is still a success, annotations and all",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 7,
+    "name": "The step is still a success, annotations and all",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "annotating",
+    "label": "annotating",
+    "conclusion": "success"
+  }
+]

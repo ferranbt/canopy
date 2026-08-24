@@ -1,0 +1,38 @@
+name: Job container volumes
+
+on: push
+
+jobs:
+  mounted-and-owned:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm-slim
+      volumes:
+        - /tmp/canopy-mounted:/mounted
+      options: --user 0:0 --hostname mounted-container
+
+    steps:
+      - name: The volume is there to write to
+        run: |
+          test -d /mounted
+          rm -f /mounted/*
+          echo "written inside the container" > /mounted/note.txt
+          echo "the volume was mounted"
+
+      - name: A later step sees what the first one wrote
+        run: |
+          cat /mounted/note.txt
+          test "$(cat /mounted/note.txt)" = "written inside the container"
+
+      - name: And the rest of what the options asked for
+        run: |
+          echo "user=$(id -u)"
+          echo "hostname=$(hostname)"
+          test "$(id -u)" = 0
+          test "$(hostname)" = mounted-container
+
+      - name: The workspace is still where the job left it
+        run: |
+          test -d "$GITHUB_WORKSPACE"
+          echo "written to the workspace" > from-the-container.txt
+          test -f from-the-container.txt

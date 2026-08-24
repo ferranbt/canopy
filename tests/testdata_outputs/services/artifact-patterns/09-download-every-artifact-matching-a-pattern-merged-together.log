@@ -1,0 +1,15 @@
+Found 2 artifact(s)
+Filtering artifacts by pattern 'shape-*'
+Preparing to download the following artifacts:
+- shape-two (ID: 3, Size: 151, Expected Digest: undefined)
+- shape-one (ID: 2, Size: 436, Expected Digest: undefined)
+Redirecting to blob download url: http://127.0.0.1:<port>/blob/shape-two
+Starting download of artifact to: $GITHUB_WORKSPACE/gathered
+Redirecting to blob download url: http://127.0.0.1:<port>/blob/shape-one
+Starting download of artifact to: $GITHUB_WORKSPACE/gathered
+SHA256 digest of downloaded artifact is <digest>
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is <digest>
+Artifact download completed successfully.
+Total of 2 artifact(s) downloaded
+Download artifact has finished successfully

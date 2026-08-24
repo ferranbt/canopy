@@ -1,0 +1,19 @@
+name: Finds on path
+description: Says whether a command is on the path an action is given.
+
+inputs:
+  command:
+    description: What to look for.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Look for it
+      shell: bash
+      run: |
+        if command -v "${{ inputs.command }}" >/dev/null; then
+          echo "an action found ${{ inputs.command }}: $("${{ inputs.command }}")"
+        else
+          echo "an action did not find ${{ inputs.command }}"
+        fi

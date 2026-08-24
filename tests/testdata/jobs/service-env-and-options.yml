@@ -1,0 +1,29 @@
+name: Service settings
+
+on: push
+
+jobs:
+  a-service-that-needs-its-environment:
+    runs-on: ubuntu-latest
+    container: debian:bookworm-slim
+    services:
+      # Without the password in its environment this image refuses to start, so reaching it
+      # at all is what says the environment arrived.
+      database:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: canopy
+          POSTGRES_DB: canopy
+        options: --memory 512m --hostname the-database
+
+    steps:
+      - name: Reach the service that only starts when it was told a password
+        shell: bash
+        run: |
+          for attempt in $(seq 60); do
+            (exec 3<>/dev/tcp/database/5432) 2>/dev/null && break
+            sleep 1
+          done
+
+          exec 3<>/dev/tcp/database/5432
+          echo "the database answered"

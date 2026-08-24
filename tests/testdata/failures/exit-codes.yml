@@ -1,0 +1,58 @@
+name: Exit codes
+
+on: push
+
+jobs:
+  exit-codes:
+    runs-on: ubuntu-latest
+    steps:
+      - id: one
+        name: The ordinary failure
+        continue-on-error: true
+        run: exit 1
+
+      - id: three
+        name: A code of its own, after saying something
+        continue-on-error: true
+        run: |
+          echo "before the failure"
+          exit 3
+
+      - id: highest
+        name: The highest a code goes
+        continue-on-error: true
+        run: exit 255
+
+      - id: signalled
+        name: A step that is killed rather than exiting
+        continue-on-error: true
+        run: |
+          echo "about to be killed"
+          kill -9 $$
+
+      - id: mid_script
+        name: A line failing part way through
+        continue-on-error: true
+        run: |
+          echo "first line"
+          false
+          echo "this line never runs"
+
+      - id: last_line
+        name: The status of the last line is the step's
+        continue-on-error: true
+        run: |
+          false
+          true
+
+      - name: What each of them came to
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.one.outcome }} == failure
+            ${{ steps.three.outcome }} == failure
+            ${{ steps.highest.outcome }} == failure
+            ${{ steps.signalled.outcome }} == failure
+            ${{ steps.mid_script.outcome }} == failure
+            ${{ steps.last_line.outcome }} == failure       # `-e` stops at the failing line
+            ${{ steps.one.conclusion }} == success          # every one of them was forgiven

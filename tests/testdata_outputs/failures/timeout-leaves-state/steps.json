@@ -1,0 +1,46 @@
+[
+  {
+    "event": "job-started",
+    "id": "cut-short",
+    "label": "cut-short"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Writes to the state files, then outstays its welcome",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "The action 'Writes to the state files, then outstays its welcome' has timed out after 1 minutes."
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Writes to the state files, then outstays its welcome",
+    "depth": 0,
+    "conclusion": "success",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What survived the kill",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What survived the kill",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "cut-short",
+    "label": "cut-short",
+    "conclusion": "success"
+  }
+]

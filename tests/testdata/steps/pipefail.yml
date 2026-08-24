@@ -1,0 +1,47 @@
+name: Pipes that fail
+
+on: push
+
+jobs:
+  a-pipe-whose-first-half-fails:
+    runs-on: ubuntu-latest
+    steps:
+      - id: named
+        name: Under bash, asked for by name
+        shell: bash
+        continue-on-error: true
+        run: |
+          false | true
+          echo "the pipe was let through"
+
+      - id: unnamed
+        name: Under the shell a step gets when it names none
+        continue-on-error: true
+        run: |
+          false | true
+          echo "the pipe was let through"
+
+      - id: under_sh
+        name: Under sh
+        shell: sh
+        continue-on-error: true
+        run: |
+          false | true
+          echo "the pipe was let through"
+
+      - name: What each of them came to
+        run: |
+          echo "named=${{ steps.named.outcome }}"
+          echo "unnamed=${{ steps.unnamed.outcome }}"
+          echo "sh=${{ steps.under_sh.outcome }}"
+
+      - id: whole_pipe
+        name: A pipe both halves of which are fine
+        shell: bash
+        continue-on-error: true
+        run: |
+          echo hello | grep -q hello
+          echo "the whole pipe went through"
+
+      - name: And that one
+        run: echo "whole=${{ steps.whole_pipe.outcome }}"

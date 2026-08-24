@@ -1,0 +1,29 @@
+name: Bad working directory
+
+on: push
+
+jobs:
+  nowhere-to-run:
+    runs-on: ubuntu-latest
+    steps:
+      - id: missing
+        name: A directory nothing made
+        continue-on-error: true
+        working-directory: nowhere
+        run: pwd
+
+      - name: The step never got to run
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.missing.outcome }} == failure
+            $(test -d nowhere && echo yes) ==            # and nothing was created on the way
+
+      - name: A directory that is there is fine
+        run: mkdir -p somewhere
+
+      - name: And a step lands in it
+        working-directory: somewhere
+        run: |
+          test "$(basename "$PWD")" = somewhere
+          echo "the directory that exists was used"

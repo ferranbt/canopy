@@ -1,0 +1,37 @@
+name: A service that will not start
+
+on: push
+
+jobs:
+  an-image-that-does-not-exist:
+    runs-on: ubuntu-latest
+    services:
+      cache:
+        image: redis:no-such-tag-exists
+
+    steps:
+      - name: A step in a job whose service never came up
+        run: echo "this never prints"
+
+      - name: Even one that runs whatever happened
+        if: always()
+        run: echo "the job got here"
+
+  a-service-that-exits-at-once:
+    runs-on: ubuntu-latest
+    services:
+      quitter:
+        image: alpine:3.19
+        options: --entrypoint /bin/true
+
+    steps:
+      - name: The job carries on without whatever that was
+        run: echo "the job started"
+
+      - name: And nothing is listening where it would have been
+        run: |
+          if getent hosts quitter; then
+            echo "the name resolves"
+          else
+            echo "the name does not resolve"
+          fi

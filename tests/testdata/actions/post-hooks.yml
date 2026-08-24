@@ -1,0 +1,23 @@
+name: Post hooks
+
+on: push
+
+jobs:
+  cleaning-up-afterwards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: The first action to be set up
+        uses: ./actions/post-node
+        with:
+          mark: first
+
+      - name: The second one
+        uses: ./actions/post-node
+        with:
+          mark: second
+
+      - name: One whose post step waits for a failure
+        uses: ./actions/post-only-on-failure
+
+      - name: The last step of the job proper
+        run: echo "the job is done, the post steps are not"

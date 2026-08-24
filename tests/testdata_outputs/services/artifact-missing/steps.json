@@ -1,0 +1,134 @@
+[
+  {
+    "event": "job-started",
+    "id": "a-name-nothing-was-uploaded-under",
+    "label": "a-name-nothing-was-uploaded-under"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Downloading a name nothing was uploaded under",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "Unable to download artifact(s): Artifact not found for name: never-uploaded"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Downloading a name nothing was uploaded under",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What the download that found nothing came to",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the download that found nothing came to",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "a-name-nothing-was-uploaded-under",
+    "label": "a-name-nothing-was-uploaded-under",
+    "conclusion": "failure"
+  },
+  {
+    "event": "job-started",
+    "id": "a-path-nothing-matches",
+    "label": "a-path-nothing-matches"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Uploading a path nothing matches",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "No files were found with the provided path: no-such-directory/**. No artifacts will be uploaded."
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Uploading a path nothing matches",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Which only warns",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Which only warns",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "a-path-nothing-matches",
+    "label": "a-path-nothing-matches",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "told-to-treat-it-as-an-error",
+    "label": "told-to-treat-it-as-an-error"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "The same, with the action told to treat it as an error",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "error",
+    "text": "No files were found with the provided path: no-such-directory/**. No artifacts will be uploaded."
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "The same, with the action told to treat it as an error",
+    "depth": 0,
+    "conclusion": "failure",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "What the step that would not upload came to",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the step that would not upload came to",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "told-to-treat-it-as-an-error",
+    "label": "told-to-treat-it-as-an-error",
+    "conclusion": "failure"
+  }
+]

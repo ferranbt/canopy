@@ -1,0 +1,50 @@
+name: Shell strictness
+
+on: push
+
+jobs:
+  a-line-that-fails-part-way-through:
+    runs-on: ubuntu-latest
+    steps:
+      - id: shell_sh
+        name: Under sh
+        shell: sh
+        continue-on-error: true
+        run: |
+          echo "first"
+          false
+          echo "this should never print"
+
+      - id: shell_bash
+        name: Under bash, asked for by name
+        shell: bash
+        continue-on-error: true
+        run: |
+          echo "first"
+          false
+          echo "this should never print"
+
+      - id: shell_default
+        name: Under the shell a step gets when it names none
+        continue-on-error: true
+        run: |
+          echo "first"
+          false
+          echo "this should never print"
+
+      - name: What each of them came to
+        run: |
+          echo "sh=${{ steps.shell_sh.outcome }}"
+          echo "bash=${{ steps.shell_bash.outcome }}"
+          echo "default=${{ steps.shell_default.outcome }}"
+
+      - id: last_line
+        name: A failure that is not the last line, under sh
+        shell: sh
+        continue-on-error: true
+        run: |
+          false
+          true
+
+      - name: And what that came to
+        run: echo "sh=${{ steps.last_line.outcome }}"

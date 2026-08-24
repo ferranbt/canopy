@@ -39,6 +39,10 @@ pub enum Exec {
     Script {
         shell: String,
         script: PathBuf,
+        /// Whether the workflow asked for that shell or was given it for asking for none,
+        /// which is the difference between `bash -e` and the stricter shell GitHub runs a
+        /// step in when it names one.
+        named: bool,
     },
     Node {
         entrypoint: PathBuf,
@@ -62,13 +66,26 @@ impl Exec {
         env: &BTreeMap<String, String>,
     ) -> Result<(String, Vec<String>), Error> {
         match self {
-            Self::Script { shell, script } => {
-                let (program, mut args) = match shell.as_str() {
-                    // `-e` is what the runner passes, so a failing line fails the step.
-                    "bash" => ("bash", vec!["-e".to_owned()]),
-                    "sh" => ("sh", Vec::new()),
-                    "python" => ("python3", Vec::new()),
-                    other => return Err(Error::Unsupported(format!("`shell: {other}`"))),
+            Self::Script {
+                shell,
+                script,
+                named,
+            } => {
+                let switches = |switches: &[&str]| -> Vec<String> {
+                    switches.iter().map(|it| (*it).to_owned()).collect()
+                };
+                // `-e` is what the runner passes, so a failing line fails the step. A shell
+                // a step asked for by name is given more than that: bash is run without the
+                // files it would read and with a failing half of a pipe failing the whole.
+                let (program, mut args) = match (shell.as_str(), named) {
+                    ("bash", true) => (
+                        "bash",
+                        switches(&["--noprofile", "--norc", "-e", "-o", "pipefail"]),
+                    ),
+                    ("bash", false) => ("bash", switches(&["-e"])),
+                    ("sh", _) => ("sh", switches(&["-e"])),
+                    ("python", _) => ("python3", Vec::new()),
+                    (other, _) => return Err(Error::Unsupported(format!("`shell: {other}`"))),
                 };
                 args.push(script.display().to_string());
                 Ok((program.to_owned(), args))
@@ -207,8 +224,17 @@ pub struct ExecResult {
     pub commands: Vec<WorkflowCommand>,
 }
 
+/// How a machine came up for the job it was given.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Started {
+    Ready,
+    /// The machine is there but something the job asked for is not, so its steps run and the
+    /// job is failing before the first of them.
+    Missing,
+}
+
 pub trait Machine {
-    fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<(), Error>;
+    fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<Started, Error>;
 
     fn finish(&mut self) -> Result<(), Error>;
 
@@ -275,8 +301,8 @@ pub trait Machine {
 pub struct HostMachine;
 
 impl Machine for HostMachine {
-    fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<(), Error> {
-        Ok(())
+    fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<Started, Error> {
+        Ok(Started::Ready)
     }
 
     fn finish(&mut self) -> Result<(), Error> {
@@ -304,6 +330,7 @@ pub fn run_until(
     let mut commands = Vec::new();
     let mut masks = request.masks.clone();
     let mut refused = false;
+    let mut listening = Listening::default();
 
     let (lines, reader) = std::sync::mpsc::channel();
     let output = pump(child.stdout.take(), Stream::Out, lines.clone());
@@ -319,7 +346,14 @@ pub fn run_until(
 
         match reader.recv_timeout(left) {
             Ok((Stream::Out, line)) => {
-                refused |= handle_line(&line, &switches, &mut commands, &mut masks, out);
+                refused |= handle_line(
+                    &line,
+                    &switches,
+                    &mut listening,
+                    &mut commands,
+                    &mut masks,
+                    out,
+                );
             }
             Ok((Stream::Err, line)) => out.report(Event::StepOutput {
                 stream: Stream::Err,
@@ -389,7 +423,22 @@ fn pump(
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         let Some(source) = source else { return };
-        for line in BufReader::new(source).lines().map_while(Result::ok) {
+        let mut reader = BufReader::new(source);
+        let mut read = Vec::new();
+
+        loop {
+            read.clear();
+            // Read as the bytes they are: a step that prints something that is not text has
+            // still printed it, and what it said is not thrown away for that.
+            match reader.read_until(b'\n', &mut read) {
+                Ok(0) | Err(_) => return,
+                Ok(_) => {}
+            }
+            while let Some(b'\n' | b'\r') = read.last() {
+                read.pop();
+            }
+
+            let line = String::from_utf8_lossy(&read).into_owned();
             if lines.send((stream, line)).is_err() {
                 return;
             }
@@ -397,30 +446,75 @@ fn pump(
     })
 }
 
+/// What a step has asked the runner to make of the lines that follow.
+#[derive(Debug, Default)]
+struct Listening {
+    /// The token a step said would put the runner back to listening for commands.
+    stopped: Option<String>,
+    /// Whether a command is written to the log as well as acted on.
+    echo: bool,
+}
+
 /// Whether the step is to fail for having asked for a command it may not have.
 fn handle_line(
     line: &str,
     switches: &Switches,
+    listening: &mut Listening,
     commands: &mut Vec<WorkflowCommand>,
     masks: &mut Vec<String>,
     out: &mut dyn Reporter,
 ) -> bool {
-    let Some(command) = WorkflowCommand::parse(line) else {
+    let printed = |out: &mut dyn Reporter, masks: &Vec<String>| {
         out.report(Event::StepOutput {
             stream: Stream::Out,
             line: hide(line, masks),
         });
+    };
+
+    // Until the token comes back, everything a step says is only what it said.
+    if let Some(token) = &listening.stopped {
+        if line.trim() == format!("::{token}::") {
+            listening.stopped = None;
+        }
+        printed(out, masks);
+        return false;
+    }
+
+    let Some(command) = WorkflowCommand::parse(line) else {
+        printed(out, masks);
         return false;
     };
 
-    if matches!(command, WorkflowCommand::AddPath(_)) && !switches.unsecure {
-        for text in refusal(line.trim()) {
+    let taken_away = match &command {
+        WorkflowCommand::AddPath(_) => Some("add-path"),
+        WorkflowCommand::SetEnv { .. } => Some("set-env"),
+        _ => None,
+    };
+    if let Some(name) = taken_away.filter(|_| !switches.unsecure) {
+        for text in refusal(line.trim(), name) {
             out.report(Event::Message {
                 level: Level::Error,
                 text,
             });
         }
         return true;
+    }
+
+    if let WorkflowCommand::Stop(token) = &command {
+        // Kept out of the log from here on, so nothing a step prints can pass for the token
+        // that would have the runner listening again.
+        masks.push(token.clone());
+        listening.stopped = Some(token.clone());
+        printed(out, masks);
+        return false;
+    }
+
+    if let WorkflowCommand::Echo(on) = &command {
+        if listening.echo {
+            printed(out, masks);
+        }
+        listening.echo = *on;
+        return false;
     }
 
     if let WorkflowCommand::AddMask(secret) = &command
@@ -455,14 +549,15 @@ fn handle_line(
 
 /// What GitHub says when a step asks for a command it took away, word for word, since a
 /// workflow may well be reading the log for it.
-fn refusal(line: &str) -> [String; 2] {
+fn refusal(line: &str, name: &str) -> [String; 2] {
     [
         format!("Unable to process command '{line}' successfully."),
-        "The `add-path` command is disabled. Please upgrade to using Environment Files or opt \
-         into unsecure command execution by setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` \
-         environment variable to `true`. For more information see: \
-         https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/"
-            .to_owned(),
+        format!(
+            "The `{name}` command is disabled. Please upgrade to using Environment Files or opt \
+             into unsecure command execution by setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` \
+             environment variable to `true`. For more information see: \
+             https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/"
+        ),
     ]
 }
 
@@ -492,6 +587,7 @@ mod tests {
             Exec::Script {
                 shell: "sh".to_owned(),
                 script: path,
+                named: true,
             },
             std::env::temp_dir(),
         )

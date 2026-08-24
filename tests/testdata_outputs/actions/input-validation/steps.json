@@ -1,0 +1,88 @@
+[
+  {
+    "event": "job-started",
+    "id": "what-the-action-did-not-ask-for",
+    "label": "what-the-action-did-not-ask-for"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A required input nobody gave",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A required input nobody gave",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What leaving it out came to",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What leaving it out came to",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "An input the action never declared",
+    "depth": 0
+  },
+  {
+    "event": "message",
+    "level": "warning",
+    "text": "Unexpected input(s) 'nobody-asked-for-this', valid inputs are ['UPPER', 'needed', 'two words', 'who-to-greet']"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "An input the action never declared",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "What passing it came to",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "What passing it came to",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "An input the action still takes",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "An input the action still takes",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "what-the-action-did-not-ask-for",
+    "label": "what-the-action-did-not-ask-for",
+    "conclusion": "success"
+  }
+]

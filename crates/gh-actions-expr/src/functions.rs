@@ -1,5 +1,9 @@
 //! The built-in functions of the expression language.
 
+use std::path::PathBuf;
+
+use sha2::{Digest, Sha256};
+
 use crate::error::EvalError;
 use crate::eval::Context;
 use crate::value::Value;
@@ -14,7 +18,7 @@ pub fn call(name: &str, args: &[Value], context: &Context) -> Result<Value, Eval
         "join" => join(name, args),
         "tojson" => arity(name, args, 1).map(|()| to_json(&args[0])),
         "fromjson" => arity(name, args, 1).and_then(|()| from_json(&args[0])),
-        "hashfiles" => Err(EvalError::Unsupported("hashFiles")),
+        "hashfiles" => hash_files(args, context),
         "success" => arity(name, args, 0).map(|()| Value::Bool(context.status.is_success())),
         "failure" => arity(name, args, 0).map(|()| Value::Bool(context.status.is_failure())),
         "cancelled" => arity(name, args, 0).map(|()| Value::Bool(context.status.is_cancelled())),
@@ -138,6 +142,50 @@ fn join(name: &str, args: &[Value]) -> Result<Value, EvalError> {
 }
 
 /// Pretty-printed, as the runner writes it.
+fn hash_files(args: &[Value], context: &Context) -> Result<Value, EvalError> {
+    if args.is_empty() {
+        return Err(EvalError::WrongArity {
+            function: "hashFiles".to_owned(),
+            expected: "at least 1".to_owned(),
+            got: 0,
+        });
+    }
+
+    let Some(workspace) = &context.workspace else {
+        return Err(EvalError::Unsupported("hashFiles"));
+    };
+
+    let mut matched: Vec<PathBuf> = Vec::new();
+    for pattern in args {
+        let pattern = workspace.join(pattern.to_display_string());
+        let found = glob::glob(&pattern.to_string_lossy())
+            .map_err(|err| EvalError::InvalidPattern(err.to_string()))?;
+
+        matched.extend(found.flatten().filter(|path| path.is_file()));
+    }
+
+    matched.sort();
+    matched.dedup();
+    if matched.is_empty() {
+        return Ok(Value::String(String::new()));
+    }
+
+    let mut whole = Sha256::new();
+    for path in matched {
+        let bytes = std::fs::read(&path)
+            .map_err(|err| EvalError::InvalidPattern(format!("{}: {err}", path.display())))?;
+        whole.update(Sha256::digest(bytes));
+    }
+
+    let digest = whole
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+
+    Ok(Value::String(digest))
+}
+
 fn to_json(value: &Value) -> Value {
     let json = serde_json::Value::from(value);
     Value::String(serde_json::to_string_pretty(&json).unwrap_or_else(|_| "null".to_owned()))

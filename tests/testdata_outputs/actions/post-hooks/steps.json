@@ -1,0 +1,111 @@
+[
+  {
+    "event": "job-started",
+    "id": "cleaning-up-afterwards",
+    "label": "cleaning-up-afterwards"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "The first action to be set up",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "The first action to be set up",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The second one",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The second one",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "One whose post step waits for a failure",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "One whose post step waits for a failure",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "The last step of the job proper",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "The last step of the job proper",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "One whose post step waits for a failure (post)",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "One whose post step waits for a failure (post)",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "The second one (post)",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "The second one (post)",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "The first action to be set up (post)",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "The first action to be set up (post)",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "cleaning-up-afterwards",
+    "label": "cleaning-up-afterwards",
+    "conclusion": "success"
+  }
+]

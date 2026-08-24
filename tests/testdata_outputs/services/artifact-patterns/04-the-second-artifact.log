@@ -1,0 +1,11 @@
+With the provided path, there will be 1 file uploaded
+Artifact name is valid!
+Root directory input is valid!
+Beginning upload of artifact content to blob storage
+Uploaded bytes 151
+Finished uploading artifact content to blob storage!
+SHA256 digest of uploaded artifact zip is <digest>
+Finalizing artifact upload
+Artifact shape-two.zip successfully finalized. Artifact ID 3
+Artifact shape-two has been successfully uploaded! Final size is 151 bytes. Artifact ID is 3
+Artifact download URL: https://github.com/ferranbt/canopy/actions/runs/1/artifacts/3

@@ -1,0 +1,47 @@
+name: Bad env file
+
+on: push
+
+jobs:
+  written-wrong:
+    runs-on: ubuntu-latest
+    steps:
+      - id: unterminated
+        name: A heredoc nothing closes
+        continue-on-error: true
+        run: |
+          {
+            echo "NEVER_CLOSED<<EOF"
+            echo "line one"
+            echo "line two"
+          } >> "$GITHUB_ENV"
+
+      - name: What the step that wrote it came to
+        run: |
+          echo "outcome=${{ steps.unterminated.outcome }}"
+          echo "value=$NEVER_CLOSED"
+
+      - id: delimiter_inside
+        name: A value carrying the delimiter it was written with
+        continue-on-error: true
+        run: |
+          {
+            echo "SNEAKY<<EOF"
+            echo "harmless"
+            echo "EOF"
+            echo "INJECTED=yes"
+          } >> "$GITHUB_ENV"
+
+      - name: What that left behind
+        run: |
+          echo "outcome=${{ steps.delimiter_inside.outcome }}"
+          echo "sneaky=$SNEAKY"
+          echo "injected=$INJECTED"
+
+      - id: no_equals
+        name: A line that is neither a name nor a heredoc
+        continue-on-error: true
+        run: echo "just some words" >> "$GITHUB_ENV"
+
+      - name: And what that came to
+        run: echo "outcome=${{ steps.no_equals.outcome }}"

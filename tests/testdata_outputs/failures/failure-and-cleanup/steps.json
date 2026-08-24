@@ -58,7 +58,7 @@
     "name": "Real failure",
     "depth": 0,
     "conclusion": "failure",
-    "code": 3
+    "code": null
   },
   {
     "event": "step-started",

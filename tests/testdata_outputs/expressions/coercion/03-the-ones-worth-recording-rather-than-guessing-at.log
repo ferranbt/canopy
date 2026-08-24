@@ -1,0 +1,13 @@
+true == 'true': false
+'' == false: true
+null == '': true
+null == false: true
+'2' > '10': true
+'a' > 'B': false
+1 && 2: 2
+false || 0: 0
+0 == '0.0': true
+'0x1F' == 31: true
+' 1 ' == 1: true
+empty array: Array
+an object: Object

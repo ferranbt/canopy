@@ -1,0 +1,80 @@
+[
+  {
+    "event": "job-started",
+    "id": "a-service-that-exits-at-once",
+    "label": "a-service-that-exits-at-once"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "The job carries on without whatever that was",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "The job carries on without whatever that was",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "And nothing is listening where it would have been",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "And nothing is listening where it would have been",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "a-service-that-exits-at-once",
+    "label": "a-service-that-exits-at-once",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "an-image-that-does-not-exist",
+    "label": "an-image-that-does-not-exist"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "A step in a job whose service never came up",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A step in a job whose service never came up",
+    "depth": 0,
+    "conclusion": "skipped",
+    "code": null
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Even one that runs whatever happened",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Even one that runs whatever happened",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "an-image-that-does-not-exist",
+    "label": "an-image-that-does-not-exist",
+    "conclusion": "failure"
+  }
+]

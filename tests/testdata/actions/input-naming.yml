@@ -1,0 +1,27 @@
+name: Input naming
+
+on: push
+
+jobs:
+  names-that-travel-badly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every input given, awkward names and all
+        uses: ./actions/awkward-inputs
+        with:
+          who-to-greet: with a dash
+          two words: with a space
+          UPPER: already shouted
+          needed: given
+
+      - name: A value of several lines
+        uses: ./actions/awkward-inputs
+        with:
+          needed: |
+            first line
+            second line
+
+      - name: Values that need no quoting to survive
+        uses: ./actions/awkward-inputs
+        with:
+          needed: 'spaces  and "quotes" and $HOME'

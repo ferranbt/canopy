@@ -1,0 +1,111 @@
+[
+  {
+    "event": "job-started",
+    "id": "exit-codes",
+    "label": "exit-codes"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "The ordinary failure",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "The ordinary failure",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 1
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "A code of its own, after saying something",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "A code of its own, after saying something",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 3
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "The highest a code goes",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "The highest a code goes",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 255
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "A step that is killed rather than exiting",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "A step that is killed rather than exiting",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 137
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "A line failing part way through",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "A line failing part way through",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 1
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "The status of the last line is the step's",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "The status of the last line is the step's",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 1
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "What each of them came to",
+    "depth": 0
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "What each of them came to",
+    "depth": 0,
+    "conclusion": "success",
+    "code": 0
+  },
+  {
+    "event": "job-finished",
+    "id": "exit-codes",
+    "label": "exit-codes",
+    "conclusion": "success"
+  }
+]

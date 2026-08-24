@@ -177,7 +177,10 @@ impl From<&Value> for serde_json::Value {
         match value {
             Value::Null => Self::Null,
             Value::Bool(b) => Self::Bool(*b),
-            Value::Number(n) => serde_json::Number::from_f64(*n).map_or(Self::Null, Self::Number),
+            Value::Number(n) => match n.fract() == 0.0 && n.abs() < 1e15 {
+                true => Self::Number((*n as i64).into()),
+                false => serde_json::Number::from_f64(*n).map_or(Self::Null, Self::Number),
+            },
             Value::String(s) => Self::String(s.clone()),
             Value::Array(items) => Self::Array(items.iter().map(Into::into).collect()),
             Value::Object(fields) => Self::Object(

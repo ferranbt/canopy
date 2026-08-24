@@ -1,0 +1,5 @@
+ok    its own input
+ok    and the inner one's output
+ok    untouched by the nesting
+ok    an inner id is not the job's
+4 check(s), 0 failed

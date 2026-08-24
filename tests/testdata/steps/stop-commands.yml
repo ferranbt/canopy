@@ -1,0 +1,38 @@
+name: Stopping commands
+
+on: push
+
+jobs:
+  stopping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Between the two tokens nothing is a command
+        run: |
+          echo "::warning::this one is heard"
+          echo "::stop-commands::canopy-token"
+          echo "::warning::this one is only text"
+          echo "::error::and so is this"
+          echo "::canopy-token::"
+          echo "::warning::heard again"
+
+      - id: through_the_stop
+        name: An output written while commands were stopped
+        run: |
+          echo "::stop-commands::another-token"
+          echo "::set-output name=ignored::yes"
+          echo "::another-token::"
+          echo "kept=written to the file instead" >> "$GITHUB_OUTPUT"
+
+      - name: What came through
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.through_the_stop.outputs.ignored }} ==        # the command was only text
+            ${{ steps.through_the_stop.outputs.kept }} == written to the file instead
+
+      - name: Echoing commands back
+        run: |
+          echo "::echo::on"
+          echo "::warning::said with echo on"
+          echo "::echo::off"
+          echo "::warning::said with echo off"
