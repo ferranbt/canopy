@@ -45,7 +45,7 @@ function findings(uri: vscode.Uri): Map<string, vscode.Diagnostic> {
 
 suite("canopy language server", () => {
   suiteSetup(async () => {
-    await vscode.extensions.getExtension("ferranborreguero.canopy")?.activate();
+    await vscode.extensions.getExtension("ferranborreguero.canopy-gh")?.activate();
   });
 
   test("reports a step that does nothing", async () => {
