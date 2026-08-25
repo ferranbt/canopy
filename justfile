@@ -24,3 +24,10 @@ gh-runner file="": build-runner-image
 
 integration file="":
     cargo run --bin integration -- {{ if file == "" { "" } else { "--test " + file } }}
+
+count-tests:
+    #!/usr/bin/env sh
+    set -e
+    count=$(find tests/testdata -name '*.yml' | wc -l | tr -d ' ')
+    printf '{"schemaVersion":1,"label":"conformance","message":"%s workflows","color":"2ea44f"}\n' "$count" > tests/num_tests.json
+    echo "$count conformance tests"

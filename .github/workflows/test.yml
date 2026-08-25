@@ -25,6 +25,11 @@ jobs:
         env:
           RUSTFLAGS: -D warnings
 
+      - name: Check the badge says how many workflows there are
+        run: |
+          just count-tests
+          git diff --exit-code tests/num_tests.json
+
   run-tests:
     name: Run tests
     runs-on: ubuntu-latest
