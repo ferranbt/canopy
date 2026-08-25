@@ -1,6 +1,6 @@
 {
-  "name": "canopy",
-  "displayName": "GitHub Actions (canopy)",
+  "name": "canopy-gh",
+  "displayName": "Canopy (GitHub Actions)",
   "description": "Checks GitHub Actions workflows as you write them, via the canopy language server.",
   "version": "0.1.0",
   "publisher": "ferranborreguero",
