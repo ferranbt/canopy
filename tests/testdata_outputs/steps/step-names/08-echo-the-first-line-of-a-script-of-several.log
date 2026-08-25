@@ -1,0 +1,13 @@
+##[group]Run echo "the first line of a script of several"
+echo "the first line of a script of several"
+echo "which is the one it is named after"
+shell: /usr/bin/bash -e {0}
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+  NAMED_BY_THE_WORKFLOW: from the workflow
+##[endgroup]
+the first line of a script of several
+which is the one it is named after

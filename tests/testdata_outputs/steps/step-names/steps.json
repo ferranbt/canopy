@@ -1,0 +1,112 @@
+[
+  {
+    "event": "job-started",
+    "id": "called-all-sorts",
+    "label": "called-all-sorts"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Worked out from push and Linux"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Worked out from push and Linux",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Named after what a step before it returned, "
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Named after what a step before it returned, ",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Named after an expression that came to nothing, []"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Named after an expression that came to nothing, []",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "A name with a slash / a colon: and \"quotes\""
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "A name with a slash / a colon: and \"quotes\"",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "Ünïcödé and a 🌲 in the name"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "Ünïcödé and a 🌲 in the name",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "A name so long that it goes on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "A name so long that it goes on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "echo \"a step with no name of its own\""
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "echo \"a step with no name of its own\"",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 7,
+    "name": "echo \"the first line of a script of several\""
+  },
+  {
+    "event": "step-finished",
+    "index": 7,
+    "name": "echo \"the first line of a script of several\"",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 8,
+    "name": "./actions/awkward-inputs"
+  },
+  {
+    "event": "step-finished",
+    "index": 8,
+    "name": "./actions/awkward-inputs",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "called-all-sorts",
+    "label": "called-all-sorts",
+    "conclusion": "success"
+  }
+]
