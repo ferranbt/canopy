@@ -1425,23 +1425,32 @@ mod tests {
     struct Recorder {
         started: usize,
         finished: usize,
+        ran: Vec<String>,
+        code: Option<i32>,
+        missing: bool,
     }
 
     impl Machine for Recorder {
         fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<Started, Error> {
             self.started += 1;
-            Ok(Started::Ready)
+
+            Ok(match self.missing {
+                true => Started::Missing,
+                false => Started::Ready,
+            })
         }
 
         fn exec(
             &mut self,
-            _request: &ExecRequest,
+            request: &ExecRequest,
             _out: &mut dyn Reporter,
         ) -> Result<ExecResult, Error> {
+            self.ran.push(request.name.clone());
+
             Ok(ExecResult {
                 status: crate::executor::ExecStatus {
-                    success: true,
-                    code: Some(0),
+                    success: self.code.is_none(),
+                    code: self.code.or(Some(0)),
                 },
                 commands: Vec::new(),
             })
@@ -1453,23 +1462,18 @@ mod tests {
         }
     }
 
-    fn plan_of(step: Step) -> (Workflow, Plan) {
-        let spec = gh_actions_spec::NormalJob {
-            steps: Some(vec![step]),
-            ..gh_actions_spec::NormalJob::default()
-        };
-        let workflow = Workflow::default();
-        let plan = Plan {
-            jobs: vec![PlannedJob {
-                id: "build".to_owned(),
-                label: "build".to_owned(),
-                needs: Vec::new(),
-                matrix: BTreeMap::new(),
-                spec,
-            }],
-        };
+    fn ran(machine: &mut Recorder, steps: &str) -> Summary {
+        let (workflow, plan) = crate::testing::workflow_of(steps);
 
-        (workflow, plan)
+        run(
+            &workflow,
+            &plan,
+            &context(),
+            &options(),
+            machine,
+            &mut Collected::default(),
+        )
+        .expect("the run itself goes through")
     }
 
     fn options() -> Options {
@@ -1491,23 +1495,22 @@ mod tests {
 
     #[test]
     fn a_job_that_fails_still_has_its_machine_cleaned_up() {
-        let (workflow, plan) = plan_of(Step::default());
-        let mut machine = Recorder::default();
+        let mut machine = Recorder {
+            code: Some(1),
+            ..Recorder::default()
+        };
 
-        let summary = run(
-            &workflow,
-            &plan,
-            &context(),
-            &options(),
+        let summary = ran(
             &mut machine,
-            &mut Collected::default(),
-        )
-        .expect("the run carries on without the job it could not run");
+            r"
+      - run: echo hi
+",
+        );
 
         assert_eq!(
             summary.jobs,
             vec![("build".to_owned(), Conclusion::Failure)],
-            "the job it could not run is the job that failed"
+            "the job it could not run is the job that failed, and the run carries on"
         );
         assert_eq!(machine.started, 1);
         assert_eq!(
@@ -1518,23 +1521,100 @@ mod tests {
 
     #[test]
     fn a_job_that_succeeds_cleans_up_once() {
-        let (workflow, plan) = plan_of(Step {
-            run: Some("echo hi".to_owned()),
-            ..Step::default()
-        });
         let mut machine = Recorder::default();
 
-        run(
-            &workflow,
-            &plan,
-            &context(),
-            &options(),
+        ran(
             &mut machine,
-            &mut Collected::default(),
-        )
-        .expect("the job runs");
+            r"
+      - run: echo hi
+",
+        );
 
         assert_eq!((machine.started, machine.finished), (1, 1));
+    }
+
+    #[test]
+    fn a_forgiven_failure_counts_as_success_to_what_follows() {
+        let mut machine = Recorder {
+            code: Some(1),
+            ..Recorder::default()
+        };
+
+        ran(
+            &mut machine,
+            r"
+      - id: forgiven
+        name: forgiven
+        continue-on-error: true
+        run: echo hi
+      - name: conclusion
+        if: steps.forgiven.conclusion == 'success'
+        run: echo hi
+      - name: outcome
+        if: always() && steps.forgiven.outcome == 'failure'
+        run: echo hi
+",
+        );
+
+        assert_eq!(
+            machine.ran,
+            ["forgiven", "conclusion", "outcome"],
+            "what the step did is a failure and what it counts as is a success, and the steps \
+             after it can read both"
+        );
+    }
+
+    #[test]
+    fn a_step_that_was_passed_over_is_still_in_the_context() {
+        let mut machine = Recorder::default();
+
+        ran(
+            &mut machine,
+            r"
+      - id: passed_over
+        name: passed over
+        if: github.event_name == 'schedule'
+        run: echo hi
+      - name: after
+        if: steps.passed_over.outcome == 'skipped'
+        run: echo hi
+",
+        );
+
+        assert_eq!(
+            machine.ran,
+            ["after"],
+            "a step nothing ran is remembered as one that was skipped"
+        );
+    }
+
+    #[test]
+    fn a_machine_missing_what_the_job_asked_for_still_runs_its_steps() {
+        let mut machine = Recorder {
+            missing: true,
+            ..Recorder::default()
+        };
+
+        let summary = ran(
+            &mut machine,
+            r"
+      - name: ordinary
+        run: echo hi
+      - name: whatever happened
+        if: always()
+        run: echo hi
+",
+        );
+
+        assert_eq!(
+            machine.ran,
+            ["whatever happened"],
+            "the job is failing before its first step, so only what runs anyway does"
+        );
+        assert_eq!(
+            summary.jobs,
+            vec![("build".to_owned(), Conclusion::Failure)]
+        );
     }
 
     #[test]

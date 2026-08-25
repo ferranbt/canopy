@@ -142,3 +142,66 @@ pub fn cache_directory() -> PathBuf {
             PathBuf::from(home).join(".cache/canopy/actions")
         })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn workspace(name: &str) -> PathBuf {
+        let workspace = std::env::temp_dir().join(format!("canopy-actions-{name}"));
+        let action = workspace.join("actions/greet");
+        std::fs::create_dir_all(&action).expect("somewhere to put an action");
+        std::fs::write(
+            action.join("action.yml"),
+            "name: Greet\nruns:\n  using: node20\n  main: index.js\n",
+        )
+        .expect("an action to find");
+
+        workspace
+    }
+
+    #[test]
+    fn a_local_action_keeps_the_path_it_was_written_with_inside_a_composite() {
+        let workspace = workspace("written-with");
+        let cache = std::env::temp_dir().join("canopy-actions-cache");
+        let uses = Uses::Local("./actions/greet".into());
+
+        let alone = resolve(&uses, &workspace, &cache, false).expect("it is there");
+        assert_eq!(
+            alone.path,
+            workspace.join("actions/greet"),
+            "a step of a job is told where the action is without the `./` it was written with"
+        );
+
+        let inside = resolve(&uses, &workspace, &cache, true).expect("it is there");
+        assert_eq!(
+            inside.path,
+            workspace.join("./actions/greet"),
+            "a step of a composite action is told the path as it was written, which is where \
+             GitHub leaves it"
+        );
+    }
+
+    #[test]
+    fn a_local_action_that_is_not_there_says_what_github_says() {
+        let workspace = workspace("not-there");
+        let cache = std::env::temp_dir().join("canopy-actions-cache");
+
+        let err = resolve(
+            &Uses::Local("./actions/nowhere".into()),
+            &workspace,
+            &cache,
+            false,
+        )
+        .expect_err("nothing is there");
+
+        assert_eq!(
+            err.to_string(),
+            format!(
+                "Can't find 'action.yml', 'action.yaml' or 'Dockerfile' under '{}'. \
+                 Did you forget to run actions/checkout before running your local action?",
+                workspace.join("actions/nowhere").display()
+            )
+        );
+    }
+}

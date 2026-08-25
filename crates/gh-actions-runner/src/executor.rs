@@ -593,6 +593,76 @@ mod tests {
         )
     }
 
+    fn shell(shell: &str, named: bool) -> (String, Vec<String>) {
+        Exec::Script {
+            shell: shell.to_owned(),
+            script: PathBuf::from("/tmp/step.sh"),
+            named,
+        }
+        .to_command(&BTreeMap::new())
+        .expect("a shell the runner knows")
+    }
+
+    #[test]
+    fn a_shell_a_step_asked_for_is_stricter_than_the_one_it_is_given() {
+        assert_eq!(
+            shell("bash", true),
+            (
+                "bash".to_owned(),
+                vec![
+                    "--noprofile".to_owned(),
+                    "--norc".to_owned(),
+                    "-e".to_owned(),
+                    "-o".to_owned(),
+                    "pipefail".to_owned(),
+                    "/tmp/step.sh".to_owned(),
+                ]
+            ),
+            "a bash a step named reads none of its start-up files, and a failing half of a \
+             pipe fails the step"
+        );
+
+        assert_eq!(
+            shell("bash", false),
+            (
+                "bash".to_owned(),
+                vec!["-e".to_owned(), "/tmp/step.sh".to_owned()]
+            ),
+            "the shell a step is given for naming none only stops at the failing line"
+        );
+    }
+
+    #[test]
+    fn sh_stops_at_a_failing_line_too() {
+        assert_eq!(
+            shell("sh", false),
+            (
+                "sh".to_owned(),
+                vec!["-e".to_owned(), "/tmp/step.sh".to_owned()]
+            )
+        );
+    }
+
+    #[test]
+    fn python_is_handed_nothing_but_the_script() {
+        assert_eq!(
+            shell("python", true),
+            ("python3".to_owned(), vec!["/tmp/step.sh".to_owned()])
+        );
+    }
+
+    #[test]
+    fn a_shell_the_runner_has_not_got_is_refused() {
+        let refused = Exec::Script {
+            shell: "fish".to_owned(),
+            script: PathBuf::from("/tmp/step.sh"),
+            named: true,
+        }
+        .to_command(&BTreeMap::new());
+
+        assert!(matches!(refused, Err(Error::Unsupported(_))));
+    }
+
     #[test]
     fn the_host_runs_a_command_and_reports_how_it_went() {
         let mut machine = HostMachine;
@@ -604,6 +674,87 @@ mod tests {
 
         assert!(!result.status.success);
         assert_eq!(result.status.code, Some(3));
+    }
+
+    #[test]
+    fn a_line_that_is_not_text_still_reaches_the_log() {
+        let mut machine = HostMachine;
+        let mut out = Collected::default();
+        let request = script("not-text", r"printf 'before \303\050 after\n'");
+
+        machine.exec(&request, &mut out).expect("runs");
+
+        assert_eq!(
+            out.output(),
+            ["before \u{fffd}( after"],
+            "bytes that are not text are shown for what they are rather than dropped"
+        );
+    }
+
+    #[test]
+    fn commands_stop_at_a_token_and_start_again_at_it() {
+        let mut machine = HostMachine;
+        let mut out = Collected::default();
+        let request = script(
+            "stop-commands",
+            "echo '::warning::heard'\n\
+             echo '::stop-commands::a-token'\n\
+             echo '::warning::only what it says'\n\
+             echo '::a-token::'\n\
+             echo '::warning::heard again'\n",
+        );
+
+        machine.exec(&request, &mut out).expect("runs");
+
+        assert_eq!(
+            out.messages_by_level(Level::Warning),
+            ["heard", "heard again"],
+            "what a step says between the tokens is not a command"
+        );
+        assert!(
+            out.output().contains(&"::warning::only what it says"),
+            "and is printed as the text it is"
+        );
+        assert!(
+            out.output().contains(&"::stop-commands::***"),
+            "the token is hidden, so nothing a step prints can pass for it"
+        );
+    }
+
+    #[test]
+    fn a_command_that_was_taken_away_is_refused_by_name() {
+        let mut machine = HostMachine;
+        let mut out = Collected::default();
+        let request = script("set-env", "echo '::set-env name=SNEAKY::1'");
+
+        let result = machine.exec(&request, &mut out).expect("runs");
+
+        assert!(!result.status.success, "asking for it fails the step");
+        let said = out.messages_by_level(Level::Error);
+        assert_eq!(
+            said[0],
+            "Unable to process command '::set-env name=SNEAKY::1' successfully."
+        );
+        assert!(said[1].starts_with("The `set-env` command is disabled."));
+    }
+
+    #[test]
+    fn and_is_allowed_when_the_step_asked_for_it_by_name() {
+        let mut machine = HostMachine;
+        let mut out = Collected::default();
+        let request = script("set-env-allowed", "echo '::set-env name=SNEAKY::1'")
+            .env("ACTIONS_ALLOW_UNSECURE_COMMANDS", "true");
+
+        let result = machine.exec(&request, &mut out).expect("runs");
+
+        assert!(result.status.success);
+        assert_eq!(
+            result.commands,
+            [WorkflowCommand::SetEnv {
+                name: "SNEAKY".to_owned(),
+                value: "1".to_owned(),
+            }]
+        );
     }
 
     #[test]

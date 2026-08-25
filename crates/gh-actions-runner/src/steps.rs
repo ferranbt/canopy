@@ -167,6 +167,8 @@ pub fn plan(
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use gh_actions_spec::{Action, NodeRuns};
 
     use super::*;
@@ -213,6 +215,54 @@ mod tests {
 
         assert!(Phase::Pre.script(&plain.runs).is_none());
         assert!(Phase::Post.script(&plain.runs).is_none());
+    }
+
+    fn composite(name: &str, inner: &str) -> PathBuf {
+        let workspace = std::env::temp_dir().join(format!("canopy-steps-{name}"));
+        let action = workspace.join("actions/outer");
+        std::fs::create_dir_all(&action).expect("somewhere to put an action");
+        std::fs::write(
+            action.join("action.yml"),
+            format!("name: Outer\nruns:\n  using: composite\n  steps:\n{inner}"),
+        )
+        .expect("an action to find");
+
+        workspace
+    }
+
+    fn phases(workspace: &Path) -> Vec<Phase> {
+        let steps = crate::testing::steps_of(
+            r"
+      - uses: ./actions/outer
+",
+        );
+
+        plan(&steps, workspace, &std::env::temp_dir(), false)
+            .expect("the action is there")
+            .into_iter()
+            .map(|planned| planned.phase)
+            .collect()
+    }
+
+    #[test]
+    fn a_composite_that_uses_actions_is_torn_down_after_the_job() {
+        let uses_one = composite(
+            "uses-one",
+            "    - uses: ./actions/greet\n    - shell: bash\n      run: echo hi\n",
+        );
+
+        assert_eq!(
+            phases(&uses_one),
+            [Phase::Main, Phase::Post],
+            "the post steps of what it used run at the end of the job, in a post step of its own"
+        );
+    }
+
+    #[test]
+    fn one_that_only_runs_scripts_has_nothing_to_tear_down() {
+        let scripts_only = composite("scripts-only", "    - shell: bash\n      run: echo hi\n");
+
+        assert_eq!(phases(&scripts_only), [Phase::Main]);
     }
 
     #[test]

@@ -157,6 +157,49 @@ mod tests {
     }
 
     #[test]
+    fn the_runner_github_ships_has_no_notice_command() {
+        assert!(
+            Command::parse("::notice::just so you know").is_none(),
+            "it is printed as the line it is, the way an unknown command is"
+        );
+    }
+
+    #[test]
+    fn the_older_spellings_are_read_so_they_can_be_refused() {
+        assert_eq!(
+            Command::parse("::set-env name=SNEAKY::value"),
+            Some(Command::SetEnv {
+                name: "SNEAKY".to_owned(),
+                value: "value".to_owned(),
+            })
+        );
+        assert_eq!(
+            Command::parse("::add-path::/somewhere"),
+            Some(Command::AddPath("/somewhere".to_owned()))
+        );
+    }
+
+    #[test]
+    fn a_step_can_stop_the_runner_reading_what_it_says() {
+        assert_eq!(
+            Command::parse("::stop-commands::a-token"),
+            Some(Command::Stop("a-token".to_owned()))
+        );
+        assert_eq!(Command::parse("::echo::on"), Some(Command::Echo(true)));
+        assert_eq!(Command::parse("::echo::off"), Some(Command::Echo(false)));
+    }
+
+    #[test]
+    fn a_level_raised_over_nothing_is_not_raised() {
+        let empty = Command::parse("::warning::").expect("a command all the same");
+
+        assert!(
+            empty.to_event().is_none(),
+            "a warning with nothing to say leaves nothing behind"
+        );
+    }
+
+    #[test]
     fn ordinary_output_is_left_alone() {
         assert!(Command::parse("building the project").is_none());
         assert!(Command::parse("a line mentioning :: in passing").is_none());
