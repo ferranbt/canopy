@@ -1,5 +1,7 @@
 # Canopy
 
+[![conformance](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ferranbt/canopy/main/tests/num_tests.json)](tests/testdata)
+
 A modular implementation of the GitHub Actions protocol, in Rust.
 
 It comes in two halves. The **SDK** is a set of crates covering the protocol itself: the
