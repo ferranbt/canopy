@@ -31,9 +31,17 @@ fn main() -> Result<()> {
             let context =
                 local_runner::checkout::context(&case.workspace, "push", &case.temp, false);
             let mut outcome = Outcome::default();
+            let mut results = std::collections::BTreeMap::new();
 
             for planned in &case.plan.jobs {
-                gh.run(
+                let mut context = context.clone();
+                context.needs = planned
+                    .needs
+                    .iter()
+                    .filter_map(|id| Some((id.clone(), results.get(id).cloned()?)))
+                    .collect();
+
+                let came = gh.run(
                     runner::Job {
                         workflow: &case.workflow,
                         planned,
@@ -42,6 +50,8 @@ fn main() -> Result<()> {
                     },
                     &mut outcome,
                 )?;
+
+                results.insert(planned.id.clone(), came);
             }
 
             Ok(outcome)

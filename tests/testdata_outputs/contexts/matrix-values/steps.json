@@ -1,0 +1,156 @@
+[
+  {
+    "event": "job-started",
+    "id": "each-combination",
+    "label": "each-combination (debug)"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Building debug"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Building debug",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What the combination holds"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the combination holds",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Only where include reached"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Only where include reached",
+    "conclusion": "skipped"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Where it did not"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Where it did not",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "An action given a value from the combination"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "An action given a value from the combination",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "What the strategy says of this run"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "What the strategy says of this run",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "each-combination",
+    "label": "each-combination (debug)",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-started",
+    "id": "each-combination",
+    "label": "each-combination (true, release)"
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "Building release"
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "Building release",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 7,
+    "name": "What the combination holds"
+  },
+  {
+    "event": "step-finished",
+    "index": 7,
+    "name": "What the combination holds",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 8,
+    "name": "Only where include reached"
+  },
+  {
+    "event": "step-finished",
+    "index": 8,
+    "name": "Only where include reached",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 9,
+    "name": "Where it did not"
+  },
+  {
+    "event": "step-finished",
+    "index": 9,
+    "name": "Where it did not",
+    "conclusion": "skipped"
+  },
+  {
+    "event": "step-started",
+    "index": 10,
+    "name": "An action given a value from the combination"
+  },
+  {
+    "event": "step-finished",
+    "index": 10,
+    "name": "An action given a value from the combination",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 11,
+    "name": "What the strategy says of this run"
+  },
+  {
+    "event": "step-finished",
+    "index": 11,
+    "name": "What the strategy says of this run",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "each-combination",
+    "label": "each-combination (true, release)",
+    "conclusion": "success"
+  }
+]

@@ -4,7 +4,7 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::channel;
 
-use gh_actions_context::{Conclusion, RunContext};
+use gh_actions_context::{Conclusion, JobResult, RunContext};
 use gh_actions_listener::client::types::Record;
 use gh_actions_plan::PlannedJob;
 use gh_actions_runner::report::{Event, Reporter, Stream};
@@ -77,7 +77,7 @@ impl GhRunner {
 
     /// A container per job: a runner takes one job and stops, which is the only thing it
     /// does without being asked to wait for work.
-    pub fn run(&self, job: Job<'_>, out: &mut dyn Reporter) -> Result<(), String> {
+    pub fn run(&self, job: Job<'_>, out: &mut dyn Reporter) -> Result<JobResult, String> {
         let nth = self.jobs.fetch_add(1, Ordering::Relaxed) + 1;
         let message = message::encode(
             job.workflow,
@@ -99,7 +99,7 @@ impl GhRunner {
     }
 }
 
-fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), String> {
+fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<JobResult, String> {
     let mut written: BTreeMap<String, Record> = BTreeMap::new();
     let mut uploads: HashMap<String, String> = HashMap::new();
     let mut came = None;
@@ -183,10 +183,11 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         conclusion: ended,
     });
 
-    if let Some((_, outputs)) = came.filter(|(_, outputs)| !outputs.is_empty()) {
+    let outputs = came.map(|(_, outputs)| outputs).unwrap_or_default();
+    if !outputs.is_empty() {
         out.report(Event::JobOutputs {
             id: id.to_owned(),
-            outputs,
+            outputs: outputs.clone(),
         });
     }
 
@@ -194,7 +195,10 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
     // without running anything is a job the runner never picked up.
     match (ran, ended) {
         (0, Conclusion::Success) => Err("the runner ran no step".to_owned()),
-        _ => Ok(()),
+        _ => Ok(JobResult {
+            conclusion: ended,
+            outputs,
+        }),
     }
 }
 

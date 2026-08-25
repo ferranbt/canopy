@@ -1,0 +1,40 @@
+name: What a job needs is told to it
+
+on: push
+
+jobs:
+  first:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      built-by: ${{ steps.meta.outputs.built-by }}
+    steps:
+      - id: meta
+        name: Something for the jobs that need this one
+        run: |
+          {
+            echo "version=1.2.3"
+            echo "built-by=the first job"
+          } >> "$GITHUB_OUTPUT"
+
+  second:
+    needs: first
+    runs-on: ubuntu-latest
+    steps:
+      - name: What the job it needed left behind
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ needs.first.outputs.version }} == 1.2.3
+            ${{ needs.first.outputs.built-by }} == the first job
+            ${{ needs.first.result }} == success
+            ${{ needs.first.outputs.nothing-of-the-sort }} ==      # an output it never declared
+
+      - name: An action given what the job it needed returned
+        uses: ./actions/awkward-inputs
+        with:
+          needed: ${{ needs.first.outputs.version }}
+
+      - name: A condition read against it
+        if: needs.first.result == 'success'
+        run: echo "the job it needed went well"
