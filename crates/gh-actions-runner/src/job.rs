@@ -841,11 +841,17 @@ impl JobRunner<'_> {
             let shown: Vec<(String, String)> = inputs.clone().into_iter().collect();
 
             self.echoed_action(uses, &shown, &own, depth > 0);
+
+            // An image a step names has no action.yml to say how to run it, so the step says
+            // it: `entrypoint` and `args` are what an action would have declared.
+            let entrypoint = inputs.get("entrypoint").cloned();
+            let args = inputs.get("args").map_or_else(Vec::new, |args| words(args));
+
             return self.run_container(
                 ContainerRun {
                     image: Image::Registry(image),
-                    entrypoint: None,
-                    args: &[],
+                    entrypoint: entrypoint.as_deref(),
+                    args: &args,
                     inputs: &inputs,
                     env: None,
                 },
@@ -1313,6 +1319,35 @@ struct StepOutcome {
     code: Option<i32>,
     outputs: BTreeMap<String, String>,
     state: BTreeMap<String, String>,
+}
+
+/// The words of a command line, where what is quoted is one word however it is spaced.
+fn words(line: &str) -> Vec<String> {
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let (mut quote, mut started) = (None, false);
+
+    for character in line.chars() {
+        match (character, quote) {
+            ('\'' | '"', None) => (quote, started) = (Some(character), true),
+            (character, Some(open)) if character == open => quote = None,
+            (character, None) if character.is_whitespace() => {
+                if started {
+                    words.push(std::mem::take(&mut word));
+                    started = false;
+                }
+            }
+            (character, _) => {
+                word.push(character);
+                started = true;
+            }
+        }
+    }
+
+    if started {
+        words.push(word);
+    }
+    words
 }
 
 /// A value of several lines is written out over as many, with only the first beside its name.

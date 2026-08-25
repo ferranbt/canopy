@@ -1,0 +1,79 @@
+[
+  {
+    "event": "job-started",
+    "id": "handed-over",
+    "label": "handed-over"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "An action that says what it was given"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "An action that says what it was given",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What came back out of it"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What came back out of it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "One that comes back with something to complain about"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "One that comes back with something to complain about",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "What that one came to"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "What that one came to",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "An image run with what the step asked of it"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "An image run with what the step asked of it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "The same image, by the digest it is known by"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "The same image, by the digest it is known by",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "handed-over",
+    "label": "handed-over",
+    "conclusion": "success"
+  }
+]
