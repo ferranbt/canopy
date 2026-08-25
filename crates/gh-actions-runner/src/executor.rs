@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 use gh_actions_plan::PlannedJob;
 
 use crate::commands::Command as WorkflowCommand;
+use crate::containers::{Containers, Images};
 use crate::error::{At, Error};
 use crate::report::{Event, Level, Reporter, Stream};
 
@@ -224,6 +225,32 @@ pub struct ExecResult {
     pub commands: Vec<WorkflowCommand>,
 }
 
+/// A step run where the runner itself is, which is where GitHub runs one that asked for
+/// nowhere else.
+pub fn on_the_machine(
+    program: &str,
+    args: &[String],
+    request: &ExecRequest,
+    out: &mut dyn Reporter,
+) -> Result<ExecResult, Error> {
+    let mut command = Command::new(program);
+    command
+        .args(args)
+        .envs(&request.env)
+        .current_dir(&request.cwd);
+
+    run_until(command, request, out)
+}
+
+pub fn found_on_the_machine(program: &str) -> String {
+    std::env::var("PATH")
+        .unwrap_or_default()
+        .split(':')
+        .map(|directory| std::path::Path::new(directory).join(program))
+        .find(|path| path.is_file())
+        .map_or_else(|| program.to_owned(), |path| path.display().to_string())
+}
+
 /// How a machine came up for the job it was given.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Started {
@@ -237,12 +264,7 @@ pub trait Machine {
     fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<Started, Error>;
 
     fn found(&mut self, program: &str) -> String {
-        std::env::var("PATH")
-            .unwrap_or_default()
-            .split(':')
-            .map(|directory| std::path::Path::new(directory).join(program))
-            .find(|path| path.is_file())
-            .map_or_else(|| program.to_owned(), |path| path.display().to_string())
+        found_on_the_machine(program)
     }
 
     fn finish(&mut self) -> Result<(), Error>;
@@ -254,13 +276,7 @@ pub trait Machine {
         request: &ExecRequest,
         out: &mut dyn Reporter,
     ) -> Result<ExecResult, Error> {
-        let mut command = Command::new(program);
-        command
-            .args(args)
-            .envs(&request.env)
-            .current_dir(&request.cwd);
-
-        run_until(command, request, out)
+        on_the_machine(program, args, request, out)
     }
 
     fn script(
@@ -310,15 +326,57 @@ pub trait Machine {
 }
 
 #[derive(Debug, Default)]
-pub struct HostMachine;
+pub struct HostMachine {
+    containers: Containers,
+}
+
+impl HostMachine {
+    pub fn new(mounts: Vec<std::path::PathBuf>) -> Self {
+        Self {
+            containers: Containers::new(Images::new(), mounts),
+        }
+    }
+}
 
 impl Machine for HostMachine {
-    fn start(&mut self, _job: &PlannedJob, _out: &mut dyn Reporter) -> Result<Started, Error> {
-        Ok(Started::Ready)
+    fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<Started, Error> {
+        let (services, started) = self.containers.start_services(job, out)?;
+
+        let Some(image) = job
+            .spec
+            .container
+            .as_ref()
+            .and(self.containers.image_for(job))
+        else {
+            return Ok(started);
+        };
+
+        self.containers.start_job(job, &image, &services, out)?;
+        Ok(started)
+    }
+
+    fn run(
+        &mut self,
+        program: &str,
+        args: &[String],
+        request: &ExecRequest,
+        out: &mut dyn Reporter,
+    ) -> Result<ExecResult, Error> {
+        match self.containers.running() {
+            true => self.containers.exec(program, args, request, out),
+            false => on_the_machine(program, args, request, out),
+        }
+    }
+
+    fn found(&mut self, program: &str) -> String {
+        match self.containers.running() {
+            true => self.containers.found(program),
+            false => found_on_the_machine(program),
+        }
     }
 
     fn finish(&mut self) -> Result<(), Error> {
-        Ok(())
+        self.containers.remove()
     }
 }
 
@@ -432,7 +490,7 @@ fn came_back_with(status: &std::process::ExitStatus) -> Option<i32> {
     {
         use std::os::unix::process::ExitStatusExt;
 
-        return status.code().or_else(|| status.signal().map(|by| 128 + by));
+        status.code().or_else(|| status.signal().map(|by| 128 + by))
     }
 
     #[cfg(not(unix))]
@@ -710,7 +768,7 @@ mod tests {
 
     #[test]
     fn the_host_runs_a_command_and_reports_how_it_went() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let request = script("how-it-went", "echo hello; exit 3");
 
         let result = machine
@@ -723,7 +781,7 @@ mod tests {
 
     #[test]
     fn a_line_that_is_not_text_still_reaches_the_log() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let mut out = Collected::default();
         let request = script("not-text", r"printf 'before \303\050 after\n'");
 
@@ -738,7 +796,7 @@ mod tests {
 
     #[test]
     fn commands_stop_at_a_token_and_start_again_at_it() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let mut out = Collected::default();
         let request = script(
             "stop-commands",
@@ -768,7 +826,7 @@ mod tests {
 
     #[test]
     fn a_command_that_was_taken_away_is_refused_by_name() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let mut out = Collected::default();
         let request = script("set-env", "echo '::set-env name=SNEAKY::1'");
 
@@ -785,7 +843,7 @@ mod tests {
 
     #[test]
     fn and_is_allowed_when_the_step_asked_for_it_by_name() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let mut out = Collected::default();
         let request = script("set-env-allowed", "echo '::set-env name=SNEAKY::1'")
             .env("ACTIONS_ALLOW_UNSECURE_COMMANDS", "true");
@@ -819,7 +877,7 @@ mod tests {
 
     #[test]
     fn a_mask_hides_what_the_rest_of_the_step_prints() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let request = script(
             "add-mask",
             "echo '::add-mask::hunter2'; echo 'password is hunter2'",
@@ -838,7 +896,7 @@ mod tests {
 
     #[test]
     fn a_step_that_was_told_a_secret_hides_it_from_the_start() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let request =
             script("told-a-secret", "echo 'leaking hunter2'").masks(vec!["hunter2".to_owned()]);
 
@@ -849,7 +907,7 @@ mod tests {
 
     #[test]
     fn workflow_commands_are_kept_and_ordinary_output_is_not() {
-        let mut machine = HostMachine;
+        let mut machine = HostMachine::default();
         let request = script("commands", "echo plain; echo '::set-output name=x::1'");
 
         let result = machine

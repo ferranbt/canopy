@@ -29,13 +29,19 @@ fn on_this_machine(case: &Case) -> Result<Outcome, String> {
         masks: Vec::new(),
     };
 
+    let mut machine = gh_actions_runner::HostMachine::new(vec![
+        options.workspace.clone(),
+        options.temp.clone(),
+        options.cache.clone(),
+    ]);
+
     let mut outcome = Outcome::default();
     gh_actions_runner::run(
         &case.workflow,
         &case.plan,
         &context,
         &options,
-        &mut gh_actions_runner::HostMachine,
+        &mut machine,
         &mut outcome,
     )
     .map_err(|err| format!("cannot run: {err}"))?;

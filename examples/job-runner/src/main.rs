@@ -136,5 +136,11 @@ pub fn run(
         },
     };
 
-    gh_actions_runner::run_steps(&planned, &context, &options, &mut HostMachine, out)
+    let mut machine = HostMachine::new(vec![
+        options.workspace.clone(),
+        options.temp.clone(),
+        options.cache.clone(),
+    ]);
+
+    gh_actions_runner::run_steps(&planned, &context, &options, &mut machine, out)
 }
