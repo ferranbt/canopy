@@ -7,6 +7,8 @@ pub mod executor;
 pub mod job;
 
 pub mod steps;
+#[cfg(test)]
+mod testing;
 pub mod validate;
 
 pub use error::{At, Error};

@@ -181,6 +181,16 @@ impl Collected {
             .collect()
     }
 
+    pub fn messages_by_level(&self, level: Level) -> Vec<&str> {
+        self.events
+            .iter()
+            .filter_map(|event| match event {
+                Event::Message { level: at, text } if *at == level => Some(text.as_str()),
+                _ => None,
+            })
+            .collect()
+    }
+
     pub fn steps(&self) -> Vec<&str> {
         self.events
             .iter()
