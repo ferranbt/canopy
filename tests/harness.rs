@@ -1,9 +1,8 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use gh_actions_context::Conclusion;
 use gh_actions_plan::Plan;
-use gh_actions_runner::report::{Event, Reporter, Stream};
+use gh_actions_runner::report::{self, Event, Reporter};
 use gh_actions_services::Services;
 use gh_actions_spec::Workflow;
 use local_runner::{Config, Local};
@@ -23,52 +22,6 @@ pub struct Printed {
 
 impl Reporter for Outcome {
     fn report(&mut self, event: Event) {
-        // Only the groups a workflow asked for, which a runner names in brackets.
-        if let Event::Progress { text } = &event
-            && !text.starts_with('[')
-        {
-            return;
-        }
-
-        // What the node an action runs on says about itself, not what the action said.
-        if let Event::StepOutput { line, .. } = &event
-            && (line.contains("DeprecationWarning:") || line.starts_with("(Use `node"))
-        {
-            return;
-        }
-
-        if let Event::StepOutput { line, .. } = &event
-            && got_ready(line)
-        {
-            return;
-        }
-
-        // A message of several lines reaches the log of the runner GitHub ships as the first
-        // of them under the level it was raised at, and the rest as what the step printed.
-        if let Event::Message { level, text } = &event
-            && let Some((first, rest)) = text.split_once('\n')
-        {
-            let (level, rest) = (*level, rest.to_owned());
-            self.report(Event::Message {
-                level,
-                text: first.to_owned(),
-            });
-            for line in rest.lines() {
-                self.report(Event::StepOutput {
-                    stream: Stream::Out,
-                    line: line.to_owned(),
-                });
-            }
-            return;
-        }
-
-        // What a runner says between steps goes to the job's own log rather than a step's,
-        // and the runner GitHub ships keeps that to itself.
-        let between = matches!(&event, Event::Message { .. } | Event::StepOutput { .. });
-        if between && !self.inside {
-            return;
-        }
-
         // The runner GitHub ships keeps a composite action's inner steps to itself, so only
         // their boundaries go: what they printed is the step's all the same.
         let nested = match &event {
@@ -79,30 +32,19 @@ impl Reporter for Outcome {
             return;
         }
 
+        for line in report::github_log(&event) {
+            let line = plain(&line);
+            let line = line.trim_end();
+
+            if !self.inside || got_ready(line) {
+                continue;
+            }
+            if let Some(printed) = self.logs.last_mut() {
+                printed.lines.push(line.to_owned());
+            }
+        }
+
         match event {
-            Event::StepOutput { line, .. } => {
-                if let Some(printed) = self.logs.last_mut() {
-                    printed.lines.push(line.trim_end().to_owned());
-                }
-            }
-            // What a step that failed came back with is only in the log of the runner GitHub
-            // ships when a shell was what ran, so it is not something to hold either to.
-            Event::StepFinished {
-                index,
-                name,
-                depth,
-                conclusion: Conclusion::Failure,
-                ..
-            } => {
-                self.inside = false;
-                self.events.push(Event::StepFinished {
-                    index,
-                    name,
-                    depth,
-                    conclusion: Conclusion::Failure,
-                    code: None,
-                });
-            }
             Event::StepStarted { name, .. } => {
                 self.inside = true;
                 self.logs.push(Printed {
@@ -115,10 +57,28 @@ impl Reporter for Outcome {
                     depth: 0,
                 });
             }
-            event => {
-                self.inside &= !matches!(event, Event::StepFinished { .. });
-                self.events.push(event);
+            Event::StepFinished {
+                name,
+                conclusion,
+                depth,
+                ..
+            } => {
+                self.inside = false;
+                self.events.push(Event::StepFinished {
+                    index: self.logs.len().saturating_sub(1),
+                    name,
+                    depth,
+                    conclusion,
+                    code: None,
+                });
             }
+            // Everything a log has a line for is in the log already.
+            Event::StepOutput { .. }
+            | Event::Message { .. }
+            | Event::GroupStarted { .. }
+            | Event::GroupFinished
+            | Event::Progress { .. } => {}
+            event => self.events.push(event),
         }
     }
 }
@@ -135,7 +95,7 @@ impl Outcome {
     /// What no two runs agree on and neither is wrong about.
     pub fn settle(&mut self) {
         for said in self.said() {
-            *said = settled(&plain(said));
+            *said = settled(said);
 
             if let Some((before, rest)) = said.split_once(" B)")
                 && let Some((head, bytes)) = before.rsplit_once('(')
@@ -297,6 +257,8 @@ fn got_ready(line: &str) -> bool {
         || line.starts_with("Getting action download info")
         || line.starts_with("Download action repository")
         || line.starts_with("##[command]/usr/bin/docker")
+        || line.contains("DeprecationWarning:")
+        || line.starts_with("(Use `node")
         || line.strip_prefix("sha256:").is_some_and(hexadecimal)
 }
 

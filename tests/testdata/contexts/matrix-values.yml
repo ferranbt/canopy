@@ -1,0 +1,42 @@
+name: What a matrix job is told
+
+on: push
+
+jobs:
+  each-combination:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [debug, release]
+        include:
+          - target: release
+            optimised: true
+
+    steps:
+      - name: Building ${{ matrix.target }}
+        run: echo "the name of this step says ${{ matrix.target }}"
+
+      - name: What the combination holds
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ matrix.target }} != ''
+            ${{ matrix.nothing-of-the-sort }} ==              # a key the combination has not got
+
+      - name: Only where include reached
+        if: matrix.optimised
+        run: echo "optimised=${{ matrix.optimised }}"
+
+      - name: Where it did not
+        if: matrix.optimised != true
+        run: echo "plain ${{ matrix.target }}"
+
+      - name: An action given a value from the combination
+        uses: ./actions/awkward-inputs
+        with:
+          needed: ${{ matrix.target }}
+
+      - name: What the strategy says of this run
+        run: |
+          echo "fail-fast=${{ strategy.fail-fast }}"
+          echo "job-total=${{ strategy.job-total }}"

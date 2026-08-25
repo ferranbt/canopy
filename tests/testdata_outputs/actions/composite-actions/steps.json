@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "./actions/greet-composite",
-    "depth": 0
+    "name": "./actions/greet-composite"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "./actions/greet-composite",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Defaults are filled in when `with` is omitted",
-    "depth": 0
+    "name": "Defaults are filled in when `with` is omitted"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Defaults are filled in when `with` is omitted",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "What the composite action returned",
-    "depth": 0
+    "name": "What the composite action returned"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "What the composite action returned",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

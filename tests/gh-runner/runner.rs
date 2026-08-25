@@ -4,10 +4,10 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::channel;
 
-use gh_actions_context::{Conclusion, RunContext};
+use gh_actions_context::{Conclusion, JobResult, RunContext};
 use gh_actions_listener::client::types::Record;
 use gh_actions_plan::PlannedJob;
-use gh_actions_runner::report::{Event, Level, Reporter, Stream};
+use gh_actions_runner::report::{Event, Reporter, Stream};
 use gh_actions_spec::Workflow;
 
 use crate::message;
@@ -77,7 +77,7 @@ impl GhRunner {
 
     /// A container per job: a runner takes one job and stops, which is the only thing it
     /// does without being asked to wait for work.
-    pub fn run(&self, job: Job<'_>, out: &mut dyn Reporter) -> Result<(), String> {
+    pub fn run(&self, job: Job<'_>, out: &mut dyn Reporter) -> Result<JobResult, String> {
         let nth = self.jobs.fetch_add(1, Ordering::Relaxed) + 1;
         let message = message::encode(
             job.workflow,
@@ -99,7 +99,7 @@ impl GhRunner {
     }
 }
 
-fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), String> {
+fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<JobResult, String> {
     let mut written: BTreeMap<String, Record> = BTreeMap::new();
     let mut uploads: HashMap<String, String> = HashMap::new();
     let mut came = None;
@@ -150,25 +150,22 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         });
 
         let said = uploads.remove(&record.id).unwrap_or_default();
-        let (code, killed) = printed(&said, out);
-        let conclusion = conclusion(record.result.as_deref());
-
-        // Only a code worth complaining about is said out loud, so a step that came back
-        // and did not complain came back with 0. One that was killed never came back, and
-        // one that was skipped never went.
-        let code = match (code, conclusion) {
-            (Some(code), _) => Some(code),
-            (None, Conclusion::Skipped) => None,
-            (None, _) if killed => None,
-            (None, _) => Some(0),
-        };
+        said.lines()
+            .map(|line| clean(&without_timestamp(line)))
+            .filter(|line| !CHATTER.iter().any(|chatter| line.starts_with(chatter)))
+            .for_each(|line| {
+                out.report(Event::StepOutput {
+                    stream: Stream::Out,
+                    line,
+                });
+            });
 
         out.report(Event::StepFinished {
             index,
             name,
             depth: 0,
-            conclusion,
-            code,
+            conclusion: conclusion(record.result.as_deref()),
+            code: None,
         });
     }
 
@@ -186,10 +183,11 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         conclusion: ended,
     });
 
-    if let Some((_, outputs)) = came.filter(|(_, outputs)| !outputs.is_empty()) {
+    let outputs = came.map(|(_, outputs)| outputs).unwrap_or_default();
+    if !outputs.is_empty() {
         out.report(Event::JobOutputs {
             id: id.to_owned(),
-            outputs,
+            outputs: outputs.clone(),
         });
     }
 
@@ -197,45 +195,11 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
     // without running anything is a job the runner never picked up.
     match (ran, ended) {
         (0, Conclusion::Success) => Err("the runner ran no step".to_owned()),
-        _ => Ok(()),
+        _ => Ok(JobResult {
+            conclusion: ended,
+            outputs,
+        }),
     }
-}
-
-fn printed(said: &str, out: &mut dyn Reporter) -> (Option<i32>, bool) {
-    let (mut code, mut killed, mut echoing) = (None, false, false);
-
-    for line in said.lines() {
-        let line = clean(without_timestamp(line).as_str());
-        if CHATTER.iter().any(|chatter| line.starts_with(chatter)) {
-            continue;
-        }
-
-        // A runner opens a step by printing it back, which is the step as it was given.
-        if line.starts_with("##[group]Run ") {
-            echoing = true;
-        }
-        if echoing {
-            echoing = line != "##[endgroup]";
-            continue;
-        }
-        if line.contains("has timed out after") {
-            killed = true;
-        }
-
-        match reported(&line) {
-            Said::Event(event) => out.report(event),
-            Said::Code(said) => code = Some(said),
-            Said::Nothing => {}
-        }
-    }
-
-    (code, killed)
-}
-
-enum Said {
-    Event(Event),
-    Code(i32),
-    Nothing,
 }
 
 /// What a runner puts against a step's log although no step printed it.
@@ -250,21 +214,10 @@ const CHATTER: [&str; 8] = [
     "Machine name:",
 ];
 
-/// The steps handed over carry the ids they were given. A runner adds its own: `Set up job`
-/// and `Complete job`, which canopy has no counterpart for, and the hooks of every action
-/// that has them, which canopy names the other way round.
 fn named(record: &Record) -> Option<String> {
-    if record.id.starts_with(message::STEPS) {
-        return Some(record.name.clone());
-    }
+    let hook = record.name.starts_with("Pre ") || record.name.starts_with("Post ");
 
-    for (hook, phase) in [("Pre ", "pre"), ("Post ", "post")] {
-        if let Some(name) = record.name.strip_prefix(hook) {
-            return Some(format!("{name} ({phase})"));
-        }
-    }
-
-    None
+    (record.id.starts_with(message::STEPS) || hook).then(|| record.name.clone())
 }
 
 fn without_timestamp(line: &str) -> String {
@@ -272,43 +225,6 @@ fn without_timestamp(line: &str) -> String {
         Some((stamp, rest)) if stamp.ends_with('Z') && stamp.contains('T') => rest.to_owned(),
         _ => line.to_owned(),
     }
-}
-
-fn reported(line: &str) -> Said {
-    if let Some(code) = line
-        .strip_prefix("##[error]Process completed with exit code ")
-        .and_then(|code| code.trim_end_matches('.').parse().ok())
-    {
-        return Said::Code(code);
-    }
-
-    for (marker, level) in [
-        ("##[debug]", Level::Debug),
-        ("##[notice]", Level::Notice),
-        ("##[warning]", Level::Warning),
-        ("##[error]", Level::Error),
-    ] {
-        if let Some(text) = line.strip_prefix(marker) {
-            return Said::Event(Event::Message {
-                level,
-                text: text.to_owned(),
-            });
-        }
-    }
-
-    if let Some(name) = line.strip_prefix("##[group]") {
-        return Said::Event(Event::Progress {
-            text: format!("[{name}]"),
-        });
-    }
-    if line == "##[endgroup]" {
-        return Said::Nothing;
-    }
-
-    Said::Event(Event::StepOutput {
-        stream: Stream::Out,
-        line: line.to_owned(),
-    })
 }
 
 struct Agent {
@@ -362,24 +278,9 @@ fn start() -> Result<Agent, String> {
 }
 
 fn clean(line: &str) -> String {
-    let mut plain = String::with_capacity(line.len());
-    let mut rest = line;
-
-    while let Some(start) = rest.find('\u{1b}') {
-        plain.push_str(&rest[..start]);
-        rest = match rest[start..].find('m') {
-            Some(end) => &rest[start + end + 1..],
-            None => "",
-        };
-    }
-    plain.push_str(rest);
-
-    let plain = plain
-        .replace(WORKSPACE, "$GITHUB_WORKSPACE")
+    line.replace(WORKSPACE, "$GITHUB_WORKSPACE")
         .replace("/home/runner/_work/_temp", "$RUNNER_TEMP")
-        .replace("/home/runner/_work", "$RUNNER_WORK");
-
-    plain.trim_end().to_owned()
+        .replace("/home/runner/_work", "$RUNNER_WORK")
 }
 
 fn conclusion(result: Option<&str>) -> Conclusion {

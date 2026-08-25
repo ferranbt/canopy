@@ -7,78 +7,46 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Between the two tokens nothing is a command",
-    "depth": 0
-  },
-  {
-    "event": "message",
-    "level": "warning",
-    "text": "this one is heard"
-  },
-  {
-    "event": "message",
-    "level": "warning",
-    "text": "heard again"
+    "name": "Between the two tokens nothing is a command"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Between the two tokens nothing is a command",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "An output written while commands were stopped",
-    "depth": 0
+    "name": "An output written while commands were stopped"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "An output written while commands were stopped",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "What came through",
-    "depth": 0
+    "name": "What came through"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "What came through",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "Echoing commands back",
-    "depth": 0
-  },
-  {
-    "event": "message",
-    "level": "warning",
-    "text": "said with echo on"
-  },
-  {
-    "event": "message",
-    "level": "warning",
-    "text": "said with echo off"
+    "name": "Echoing commands back"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "Echoing commands back",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

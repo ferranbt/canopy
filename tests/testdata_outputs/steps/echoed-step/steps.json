@@ -1,0 +1,68 @@
+[
+  {
+    "event": "job-started",
+    "id": "said-before-it-runs",
+    "label": "said-before-it-runs"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Ask for the secret to be hidden before anything says it"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Ask for the secret to be hidden before anything says it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "A step of its own, with what the workflow gave it"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "A step of its own, with what the workflow gave it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "An action given the same sort of values"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "An action given the same sort of values",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "An action given a value of several lines"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "An action given a value of several lines",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "A script of several lines, with one that is blank"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "A script of several lines, with one that is blank",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "said-before-it-runs",
+    "label": "said-before-it-runs",
+    "conclusion": "success"
+  }
+]

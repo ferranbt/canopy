@@ -1,0 +1,101 @@
+[
+  {
+    "event": "job-started",
+    "id": "taken-already",
+    "label": "taken-already"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Something worth uploading"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Something worth uploading",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Upload it"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Upload it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Change what is in it"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Change what is in it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "Upload it again under the name already taken"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "Upload it again under the name already taken",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "What uploading it twice came to"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "What uploading it twice came to",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "Upload it again, saying what is there may go"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "Upload it again, saying what is there may go",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "Download whatever is under that name now"
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "Download whatever is under that name now",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 7,
+    "name": "Which of them came back"
+  },
+  {
+    "event": "step-finished",
+    "index": 7,
+    "name": "Which of them came back",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "taken-already",
+    "label": "taken-already",
+    "conclusion": "success"
+  }
+]

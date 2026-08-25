@@ -7,58 +7,46 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "What the functions return",
-    "depth": 0
+    "name": "What the functions return"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "What the functions return",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What toJSON writes",
-    "depth": 0
+    "name": "What toJSON writes"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What toJSON writes",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "A file the run can be held to",
-    "depth": 0
+    "name": "A file the run can be held to"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "A file the run can be held to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "What hashFiles makes of it",
-    "depth": 0
+    "name": "What hashFiles makes of it"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "What hashFiles makes of it",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

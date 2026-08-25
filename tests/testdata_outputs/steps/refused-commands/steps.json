@@ -7,54 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "The older spelling, without opting into it",
-    "depth": 0
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "Unable to process command '::add-path::$GITHUB_WORKSPACE/other' successfully."
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "The `add-path` command is disabled. Please upgrade to using Environment Files or opt into unsecure command execution by setting the `ACTIONS_ALLOW_UNSECURE_COMMANDS` environment variable to `true`. For more information see: https://github.blog/changelog/2020-10-01-github-actions-deprecating-set-env-and-add-path-commands/"
+    "name": "The older spelling, without opting into it"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "The older spelling, without opting into it",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the step that asked came to",
-    "depth": 0
+    "name": "What the step that asked came to"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the step that asked came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "The file it wrote is still there, whatever the command came to",
-    "depth": 0
+    "name": "The file it wrote is still there, whatever the command came to"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "The file it wrote is still there, whatever the command came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

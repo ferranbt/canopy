@@ -1,0 +1,68 @@
+[
+  {
+    "event": "job-started",
+    "id": "what-it-hashes",
+    "label": "what-it-hashes"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A tree with something to leave out of it"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A tree with something to leave out of it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What it makes of the patterns it was given"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What it makes of the patterns it was given",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "What it leaves out when told to"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "What it leaves out when told to",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "What it makes of a file that changed"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "What it makes of a file that changed",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "The same pattern over changed files"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "The same pattern over changed files",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "what-it-hashes",
+    "label": "what-it-hashes",
+    "conclusion": "success"
+  }
+]

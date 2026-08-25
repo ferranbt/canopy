@@ -1,0 +1,101 @@
+[
+  {
+    "event": "job-started",
+    "id": "folding-lines-away",
+    "label": "folding-lines-away"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A group with lines in it"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A group with lines in it",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "One group after another"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "One group after another",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "A group opened inside another"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "A group opened inside another",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "A group nothing closes"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "A group nothing closes",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "The step after the one that left a group open"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "The step after the one that left a group open",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "An end with no beginning"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "An end with no beginning",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 6,
+    "name": "A group with no name"
+  },
+  {
+    "event": "step-finished",
+    "index": 6,
+    "name": "A group with no name",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 7,
+    "name": "What a group is called can be worked out"
+  },
+  {
+    "event": "step-finished",
+    "index": 7,
+    "name": "What a group is called can be worked out",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "folding-lines-away",
+    "label": "folding-lines-away",
+    "conclusion": "success"
+  }
+]

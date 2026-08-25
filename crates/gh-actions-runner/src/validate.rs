@@ -144,8 +144,6 @@ pub fn inputs(steps: &[PlannedStep]) -> Vec<Finding> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use gh_actions_spec::{Action, ActionInput, NodeRuns, Runs, Scalar, Step, Uses};
 
     use super::*;
@@ -177,7 +175,7 @@ mod tests {
                 with: Some(
                     with.iter()
                         .map(|(key, value)| (key.to_string(), Scalar::String(value.to_string())))
-                        .collect::<BTreeMap<_, _>>(),
+                        .collect(),
                 ),
                 ..Step::default()
             },

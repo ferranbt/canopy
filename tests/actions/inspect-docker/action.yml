@@ -1,0 +1,28 @@
+name: Inspect (docker)
+description: Says what a container action was handed, and comes back with what it was told to.
+
+inputs:
+  who-to-greet:
+    description: A name with a dash in it.
+    required: false
+    default: dashed
+  two words:
+    description: A name with a space in it.
+    required: false
+    default: spaced
+  code:
+    description: What the container should come back with.
+    required: false
+    default: "0"
+
+runs:
+  using: docker
+  image: Dockerfile
+  entrypoint: /inspect.sh
+  args:
+    - the first argument
+    - ${{ inputs.who-to-greet }}
+    - ${{ inputs.code }}
+  env:
+    FROM_THE_ACTION: set where the action was declared
+    NAMED_AFTER_AN_INPUT: ${{ inputs.who-to-greet }}

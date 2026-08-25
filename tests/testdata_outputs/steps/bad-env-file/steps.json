@@ -7,106 +7,68 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A heredoc nothing closes",
-    "depth": 0
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "Unable to process file command 'env' successfully."
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "Invalid value. Matching delimiter not found 'EOF'"
+    "name": "A heredoc nothing closes"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A heredoc nothing closes",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the step that wrote it came to",
-    "depth": 0
+    "name": "What the step that wrote it came to"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the step that wrote it came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "A value carrying the delimiter it was written with",
-    "depth": 0
+    "name": "A value carrying the delimiter it was written with"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "A value carrying the delimiter it was written with",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "What that left behind",
-    "depth": 0
+    "name": "What that left behind"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "What that left behind",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "A line that is neither a name nor a heredoc",
-    "depth": 0
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "Unable to process file command 'env' successfully."
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "Invalid format 'just some words'"
+    "name": "A line that is neither a name nor a heredoc"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "A line that is neither a name nor a heredoc",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "And what that came to",
-    "depth": 0
+    "name": "And what that came to"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "And what that came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

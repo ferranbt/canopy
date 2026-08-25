@@ -1,0 +1,38 @@
+name: Where an annotation lands
+
+on: push
+
+jobs:
+  among-what-a-step-says:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Between the lines it belongs between
+        run: |
+          echo "before"
+          echo "::warning::in the middle"
+          echo "after"
+
+      - name: One after another, in the order they were said
+        run: |
+          echo "::warning::the first"
+          echo "::error::the second"
+          echo "::warning::the third"
+          echo "and then a line"
+
+      - name: Inside a group
+        run: |
+          echo "::group::a group with an annotation in it"
+          echo "before it"
+          echo "::error::raised inside the group"
+          echo "after it"
+          echo "::endgroup::"
+
+      - name: A message of more than one line
+        run: |
+          echo "::error::the first line%0Athe second line%0Athe third"
+          echo "the line after the message"
+
+      - name: The last thing a step says
+        run: |
+          echo "a line"
+          echo "::warning::said last of all"

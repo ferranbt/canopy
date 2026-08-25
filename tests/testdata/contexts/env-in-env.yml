@@ -1,0 +1,37 @@
+name: The env context where a step is given its own
+
+on: push
+
+env:
+  FROM_WORKFLOW: set by the workflow
+
+jobs:
+  reading-one-to-write-another:
+    runs-on: ubuntu-latest
+    env:
+      FROM_JOB: set by the job
+
+    steps:
+      - name: A step whose own env is worked out before it runs
+        env:
+          COPIED: ${{ github.event_name }}
+          JOINED: ${{ github.event_name }} and ${{ runner.os }}
+          NOT_THERE: ${{ env.NEVER_SET }}
+        run: |
+          echo "copied=$COPIED"
+          echo "joined=$JOINED"
+          echo "not there=[$NOT_THERE]"
+
+      - id: exported
+        name: Something exported for the steps that follow
+        run: echo "EXPORTED=written by a step" >> "$GITHUB_ENV"
+
+      - name: Which a later step can read into its own env
+        env:
+          FROM_THE_FILE: ${{ env.EXPORTED }}
+        run: echo "from the file=$FROM_THE_FILE"
+
+      - name: And an action given the same
+        uses: ./actions/awkward-inputs
+        with:
+          needed: ${{ env.FROM_JOB }}

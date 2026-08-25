@@ -30,6 +30,9 @@ pub trait Artifacts: Send + Sync + 'static {
     fn store(&self, name: &str, bytes: &[u8]) -> std::io::Result<()>;
 
     fn load(&self, name: &str) -> std::io::Result<Vec<u8>>;
+
+    /// Whatever was under that name, so it can be uploaded again.
+    fn delete(&self, name: &str) -> Option<Artifact>;
 }
 
 pub struct ArtifactServer<A: Artifacts> {
@@ -70,6 +73,10 @@ impl<A: Artifacts> ArtifactServer<A> {
                 post(signed_url::<A>),
             )
             .route(
+                "/twirp/github.actions.results.api.v1.ArtifactService/DeleteArtifact",
+                post(delete_artifact::<A>),
+            )
+            .route(
                 "/blob/{name}",
                 put(upload_blob::<A>).get(download_blob::<A>),
             )
@@ -105,12 +112,37 @@ async fn create_artifact<A: Artifacts>(
     axum::Json(request): axum::Json<Value>,
 ) -> impl IntoResponse {
     let name = request["name"].as_str().unwrap_or("artifact").to_owned();
+
+    // A name is taken until whoever took it gives it up, which is what `overwrite:` has an
+    // action do before it uploads again.
+    if server.artifacts.get(&name).is_some() {
+        return twirp_error(
+            StatusCode::CONFLICT,
+            "already_exists",
+            "an artifact with this name already exists on the workflow run",
+        );
+    }
     server.artifacts.create(&name);
 
     axum::Json(json!({
         "ok": true,
         "signedUploadUrl": format!("{}/blob/{name}?sig=local", server.base_url),
     }))
+    .into_response()
+}
+
+async fn delete_artifact<A: Artifacts>(
+    State(server): Server<A>,
+    axum::Json(request): axum::Json<Value>,
+) -> impl IntoResponse {
+    let name = request["name"].as_str().unwrap_or_default();
+
+    match server.artifacts.delete(name) {
+        Some(artifact) => {
+            axum::Json(json!({ "ok": true, "artifactId": artifact.id.to_string() })).into_response()
+        }
+        None => twirp_error(StatusCode::NOT_FOUND, "not_found", "no such artifact"),
+    }
 }
 
 async fn finalize_artifact<A: Artifacts>(

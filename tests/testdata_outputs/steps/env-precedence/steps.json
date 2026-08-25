@@ -7,30 +7,24 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A step's own env beats the job and the workflow",
-    "depth": 0
+    "name": "A step's own env beats the job and the workflow"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A step's own env beats the job and the workflow",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Without one of its own, the job's wins",
-    "depth": 0
+    "name": "Without one of its own, the job's wins"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Without one of its own, the job's wins",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

@@ -7,86 +7,68 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Under sh",
-    "depth": 0
+    "name": "Under sh"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Under sh",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 1
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Under bash, asked for by name",
-    "depth": 0
+    "name": "Under bash, asked for by name"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Under bash, asked for by name",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 1
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "Under the shell a step gets when it names none",
-    "depth": 0
+    "name": "Under the shell a step gets when it names none"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "Under the shell a step gets when it names none",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 1
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "What each of them came to",
-    "depth": 0
+    "name": "What each of them came to"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "What each of them came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "A failure that is not the last line, under sh",
-    "depth": 0
+    "name": "A failure that is not the last line, under sh"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "A failure that is not the last line, under sh",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 1
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "And what that came to",
-    "depth": 0
+    "name": "And what that came to"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "And what that came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

@@ -35,6 +35,7 @@ pub struct Containers {
     mounts: Vec<PathBuf>,
     current: Option<String>,
     services: Vec<String>,
+    found: BTreeMap<String, String>,
 }
 
 impl Containers {
@@ -44,6 +45,7 @@ impl Containers {
             mounts,
             current: None,
             services: Vec::new(),
+            found: BTreeMap::new(),
         }
     }
 
@@ -226,6 +228,32 @@ impl Machine for Containers {
         command.arg(id).arg(program).args(args);
 
         run_until(command, request, out)
+    }
+
+    /// Looked for inside the container the steps run in, since that is the only place it
+    /// could be found, and remembered so a job asks the once.
+    fn found(&mut self, program: &str) -> String {
+        if let Some(found) = self.found.get(program) {
+            return found.clone();
+        }
+
+        let Some(id) = self.current.clone() else {
+            return program.to_owned();
+        };
+        let looked = Command::new("docker")
+            .args(["exec", &id, "sh", "-c"])
+            .arg(format!("command -v {program}"))
+            .output();
+
+        let found = looked
+            .ok()
+            .filter(|output| output.status.success())
+            .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_owned())
+            .filter(|found| !found.is_empty())
+            .unwrap_or_else(|| program.to_owned());
+
+        self.found.insert(program.to_owned(), found.clone());
+        found
     }
 
     fn finish(&mut self) -> Result<(), Error> {

@@ -1,0 +1,57 @@
+[
+  {
+    "event": "job-started",
+    "id": "reading-one-to-write-another",
+    "label": "reading-one-to-write-another"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "A step whose own env is worked out before it runs"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "A step whose own env is worked out before it runs",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "Something exported for the steps that follow"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "Something exported for the steps that follow",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Which a later step can read into its own env"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Which a later step can read into its own env",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "And an action given the same"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "And an action given the same",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "reading-one-to-write-another",
+    "label": "reading-one-to-write-another",
+    "conclusion": "success"
+  }
+]

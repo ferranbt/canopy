@@ -1,0 +1,44 @@
+name: Hashing files
+
+on: push
+
+jobs:
+  what-it-hashes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A tree with something to leave out of it
+        run: |
+          rm -rf hashed
+          mkdir -p hashed/deeper hashed/left-out
+          printf 'one\n' > hashed/one.txt
+          printf 'two\n' > hashed/two.txt
+          printf 'deeper\n' > hashed/deeper/three.txt
+          printf 'left out\n' > hashed/left-out/four.txt
+
+      - name: What it makes of the patterns it was given
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ hashFiles('hashed/one.txt') != '' }} == true                                    # a file it found
+            ${{ hashFiles('hashed/nothing-of-the-sort') == '' }} == true                        # and one it did not
+            ${{ hashFiles('hashed/*.txt') == hashFiles('hashed/one.txt', 'hashed/two.txt') }} == true
+            ${{ hashFiles('hashed/one.txt', 'hashed/two.txt') == hashFiles('hashed/two.txt', 'hashed/one.txt') }} == false  # the order asked for is the order hashed
+            ${{ hashFiles('hashed/**/*.txt') == hashFiles('hashed/*.txt') }} == false           # deeper files count
+            ${{ hashFiles('hashed/one.txt') == hashFiles('hashed/two.txt') }} == false          # what is in them counts
+
+      - name: What it leaves out when told to
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ hashFiles('hashed/**/*.txt', '!hashed/left-out/**') != hashFiles('hashed/**/*.txt') }} == true
+            ${{ hashFiles('hashed/**/*.txt', '!hashed/left-out/**') == hashFiles('hashed/one.txt', 'hashed/two.txt', 'hashed/deeper/three.txt') }} == false  # the same files, asked for another way
+            ${{ hashFiles('hashed/**/*.txt', '!hashed/**') == '' }} == true                     # everything left out
+
+      - name: What it makes of a file that changed
+        run: printf 'one again\n' > hashed/one.txt
+
+      - name: The same pattern over changed files
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ hashFiles('hashed/one.txt') != '' }} == true

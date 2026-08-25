@@ -195,9 +195,12 @@ impl Progress {
 
 impl Reporter for Progress {
     fn report(&mut self, event: Event) {
+        for line in gh_actions_report::github_log(&event) {
+            self.line(&line);
+        }
+
         match event {
             Event::StepStarted { index, .. } => self.step_started(index),
-            Event::StepOutput { line, .. } => self.line(&line),
             Event::StepFinished {
                 index, conclusion, ..
             } => {

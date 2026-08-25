@@ -15,8 +15,8 @@ use gh_actions_plan::{Plan, PlannedJob, scalar_value};
 use crate::actions::{self, ResolvedAction};
 use crate::commands::{self, Command};
 use crate::error::{At, Error};
-use crate::executor::{Exec, ExecRequest, ExecResult, Image, Machine, Started};
-use crate::report::{Event, Level, PassedOver, Reporter};
+use crate::executor::{Exec, ExecRequest, ExecResult, Image, Machine, Started, hide};
+use crate::report::{Event, Level, PassedOver, Reporter, Stream};
 use crate::steps::{self, Phase, PlannedStep};
 use crate::validate;
 
@@ -393,6 +393,8 @@ fn run_prepared(
         state: BTreeMap::new(),
         saved: BTreeMap::new(),
         deferred: BTreeMap::new(),
+        exported: Vec::new(),
+        container: job.spec.container.is_some(),
         counter: 0,
         job_deadline,
         step_deadline: None,
@@ -457,6 +459,12 @@ struct JobRunner<'a> {
     /// What a composite action left for its own post step to run, by the position of the
     /// step that used it.
     deferred: BTreeMap<usize, Deferred>,
+    /// The names a step exported through `$GITHUB_ENV`, in the order they were, which is the
+    /// order a runner puts them back in the log.
+    exported: Vec<String>,
+    /// Whether the job named a container, which is where its steps run and where a shell is
+    /// therefore looked for.
+    container: bool,
     counter: usize,
     job_deadline: Instant,
     step_deadline: Option<Instant>,
@@ -662,17 +670,29 @@ impl JobRunner<'_> {
         let script = interpolate(script, context)?;
         let asked = step.shell.clone().or_else(|| self.defaults.shell.clone());
         let named = asked.is_some();
-        let shell = asked.unwrap_or_else(|| "bash".to_owned());
+        let shell = asked.unwrap_or_else(|| match self.container {
+            true => "sh".to_owned(),
+            false => "bash".to_owned(),
+        });
         let files = self.step_files()?;
         let cwd = self.script_directory(step, context)?;
 
-        if !cwd.is_dir() {
-            let (program, _) = Exec::Script {
-                shell: shell.clone(),
+        let own = interpolated_env(step.env.as_ref(), context)?;
+        let request = ExecRequest::new(
+            Exec::Script {
+                shell,
                 script: files.script.clone(),
                 named,
-            }
-            .to_command(&BTreeMap::new())?;
+            },
+            cwd.clone(),
+        )
+        .envs(self.step_env(&files))
+        .envs(own.clone());
+
+        self.echoed_script(&script, &request, &own);
+
+        if !cwd.is_dir() {
+            let (program, _) = request.exec.to_command(&BTreeMap::new())?;
 
             return Ok(self.refused(Error::Refused(format!(
                 "An error occurred trying to start process '{}' with working directory '{}'. \
@@ -682,20 +702,128 @@ impl JobRunner<'_> {
             ))));
         }
 
-        let request = ExecRequest::new(
-            Exec::Script {
-                shell,
-                script: files.script.clone(),
-                named,
-            },
-            cwd,
-        )
-        .envs(self.step_env(&files))
-        .envs(interpolated_env(step.env.as_ref(), context)?);
-
         self.write_file(&files.script, &script)?;
         let status = self.exec(&request)?;
         self.collect(&files, &status)
+    }
+
+    /// A runner opens a step by putting it back in the log: what it is about to run, and
+    /// what the workflow gave it to run with.
+    fn echo(&mut self, mut said: Vec<String>, own: &BTreeMap<String, String>) {
+        let mut given = self.options.service_env.clone();
+        given.extend(self.run.env.clone());
+        given.extend(own.clone());
+
+        let exported: Vec<(String, String)> = self
+            .exported
+            .iter()
+            .filter_map(|name| Some((name.clone(), given.remove(name)?)))
+            .collect();
+
+        if !given.is_empty() || !exported.is_empty() {
+            said.push("env:".to_owned());
+            for (name, value) in &exported {
+                said.extend(field(name, value));
+            }
+            for (name, value) in &given {
+                said.extend(field(name, value));
+            }
+        }
+
+        self.out.report(Event::GroupStarted {
+            name: hide(&said[0], &self.masks),
+        });
+        for line in &said[1..] {
+            self.out.report(Event::StepOutput {
+                stream: Stream::Out,
+                line: hide(line, &self.masks),
+            });
+        }
+        self.out.report(Event::GroupFinished);
+    }
+
+    /// The script as it was written, and the shell it will be handed to, where the script
+    /// itself goes down as the placeholder a shell is named with.
+    fn echoed_script(
+        &mut self,
+        script: &str,
+        request: &ExecRequest,
+        own: &BTreeMap<String, String>,
+    ) {
+        let mut said = vec![format!("Run {}", script.lines().next().unwrap_or_default())];
+        said.extend(script.lines().map(str::to_owned));
+
+        if let Ok((program, args)) = request.exec.to_command(&request.env) {
+            let program = match self.container {
+                true => program,
+                false => self.machine.found(&program),
+            };
+            let switches = args
+                .split_last()
+                .map_or(String::new(), |(_, rest)| rest.join(" "));
+            let said_as = [program, switches, "{0}".to_owned()];
+
+            said.push(format!("shell: {}", said_as.join(" ").replace("  ", " ")));
+        }
+
+        self.echo(said, own);
+    }
+
+    /// The action as it was asked for, and what it was given: what the step passed, and then
+    /// what the action itself filled in, in the order it declares them.
+    fn echoed_action(
+        &mut self,
+        uses: &Uses,
+        inputs: &[(String, String)],
+        own: &BTreeMap<String, String>,
+        inside: bool,
+    ) {
+        // A step of a composite action is said as it was written, the way its path is.
+        let asked = uses.to_string();
+        let named = match inside {
+            true => asked.clone(),
+            false => asked.strip_prefix("./").unwrap_or(&asked).to_owned(),
+        };
+        let mut said = vec![format!("Run {named}")];
+
+        let given: Vec<&(String, String)> = inputs
+            .iter()
+            .filter(|(_, value)| !value.is_empty())
+            .collect();
+
+        if !given.is_empty() {
+            said.push("with:".to_owned());
+            said.extend(given.iter().flat_map(|(name, value)| field(name, value)));
+        }
+
+        self.echo(said, own);
+    }
+
+    fn given_and_filled_in(
+        &self,
+        action: &Action,
+        step: &Step,
+        context: &Context,
+        inside: bool,
+    ) -> Result<Vec<(String, String)>, Error> {
+        let mut shown = Vec::new();
+
+        for (name, value) in step.with.iter().flatten() {
+            shown.push((name.clone(), interpolate(&scalar_string(value), context)?));
+        }
+        // A step of the job itself reaches the runner as a mapping by name; one of a
+        // composite action is read as it was written.
+        if !inside {
+            shown.sort();
+        }
+        for (name, input) in action.inputs.iter().flatten() {
+            let given = step.with.iter().flatten().any(|(passed, _)| passed == name);
+            if let (false, Some(default)) = (given, &input.default) {
+                shown.push((name.clone(), interpolate(&scalar_string(default), context)?));
+            }
+        }
+
+        Ok(shown)
     }
 
     fn run_action(
@@ -709,11 +837,21 @@ impl JobRunner<'_> {
         if let Uses::Image(image) = uses {
             let image = image.clone();
             let inputs = self.inputs_for(None, step, context)?;
+            let own = interpolated_env(step.env.as_ref(), context)?;
+            let shown: Vec<(String, String)> = inputs.clone().into_iter().collect();
+
+            self.echoed_action(uses, &shown, &own, depth > 0);
+
+            // An image a step names has no action.yml to say how to run it, so the step says
+            // it: `entrypoint` and `args` are what an action would have declared.
+            let entrypoint = inputs.get("entrypoint").cloned();
+            let args = inputs.get("args").map_or_else(Vec::new, |args| words(args));
+
             return self.run_container(
                 ContainerRun {
                     image: Image::Registry(image),
-                    entrypoint: None,
-                    args: &[],
+                    entrypoint: entrypoint.as_deref(),
+                    args: &args,
                     inputs: &inputs,
                     env: None,
                 },
@@ -739,6 +877,9 @@ impl JobRunner<'_> {
         }
 
         let inputs = self.inputs_for(Some(&resolved.action), step, context)?;
+        let own = interpolated_env(step.env.as_ref(), context)?;
+        let shown = self.given_and_filled_in(&resolved.action, step, context, inside)?;
+        self.echoed_action(uses, &shown, &own, inside);
 
         match resolved.action.runs.clone() {
             Runs::Composite(runs) => {
@@ -1060,15 +1201,21 @@ impl JobRunner<'_> {
                         });
                     }
                     wrong = true;
-                    BTreeMap::new()
+                    Vec::new()
                 }
             }
         };
 
         let from_env = read("env", &self.read_file(&files.env)?, self.out);
-        let mut outputs = read("output", &self.read_file(&files.output)?, self.out);
-        let mut state = read("state", &self.read_file(&files.state)?, self.out);
+        let outputs = read("output", &self.read_file(&files.output)?, self.out);
+        let state = read("state", &self.read_file(&files.state)?, self.out);
+        let (mut outputs, mut state) = (BTreeMap::from_iter(outputs), BTreeMap::from_iter(state));
 
+        for (name, _) in &from_env {
+            if !self.exported.contains(name) {
+                self.exported.push(name.clone());
+            }
+        }
         self.run.env.extend(from_env);
         self.path_entries
             .extend(read_lines(&self.read_file(&files.path)?));
@@ -1172,6 +1319,45 @@ struct StepOutcome {
     code: Option<i32>,
     outputs: BTreeMap<String, String>,
     state: BTreeMap<String, String>,
+}
+
+/// The words of a command line, where what is quoted is one word however it is spaced.
+fn words(line: &str) -> Vec<String> {
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let (mut quote, mut started) = (None, false);
+
+    for character in line.chars() {
+        match (character, quote) {
+            ('\'' | '"', None) => (quote, started) = (Some(character), true),
+            (character, Some(open)) if character == open => quote = None,
+            (character, None) if character.is_whitespace() => {
+                if started {
+                    words.push(std::mem::take(&mut word));
+                    started = false;
+                }
+            }
+            (character, _) => {
+                word.push(character);
+                started = true;
+            }
+        }
+    }
+
+    if started {
+        words.push(word);
+    }
+    words
+}
+
+/// A value of several lines is written out over as many, with only the first beside its name.
+fn field(name: &str, value: &str) -> Vec<String> {
+    let mut lines = value.lines();
+    let first = format!("  {name}: {}", lines.next().unwrap_or_default());
+
+    std::iter::once(first)
+        .chain(lines.map(str::to_owned))
+        .collect()
 }
 
 fn found(program: &str) -> String {
@@ -1330,8 +1516,8 @@ fn step_name(planned: &PlannedStep, context: &Context) -> Result<String, Error> 
 
     Ok(match planned.phase {
         Phase::Main => base,
-        Phase::Pre => format!("{base} (pre)"),
-        Phase::Post => format!("{base} (post)"),
+        Phase::Pre => format!("Pre {base}"),
+        Phase::Post => format!("Post {base}"),
     })
 }
 
@@ -1366,8 +1552,9 @@ fn scalar_string(scalar: &Scalar) -> String {
 }
 
 /// A file written wrong is taken as nothing at all, and says which line it gave up on.
-fn parse_env_file(contents: &str) -> Result<BTreeMap<String, String>, String> {
-    let mut entries = BTreeMap::new();
+/// In the order they were written, which is the order a runner puts them back in the log.
+fn parse_env_file(contents: &str) -> Result<Vec<(String, String)>, String> {
+    let mut entries = Vec::new();
     let mut lines = contents.lines();
 
     while let Some(line) = lines.next() {
@@ -1390,9 +1577,9 @@ fn parse_env_file(contents: &str) -> Result<BTreeMap<String, String>, String> {
                     "Invalid value. Matching delimiter not found '{delimiter}'"
                 ));
             }
-            entries.insert(key.trim().to_owned(), value.join("\n"));
+            entries.push((key.trim().to_owned(), value.join("\n")));
         } else if let Some((key, value)) = line.split_once('=') {
-            entries.insert(key.trim().to_owned(), value.to_owned());
+            entries.push((key.trim().to_owned(), value.to_owned()));
         } else {
             return Err(format!("Invalid format '{line}'"));
         }
@@ -1621,8 +1808,15 @@ mod tests {
     fn reads_both_env_file_forms() {
         let parsed = parse_env_file("SIMPLE=value\nNOTES<<EOF\nline one\nline two\nEOF\n")
             .expect("both forms are read");
-        assert_eq!(parsed["SIMPLE"], "value");
-        assert_eq!(parsed["NOTES"], "line one\nline two");
+
+        assert_eq!(
+            parsed,
+            [
+                ("SIMPLE".to_owned(), "value".to_owned()),
+                ("NOTES".to_owned(), "line one\nline two".to_owned()),
+            ],
+            "in the order they were written, which is the order they are said in"
+        );
     }
 
     #[test]

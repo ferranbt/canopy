@@ -1,3 +1,17 @@
+##[group]Run actions/download-artifact@v4
+with:
+  name: never-uploaded
+  path: restored
+  merge-multiple: false
+  repository: ferranbt/canopy
+  run-id: 1
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
 Downloading single artifact
+##[error]Unable to download artifact(s): Artifact not found for name: never-uploaded
         Please ensure that your artifact is not expired and the artifact was uploaded using a compatible version of toolkit/upload-artifact.
         For more information, visit the GitHub Artifacts FAQ: https://github.com/actions/toolkit/blob/main/packages/artifact/docs/faq.md

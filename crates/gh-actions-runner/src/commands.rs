@@ -88,9 +88,8 @@ impl Command {
                 },
                 text: text.clone(),
             }),
-            Self::Group(name) => Some(Event::Progress {
-                text: format!("[{name}]"),
-            }),
+            Self::Group(name) => Some(Event::GroupStarted { name: name.clone() }),
+            Self::EndGroup => Some(Event::GroupFinished),
             _ => None,
         }
     }

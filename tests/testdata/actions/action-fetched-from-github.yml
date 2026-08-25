@@ -16,5 +16,5 @@ jobs:
         uses: ./actions/expect
         with:
           checks: |
-            ${{ steps.greet.outcome }} == success       # it was fetched, and it ran
-            ${{ steps.greet.outputs.time }} != ''       # and it returned what it declares
+            ${{ steps.greet.outcome }} == success                     # it was fetched, and it ran
+            ${{ steps.greet.outputs.time != '' }} == true             # and it returned what it declares

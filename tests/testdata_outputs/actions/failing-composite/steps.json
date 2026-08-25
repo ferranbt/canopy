@@ -7,72 +7,57 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A composite action that fails in the middle",
-    "depth": 0
+    "name": "A composite action that fails in the middle"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A composite action that fails in the middle",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 4
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the composite came to",
-    "depth": 0
+    "name": "What the composite came to"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the composite came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "A composite action that forgives a step of its own",
-    "depth": 0
+    "name": "A composite action that forgives a step of its own"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "A composite action that forgives a step of its own",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 5
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "What that one came to",
-    "depth": 0
+    "name": "What that one came to"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "What that one came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "The job is still going",
-    "depth": 0
+    "name": "The job is still going"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "The job is still going",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

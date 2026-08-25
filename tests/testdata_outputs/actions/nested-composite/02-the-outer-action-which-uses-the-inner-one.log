@@ -1,6 +1,72 @@
+##[group]Run actions/outer-composite
+with:
+  who-to-greet: nested
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
+##[group]Run echo "outer input=nested"
+echo "outer input=nested"
+echo "outer path is this action=$(test -f "$GITHUB_WORKSPACE/actions/outer-composite/action.yml" && echo yes)"
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
 outer input=nested
 outer path is this action=yes
+##[group]Run ./actions/greet-composite
+with:
+  who-to-greet: nested
+  greeting: Hey
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
+##[group]Run echo "message=Hey, nested!" >> "$GITHUB_OUTPUT"
+echo "message=Hey, nested!" >> "$GITHUB_OUTPUT"
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
+##[group]Run echo "Hey, nested!"
+echo "Hey, nested!"
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
 Hey, nested!
+##[group]Run echo "action_path=$GITHUB_WORKSPACE/./actions/greet-composite"
+echo "action_path=$GITHUB_WORKSPACE/./actions/greet-composite"
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
 action_path=$GITHUB_WORKSPACE/./actions/greet-composite
+##[group]Run echo "inner message=Hey, nested!"
+echo "inner message=Hey, nested!"
+echo "outer input again=nested"
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
 inner message=Hey, nested!
 outer input again=nested

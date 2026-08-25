@@ -1,0 +1,76 @@
+[
+  {
+    "event": "job-started",
+    "id": "first",
+    "label": "first"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Something for the jobs that need this one"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Something for the jobs that need this one",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "first",
+    "label": "first",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-outputs",
+    "id": "first",
+    "outputs": {
+      "built-by": "the first job",
+      "version": "1.2.3"
+    }
+  },
+  {
+    "event": "job-started",
+    "id": "second",
+    "label": "second"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "What the job it needed left behind"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "What the job it needed left behind",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "An action given what the job it needed returned"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "An action given what the job it needed returned",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "A condition read against it"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "A condition read against it",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "second",
+    "label": "second",
+    "conclusion": "success"
+  }
+]

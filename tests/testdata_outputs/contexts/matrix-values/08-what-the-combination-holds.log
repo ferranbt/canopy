@@ -1,0 +1,71 @@
+##[group]Run actions/expect
+with:
+  checks: release != ''
+ ==              # a key the combination has not got
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
+##[group]Run checked=0
+checked=0
+failed=0
+trim() { printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'; }
+while IFS= read -r line; do
+  label=""
+  case "$line" in
+    *" # "*)
+      label="$(trim "${line#* # }")"
+      line="${line%% # *}"
+      ;;
+  esac
+  line="$(trim "$line")"
+  [ -z "$line" ] && continue
+  checked=$((checked + 1))
+  # Padded, so a side that is empty still has the space the operator sits between.
+  padded=" $line "
+  case "$padded" in
+    *" != "*) operator="!="; actual="${padded%% != *}"; expected="${padded#* != }" ;;
+    *" == "*) operator="=="; actual="${padded%% == *}"; expected="${padded#* == }" ;;
+    *)
+      echo "FAIL  ${label:-check $checked}: not a check: $line"
+      failed=$((failed + 1))
+      continue
+      ;;
+  esac
+  actual="$(trim "$actual")"
+  expected="$(trim "$expected")"
+  actual="$(eval "printf '%s' \"$actual\"" 2>/dev/null)"
+  held=0
+  if [ "$operator" = "==" ]; then
+    [ "$actual" = "$expected" ] && held=1
+  else
+    [ "$actual" != "$expected" ] && held=1
+  fi
+  if [ "$held" = "1" ]; then
+    echo "ok    ${label:-check $checked}"
+  else
+    echo "FAIL  ${label:-check $checked}: expected $operator \"$expected\", got \"$actual\""
+    failed=$((failed + 1))
+  fi
+done <<'CANOPY_CHECKS'
+release != ''
+ ==              # a key the combination has not got
+CANOPY_CHECKS
+if [ "$checked" = "0" ]; then
+  echo "no checks were given"
+  exit 1
+fi
+echo "$checked check(s), $failed failed"
+[ "$failed" = "0" ]
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
+ok    check 1
+ok    a key the combination has not got
+2 check(s), 0 failed

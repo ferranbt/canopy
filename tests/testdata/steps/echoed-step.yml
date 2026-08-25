@@ -1,0 +1,42 @@
+name: What a runner puts back
+
+on: push
+
+env:
+  A_SECRET: hunter2-not-a-real-secret
+  LOOKS_LIKE_A_COMMAND: "##[warning]not raised by anyone"
+  TRAILING: "kept  "
+  EMPTY: ""
+
+jobs:
+  said-before-it-runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask for the secret to be hidden before anything says it
+        run: echo "::add-mask::$A_SECRET"
+
+      - name: A step of its own, with what the workflow gave it
+        env:
+          OWN: from the step
+          ALSO_SECRET: hunter2-not-a-real-secret
+        run: echo "ran"
+
+      - name: An action given the same sort of values
+        uses: ./actions/awkward-inputs
+        with:
+          needed: ${{ env.A_SECRET }}
+          UPPER: ""
+          two words: "with  two  spaces"
+
+      - name: An action given a value of several lines
+        uses: ./actions/awkward-inputs
+        with:
+          needed: |
+            the first line
+            the second line
+
+      - name: A script of several lines, with one that is blank
+        run: |
+          echo "the first line"
+
+          echo "after the blank one"

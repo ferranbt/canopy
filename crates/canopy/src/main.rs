@@ -123,7 +123,7 @@ fn execute(
     let mut out: Box<dyn gh_actions_runner::Reporter> = if json {
         Box::new(gh_actions_runner::Json::new(std::io::stdout()))
     } else {
-        Box::new(gh_actions_runner::Terminal)
+        Box::new(gh_actions_runner::Terminal::default())
     };
     let summary = local.run(&workflow, &plan, out.as_mut())?;
     local.clean();

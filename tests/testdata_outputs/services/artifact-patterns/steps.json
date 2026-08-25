@@ -7,142 +7,112 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A tree worth uploading, hidden files and all",
-    "depth": 0
+    "name": "A tree worth uploading, hidden files and all"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A tree worth uploading, hidden files and all",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "The first artifact",
-    "depth": 0
+    "name": "The first artifact"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "The first artifact",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "A second one, so there is something to tell apart",
-    "depth": 0
+    "name": "A second one, so there is something to tell apart"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "A second one, so there is something to tell apart",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "The second artifact",
-    "depth": 0
+    "name": "The second artifact"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "The second artifact",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "Throw the local copies away",
-    "depth": 0
+    "name": "Throw the local copies away"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "Throw the local copies away",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "Download the first one back",
-    "depth": 0
+    "name": "Download the first one back"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "Download the first one back",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 6,
-    "name": "The tree came back as it went",
-    "depth": 0
+    "name": "The tree came back as it went"
   },
   {
     "event": "step-finished",
     "index": 6,
     "name": "The tree came back as it went",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 7,
-    "name": "Whether the hidden file came with it",
-    "depth": 0
+    "name": "Whether the hidden file came with it"
   },
   {
     "event": "step-finished",
     "index": 7,
     "name": "Whether the hidden file came with it",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 8,
-    "name": "Download every artifact matching a pattern, merged together",
-    "depth": 0
+    "name": "Download every artifact matching a pattern, merged together"
   },
   {
     "event": "step-finished",
     "index": 8,
     "name": "Download every artifact matching a pattern, merged together",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 9,
-    "name": "What the pattern gathered",
-    "depth": 0
+    "name": "What the pattern gathered"
   },
   {
     "event": "step-finished",
     "index": 9,
     "name": "What the pattern gathered",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

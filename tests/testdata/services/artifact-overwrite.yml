@@ -1,0 +1,49 @@
+name: The same artifact name twice
+
+on: push
+
+jobs:
+  taken-already:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Something worth uploading
+        run: |
+          rm -rf out restored
+          mkdir -p out
+          echo "the first one" > out/note.txt
+
+      - name: Upload it
+        uses: actions/upload-artifact@v4
+        with:
+          name: taken
+          path: out
+
+      - name: Change what is in it
+        run: echo "the second one" > out/note.txt
+
+      - id: again
+        name: Upload it again under the name already taken
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: taken
+          path: out
+
+      - name: What uploading it twice came to
+        run: echo "outcome=${{ steps.again.outcome }}"
+
+      - name: Upload it again, saying what is there may go
+        uses: actions/upload-artifact@v4
+        with:
+          name: taken
+          path: out
+          overwrite: true
+
+      - name: Download whatever is under that name now
+        uses: actions/download-artifact@v4
+        with:
+          name: taken
+          path: restored
+
+      - name: Which of them came back
+        run: cat restored/note.txt

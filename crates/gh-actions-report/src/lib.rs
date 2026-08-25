@@ -37,6 +37,21 @@ pub enum Level {
     Error,
 }
 
+fn outermost(depth: &usize) -> bool {
+    *depth == 0
+}
+
+impl Level {
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Debug => "debug",
+            Self::Notice => "notice",
+            Self::Warning => "warning",
+            Self::Error => "error",
+        }
+    }
+}
+
 // An event being reported by the runner
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "event", rename_all = "kebab-case")]
@@ -61,6 +76,7 @@ pub enum Event {
     StepStarted {
         index: usize,
         name: String,
+        #[serde(default, skip_serializing_if = "outermost")]
         depth: usize,
     },
     #[serde(rename = "output")]
@@ -71,13 +87,19 @@ pub enum Event {
     StepFinished {
         index: usize,
         name: String,
+        #[serde(default, skip_serializing_if = "outermost")]
         depth: usize,
         conclusion: Conclusion,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         code: Option<i32>,
     },
     Progress {
         text: String,
     },
+    GroupStarted {
+        name: String,
+    },
+    GroupFinished,
     Message {
         level: Level,
         text: String,
@@ -88,8 +110,28 @@ pub trait Reporter {
     fn report(&mut self, event: Event);
 }
 
+pub fn github_log(event: &Event) -> Vec<String> {
+    match event {
+        Event::StepOutput { line, .. } => vec![line.clone()],
+        Event::GroupStarted { name } => vec![format!("##[group]{name}")],
+        Event::GroupFinished => vec!["##[endgroup]".to_owned()],
+        // Only the first line is annotated with the log
+        Event::Message { level, text } => {
+            let mut lines = text.lines();
+            let first = format!("##[{}]{}", level.name(), lines.next().unwrap_or_default());
+
+            std::iter::once(first)
+                .chain(lines.map(str::to_owned))
+                .collect()
+        }
+        _ => Vec::new(),
+    }
+}
+
 #[derive(Debug, Default)]
-pub struct Terminal;
+pub struct Terminal {
+    grouped: bool,
+}
 
 impl Reporter for Terminal {
     fn report(&mut self, event: Event) {
@@ -102,10 +144,21 @@ impl Reporter for Terminal {
             Event::StepStarted { name, depth, .. } => {
                 println!("{}==> {name}", indent(depth));
             }
-            Event::StepOutput { stream, line } => match stream {
-                Stream::Out => println!("{line}"),
-                Stream::Err => eprintln!("{line}"),
-            },
+            Event::StepOutput { stream, line } => {
+                let line = match self.grouped {
+                    true => format!("    {line}"),
+                    false => line,
+                };
+                match stream {
+                    Stream::Out => println!("{line}"),
+                    Stream::Err => eprintln!("{line}"),
+                }
+            }
+            Event::GroupStarted { name } => {
+                self.grouped = true;
+                println!("    [{name}]");
+            }
+            Event::GroupFinished => self.grouped = false,
             Event::StepFinished {
                 name,
                 depth,
@@ -113,6 +166,8 @@ impl Reporter for Terminal {
                 code,
                 ..
             } => {
+                // A group a step left open ends with the step, whatever it said.
+                self.grouped = false;
                 if conclusion != Conclusion::Failure {
                     return;
                 }

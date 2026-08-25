@@ -7,72 +7,57 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Nothing has gone wrong yet",
-    "depth": 0
+    "name": "Nothing has gone wrong yet"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Nothing has gone wrong yet",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "A failure the job was told to forgive",
-    "depth": 0
+    "name": "A failure the job was told to forgive"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "A failure the job was told to forgive",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 1
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "What a forgiven failure leaves behind",
-    "depth": 0
+    "name": "What a forgiven failure leaves behind"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "What a forgiven failure leaves behind",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "The job is still going well",
-    "depth": 0
+    "name": "The job is still going well"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "The job is still going well",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "So failure() finds nothing to do",
-    "depth": 0
+    "name": "So failure() finds nothing to do"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "So failure() finds nothing to do",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "skipped"
   },
   {
     "event": "job-finished",
@@ -88,114 +73,90 @@
   {
     "event": "step-started",
     "index": 5,
-    "name": "This one is fine",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 0,
-    "name": "This one is fine",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
-  },
-  {
-    "event": "step-started",
-    "index": 6,
-    "name": "A failure with no excuse",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 1,
-    "name": "A failure with no excuse",
-    "depth": 0,
-    "conclusion": "failure",
-    "code": null
-  },
-  {
-    "event": "step-started",
-    "index": 7,
-    "name": "Skipped, because the job is failing",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 2,
-    "name": "Skipped, because the job is failing",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
-  },
-  {
-    "event": "step-started",
-    "index": 8,
-    "name": "failure() runs once something has",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 3,
-    "name": "failure() runs once something has",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
-  },
-  {
-    "event": "step-started",
-    "index": 9,
-    "name": "always() runs whatever happened",
-    "depth": 0
-  },
-  {
-    "event": "step-finished",
-    "index": 4,
-    "name": "always() runs whatever happened",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
-  },
-  {
-    "event": "step-started",
-    "index": 10,
-    "name": "cancelled() does not, since nothing called this off",
-    "depth": 0
+    "name": "This one is fine"
   },
   {
     "event": "step-finished",
     "index": 5,
-    "name": "cancelled() does not, since nothing called this off",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "name": "This one is fine",
+    "conclusion": "success"
   },
   {
     "event": "step-started",
-    "index": 11,
-    "name": "A handler running does not put the job back in the good",
-    "depth": 0
+    "index": 6,
+    "name": "A failure with no excuse"
   },
   {
     "event": "step-finished",
     "index": 6,
-    "name": "A handler running does not put the job back in the good",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "name": "A failure with no excuse",
+    "conclusion": "failure"
   },
   {
     "event": "step-started",
-    "index": 12,
-    "name": "What the steps are remembered as",
-    "depth": 0
+    "index": 7,
+    "name": "Skipped, because the job is failing"
   },
   {
     "event": "step-finished",
     "index": 7,
+    "name": "Skipped, because the job is failing",
+    "conclusion": "skipped"
+  },
+  {
+    "event": "step-started",
+    "index": 8,
+    "name": "failure() runs once something has"
+  },
+  {
+    "event": "step-finished",
+    "index": 8,
+    "name": "failure() runs once something has",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 9,
+    "name": "always() runs whatever happened"
+  },
+  {
+    "event": "step-finished",
+    "index": 9,
+    "name": "always() runs whatever happened",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 10,
+    "name": "cancelled() does not, since nothing called this off"
+  },
+  {
+    "event": "step-finished",
+    "index": 10,
+    "name": "cancelled() does not, since nothing called this off",
+    "conclusion": "skipped"
+  },
+  {
+    "event": "step-started",
+    "index": 11,
+    "name": "A handler running does not put the job back in the good"
+  },
+  {
+    "event": "step-finished",
+    "index": 11,
+    "name": "A handler running does not put the job back in the good",
+    "conclusion": "skipped"
+  },
+  {
+    "event": "step-started",
+    "index": 12,
+    "name": "What the steps are remembered as"
+  },
+  {
+    "event": "step-finished",
+    "index": 12,
     "name": "What the steps are remembered as",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

@@ -1,0 +1,42 @@
+name: What a container action is handed
+
+on: push
+
+jobs:
+  handed-over:
+    runs-on: ubuntu-latest
+    steps:
+      - id: inspected
+        name: An action that says what it was given
+        uses: ./actions/inspect-docker
+        with:
+          who-to-greet: given a value
+
+      - name: What came back out of it
+        uses: ./actions/expect
+        with:
+          checks: |
+            ${{ steps.inspected.outcome }} == success
+            ${{ steps.inspected.outputs.said-by }} == the entrypoint the action asked for
+
+      - id: failed
+        name: One that comes back with something to complain about
+        continue-on-error: true
+        uses: ./actions/inspect-docker
+        with:
+          code: "7"
+
+      - name: What that one came to
+        run: echo "outcome=${{ steps.failed.outcome }}"
+
+      - name: An image run with what the step asked of it
+        uses: docker://alpine:3.19
+        with:
+          entrypoint: /bin/sh
+          args: -c "echo asked for by the step; id -u"
+
+      - name: The same image, by the digest it is known by
+        uses: docker://alpine@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+        with:
+          entrypoint: /bin/sh
+          args: -c "echo asked for by its digest"

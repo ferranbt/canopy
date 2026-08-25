@@ -7,54 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "./actions/greet-node",
-    "depth": 0
-  },
-  {
-    "event": "message",
-    "level": "warning",
-    "text": "`pre` execution is not supported for local action from 'actions/greet-node'"
+    "name": "./actions/greet-node"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "./actions/greet-node",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the JavaScript action returned",
-    "depth": 0
+    "name": "What the JavaScript action returned"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the JavaScript action returned",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "./actions/greet-node (post)",
-    "depth": 0
-  },
-  {
-    "event": "message",
-    "level": "warning",
-    "text": "`pre` execution is not supported for local action from 'actions/greet-node'"
+    "name": "Post ./actions/greet-node"
   },
   {
     "event": "step-finished",
     "index": 2,
-    "name": "./actions/greet-node (post)",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "name": "Post ./actions/greet-node",
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

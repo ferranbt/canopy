@@ -155,17 +155,39 @@ fn hash_files(args: &[Value], context: &Context) -> Result<Value, EvalError> {
         return Err(EvalError::Unsupported("hashFiles"));
     };
 
+    // Taken in the order they were asked for, since that is the order they are hashed in: a
+    // pattern adds what it matches, and one written with a `!` takes back what it does.
     let mut matched: Vec<PathBuf> = Vec::new();
     for pattern in args {
-        let pattern = workspace.join(pattern.to_display_string());
-        let found = glob::glob(&pattern.to_string_lossy())
+        let asked = pattern.to_display_string();
+        let (taking_back, pattern) = match asked.strip_prefix('!') {
+            Some(rest) => (true, rest.to_owned()),
+            None => (false, asked),
+        };
+
+        // Everything under a directory, which is what a pattern ending there asks for.
+        let pattern = match pattern.strip_suffix("**") {
+            Some(above) => format!("{above}**/*"),
+            None => pattern,
+        };
+        let against = workspace.join(pattern);
+        let found = glob::glob(&against.to_string_lossy())
             .map_err(|err| EvalError::InvalidPattern(err.to_string()))?;
 
-        matched.extend(found.flatten().filter(|path| path.is_file()));
+        let mut found: Vec<PathBuf> = found.flatten().filter(|path| path.is_file()).collect();
+        found.sort();
+
+        if taking_back {
+            matched.retain(|path| !found.contains(path));
+            continue;
+        }
+        for path in found {
+            if !matched.contains(&path) {
+                matched.push(path);
+            }
+        }
     }
 
-    matched.sort();
-    matched.dedup();
     if matched.is_empty() {
         return Ok(Value::String(String::new()));
     }

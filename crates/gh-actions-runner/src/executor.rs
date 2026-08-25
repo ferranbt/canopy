@@ -84,7 +84,7 @@ impl Exec {
                     ),
                     ("bash", false) => ("bash", switches(&["-e"])),
                     ("sh", _) => ("sh", switches(&["-e"])),
-                    ("python", _) => ("python3", Vec::new()),
+                    ("python", _) => ("python", Vec::new()),
                     (other, _) => return Err(Error::Unsupported(format!("`shell: {other}`"))),
                 };
                 args.push(script.display().to_string());
@@ -236,6 +236,15 @@ pub enum Started {
 pub trait Machine {
     fn start(&mut self, job: &PlannedJob, out: &mut dyn Reporter) -> Result<Started, Error>;
 
+    fn found(&mut self, program: &str) -> String {
+        std::env::var("PATH")
+            .unwrap_or_default()
+            .split(':')
+            .map(|directory| std::path::Path::new(directory).join(program))
+            .find(|path| path.is_file())
+            .map_or_else(|| program.to_owned(), |path| path.display().to_string())
+    }
+
     fn finish(&mut self) -> Result<(), Error>;
 
     fn run(
@@ -274,11 +283,14 @@ pub trait Machine {
         out: &mut dyn Reporter,
     ) -> Result<ExecResult, Error> {
         if let Some((program, args)) = request.exec.build() {
-            out.report(Event::Progress {
-                text: "[Building docker image]".to_owned(),
+            out.report(Event::GroupStarted {
+                name: "Building docker image".to_owned(),
             });
 
-            let built = self.run(&program, &args, request, out)?;
+            let built = self.run(&program, &args, request, out);
+            out.report(Event::GroupFinished);
+
+            let built = built?;
             if !built.status.success {
                 return Ok(built);
             }
@@ -385,6 +397,15 @@ pub fn run_until(
                 "The action '{}' has timed out after {minutes} minutes.",
                 request.name
             ),
+        });
+    }
+
+    if let (Some(code), false, Exec::Script { .. }) = (status.code(), timed_out, &request.exec)
+        && !status.success()
+    {
+        out.report(Event::Message {
+            level: Level::Error,
+            text: format!("Process completed with exit code {code}."),
         });
     }
 
@@ -528,6 +549,9 @@ fn handle_line(
                 level,
                 text: hide(&text, masks),
             },
+            Event::GroupStarted { name } => Event::GroupStarted {
+                name: hide(&name, masks),
+            },
             other => other,
         };
 
@@ -563,7 +587,7 @@ fn refusal(line: &str, name: &str) -> [String; 2] {
 
 /// Only ever catches an accident: a step that means to print a secret can take it apart
 /// first. The same best effort GitHub makes, and worth about as much.
-fn hide(line: &str, masks: &[String]) -> String {
+pub(crate) fn hide(line: &str, masks: &[String]) -> String {
     let mut line = line.to_owned();
     for secret in masks {
         if !secret.is_empty() {
@@ -647,7 +671,7 @@ mod tests {
     fn python_is_handed_nothing_but_the_script() {
         assert_eq!(
             shell("python", true),
-            ("python3".to_owned(), vec!["/tmp/step.sh".to_owned()])
+            ("python".to_owned(), vec!["/tmp/step.sh".to_owned()])
         );
     }
 

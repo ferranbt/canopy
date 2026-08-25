@@ -7,86 +7,68 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A step output carrying shell syntax",
-    "depth": 0
+    "name": "A step output carrying shell syntax"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A step output carrying shell syntax",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Quoted, the value arrives as it was written",
-    "depth": 0
+    "name": "Quoted, the value arrives as it was written"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Quoted, the value arrives as it was written",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "The shell does not expand what the runner put there",
-    "depth": 0
+    "name": "The shell does not expand what the runner put there"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "The shell does not expand what the runner put there",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "Whitespace inside a value is kept",
-    "depth": 0
+    "name": "Whitespace inside a value is kept"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "Whitespace inside a value is kept",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "The same value through the environment, which is where it belongs",
-    "depth": 0
+    "name": "The same value through the environment, which is where it belongs"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "The same value through the environment, which is where it belongs",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "A value that is only a number keeps its shape",
-    "depth": 0
+    "name": "A value that is only a number keeps its shape"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "A value that is only a number keeps its shape",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

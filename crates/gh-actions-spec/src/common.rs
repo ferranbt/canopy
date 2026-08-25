@@ -107,4 +107,5 @@ pub struct RunDefaults {
 }
 
 /// What `with:` and a reusable workflow's `inputs:` hold.
-pub type With = BTreeMap<String, Scalar>;
+/// In the order they were written, which is the order a runner says them back in.
+pub type With = indexmap::IndexMap<String, Scalar>;

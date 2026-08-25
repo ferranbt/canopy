@@ -7,16 +7,13 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Check which image the steps are in",
-    "depth": 0
+    "name": "Check which image the steps are in"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Check which image the steps are in",
-    "depth": 0,
-    "conclusion": "success",
-    "code": 0
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

@@ -16,7 +16,8 @@ pub struct Action {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub author: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub inputs: Option<BTreeMap<String, ActionInput>>,
+    /// In the order they were declared
+    pub inputs: Option<indexmap::IndexMap<String, ActionInput>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub outputs: Option<BTreeMap<String, ActionOutput>>,
     pub runs: Runs,
