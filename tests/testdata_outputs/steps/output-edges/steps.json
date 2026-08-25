@@ -16,7 +16,7 @@
     "name": "Values that are awkward to write down",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",

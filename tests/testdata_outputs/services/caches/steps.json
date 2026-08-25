@@ -16,7 +16,7 @@
     "name": "Create something worth caching",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,7 +30,7 @@
     "name": "Save it to the cache",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -44,7 +44,7 @@
     "name": "Throw the local copy away",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -58,7 +58,7 @@
     "name": "Restore it",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -72,7 +72,7 @@
     "name": "Check the cache round trip",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

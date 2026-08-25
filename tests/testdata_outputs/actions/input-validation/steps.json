@@ -16,7 +16,7 @@
     "name": "A required input nobody gave",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,7 +30,7 @@
     "name": "What leaving it out came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -39,17 +39,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "Unexpected input(s) 'nobody-asked-for-this', valid inputs are ['UPPER', 'needed', 'two words', 'who-to-greet']"
-  },
-  {
     "event": "step-finished",
     "index": 2,
     "name": "An input the action never declared",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -63,7 +58,7 @@
     "name": "What passing it came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -77,7 +72,7 @@
     "name": "An input the action still takes",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

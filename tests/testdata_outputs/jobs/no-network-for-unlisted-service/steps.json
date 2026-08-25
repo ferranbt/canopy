@@ -16,7 +16,7 @@
     "name": "The one it asked for is there",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,7 +30,7 @@
     "name": "A name it did not ask for is not",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -44,7 +44,7 @@
     "name": "Nor is the name of an image it happens to run",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

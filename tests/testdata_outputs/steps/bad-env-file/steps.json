@@ -11,22 +11,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "Unable to process file command 'env' successfully."
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "Invalid value. Matching delimiter not found 'EOF'"
-  },
-  {
     "event": "step-finished",
     "index": 0,
     "name": "A heredoc nothing closes",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -40,7 +30,7 @@
     "name": "What the step that wrote it came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -54,7 +44,7 @@
     "name": "A value carrying the delimiter it was written with",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -68,7 +58,7 @@
     "name": "What that left behind",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -77,22 +67,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "Unable to process file command 'env' successfully."
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "Invalid format 'just some words'"
-  },
-  {
     "event": "step-finished",
     "index": 4,
     "name": "A line that is neither a name nor a heredoc",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -106,7 +86,7 @@
     "name": "And what that came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

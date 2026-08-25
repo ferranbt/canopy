@@ -1,1 +1,4 @@
+##[warning]`pre` execution is not supported for local action from 'actions/state-docker'
+##[group]Building docker image
+##[endgroup]
 the post step read the state the main step saved

@@ -16,7 +16,7 @@
     "name": "Comparisons across types",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,7 +30,7 @@
     "name": "What the logical operators return",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -44,7 +44,7 @@
     "name": "The ones worth recording rather than guessing at",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

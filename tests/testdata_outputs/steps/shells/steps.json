@@ -16,7 +16,7 @@
     "name": "A python step is run by python, not by a shell",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,7 +30,7 @@
     "name": "A python step that fails still fails its job",
     "depth": 0,
     "conclusion": "success",
-    "code": 1
+    "code": null
   },
   {
     "event": "step-started",
@@ -44,7 +44,7 @@
     "name": "And is reported as a failure",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

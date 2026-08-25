@@ -16,7 +16,7 @@
     "name": "Check which image the steps are in",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

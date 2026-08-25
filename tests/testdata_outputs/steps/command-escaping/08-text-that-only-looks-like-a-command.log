@@ -1,1 +1,2 @@
 the runner is told with ::warning:: at the start of a line
+##[warning]indented, so not a command

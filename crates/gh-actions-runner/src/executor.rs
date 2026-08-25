@@ -274,11 +274,14 @@ pub trait Machine {
         out: &mut dyn Reporter,
     ) -> Result<ExecResult, Error> {
         if let Some((program, args)) = request.exec.build() {
-            out.report(Event::Progress {
-                text: "[Building docker image]".to_owned(),
+            out.report(Event::GroupStarted {
+                name: "Building docker image".to_owned(),
             });
 
-            let built = self.run(&program, &args, request, out)?;
+            let built = self.run(&program, &args, request, out);
+            out.report(Event::GroupFinished);
+
+            let built = built?;
             if !built.status.success {
                 return Ok(built);
             }
@@ -385,6 +388,15 @@ pub fn run_until(
                 "The action '{}' has timed out after {minutes} minutes.",
                 request.name
             ),
+        });
+    }
+
+    if let (Some(code), false, Exec::Script { .. }) = (status.code(), timed_out, &request.exec)
+        && !status.success()
+    {
+        out.report(Event::Message {
+            level: Level::Error,
+            text: format!("Process completed with exit code {code}."),
         });
     }
 
@@ -527,6 +539,9 @@ fn handle_line(
             Event::Message { level, text } => Event::Message {
                 level,
                 text: hide(&text, masks),
+            },
+            Event::GroupStarted { name } => Event::GroupStarted {
+                name: hide(&name, masks),
             },
             other => other,
         };

@@ -1,0 +1,2 @@
+##[error]Unable to process file command 'env' successfully.
+##[error]Invalid value. Matching delimiter not found 'EOF'

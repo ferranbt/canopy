@@ -16,7 +16,7 @@
     "name": "A secret of more than one line, hidden a line at a time",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -25,22 +25,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "the value is ***"
-  },
-  {
-    "event": "message",
-    "level": "error",
-    "text": "and so is this one: ***"
-  },
-  {
     "event": "step-finished",
     "index": 1,
     "name": "Inside what a step says to the runner",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -54,7 +44,7 @@
     "name": "In the middle of a longer line, and more than once",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -68,7 +58,7 @@
     "name": "On standard error as well",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -82,7 +72,7 @@
     "name": "A mask an action asked for",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -96,7 +86,7 @@
     "name": "Holds for the steps that follow it",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -110,7 +100,7 @@
     "name": "What is not a secret is left alone",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

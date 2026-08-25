@@ -11,11 +11,6 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "Unable to download artifact(s): Artifact not found for name: never-uploaded"
-  },
-  {
     "event": "step-finished",
     "index": 0,
     "name": "Downloading a name nothing was uploaded under",
@@ -35,7 +30,7 @@
     "name": "What the download that found nothing came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",
@@ -55,17 +50,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "No files were found with the provided path: no-such-directory/**. No artifacts will be uploaded."
-  },
-  {
     "event": "step-finished",
-    "index": 0,
+    "index": 2,
     "name": "Uploading a path nothing matches",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -75,11 +65,11 @@
   },
   {
     "event": "step-finished",
-    "index": 1,
+    "index": 3,
     "name": "Which only warns",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",
@@ -99,13 +89,8 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "No files were found with the provided path: no-such-directory/**. No artifacts will be uploaded."
-  },
-  {
     "event": "step-finished",
-    "index": 0,
+    "index": 4,
     "name": "The same, with the action told to treat it as an error",
     "depth": 0,
     "conclusion": "failure",
@@ -119,11 +104,11 @@
   },
   {
     "event": "step-finished",
-    "index": 1,
+    "index": 5,
     "name": "What the step that would not upload came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

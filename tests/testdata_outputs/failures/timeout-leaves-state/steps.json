@@ -11,11 +11,6 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "The action 'Writes to the state files, then outstays its welcome' has timed out after 1 minutes."
-  },
-  {
     "event": "step-finished",
     "index": 0,
     "name": "Writes to the state files, then outstays its welcome",
@@ -35,7 +30,7 @@
     "name": "What survived the kill",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

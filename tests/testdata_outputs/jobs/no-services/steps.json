@@ -16,7 +16,7 @@
     "name": "A name no service claimed does not resolve",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

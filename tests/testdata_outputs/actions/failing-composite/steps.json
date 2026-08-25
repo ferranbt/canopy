@@ -16,7 +16,7 @@
     "name": "A composite action that fails in the middle",
     "depth": 0,
     "conclusion": "success",
-    "code": 4
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,7 +30,7 @@
     "name": "What the composite came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -44,7 +44,7 @@
     "name": "A composite action that forgives a step of its own",
     "depth": 0,
     "conclusion": "success",
-    "code": 5
+    "code": null
   },
   {
     "event": "step-started",
@@ -58,7 +58,7 @@
     "name": "What that one came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -72,7 +72,7 @@
     "name": "The job is still going",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

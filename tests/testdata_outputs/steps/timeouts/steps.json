@@ -11,11 +11,6 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "The action 'A step that takes longer than it is allowed' has timed out after 1 minutes."
-  },
-  {
     "event": "step-finished",
     "index": 0,
     "name": "A step that takes longer than it is allowed",
@@ -35,7 +30,7 @@
     "name": "The step was killed rather than left running",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -49,7 +44,7 @@
     "name": "A step within its time is untouched",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

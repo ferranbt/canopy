@@ -11,17 +11,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "100% of the way there"
-  },
-  {
     "event": "step-finished",
     "index": 0,
     "name": "A percent in the data is written as one",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,17 +25,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "first line"
-  },
-  {
     "event": "step-finished",
     "index": 1,
     "name": "A newline in the data is written as one",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -49,17 +39,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "before\rafter"
-  },
-  {
     "event": "step-finished",
     "index": 2,
     "name": "A carriage return too",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -68,17 +53,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "a%b"
-  },
-  {
     "event": "step-finished",
     "index": 3,
     "name": "All three at once",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -87,17 +67,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "the title had both"
-  },
-  {
     "event": "step-finished",
     "index": 4,
     "name": "A property with a comma and a colon in it",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -106,17 +81,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "50% off, and %00 is nothing"
-  },
-  {
     "event": "step-finished",
     "index": 5,
     "name": "What is not an escape is left alone",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -130,7 +100,7 @@
     "name": "A command with nothing after it",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -139,17 +109,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "warning",
-    "text": "indented, so not a command"
-  },
-  {
     "event": "step-finished",
     "index": 7,
     "name": "Text that only looks like a command",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

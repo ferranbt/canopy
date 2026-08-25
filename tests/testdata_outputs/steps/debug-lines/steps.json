@@ -16,7 +16,7 @@
     "name": "Say something only a debug run should show",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

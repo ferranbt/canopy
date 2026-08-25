@@ -1,3 +1,4 @@
+##[warning]Unexpected input(s) 'nobody-asked-for-this', valid inputs are ['UPPER', 'needed', 'two words', 'who-to-greet']
 dashed=[TO-GREET:-]
 spaced=[]
 upper=[]

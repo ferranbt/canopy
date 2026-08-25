@@ -1,1 +1,2 @@
+##[warning]`pre` execution is not supported for local action from 'actions/greet-node'
 the post step read the state the main step saved

@@ -11,16 +11,12 @@
     "depth": 0
   },
   {
-    "event": "progress",
-    "text": "[Building docker image]"
-  },
-  {
     "event": "step-finished",
     "index": 0,
     "name": "./actions/greet-docker",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -34,7 +30,7 @@
     "name": "Read the container's output",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -48,7 +44,7 @@
     "name": "Run a published image directly",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

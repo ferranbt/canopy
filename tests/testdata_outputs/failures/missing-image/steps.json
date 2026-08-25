@@ -37,7 +37,7 @@
   },
   {
     "event": "step-finished",
-    "index": 0,
+    "index": 1,
     "name": "Something before it, so the job is known to have started",
     "depth": 0,
     "conclusion": "skipped",
@@ -51,7 +51,7 @@
   },
   {
     "event": "step-finished",
-    "index": 1,
+    "index": 2,
     "name": "An image that cannot be pulled",
     "depth": 0,
     "conclusion": "skipped",
@@ -65,11 +65,11 @@
   },
   {
     "event": "step-finished",
-    "index": 2,
+    "index": 3,
     "name": "What the step that could not be pulled came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

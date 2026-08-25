@@ -7,7 +7,7 @@ use std::sync::mpsc::channel;
 use gh_actions_context::{Conclusion, RunContext};
 use gh_actions_listener::client::types::Record;
 use gh_actions_plan::PlannedJob;
-use gh_actions_runner::report::{Event, Level, Reporter, Stream};
+use gh_actions_runner::report::{Event, Reporter, Stream};
 use gh_actions_spec::Workflow;
 
 use crate::message;
@@ -150,25 +150,14 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         });
 
         let said = uploads.remove(&record.id).unwrap_or_default();
-        let (code, killed) = printed(&said, out);
-        let conclusion = conclusion(record.result.as_deref());
-
-        // Only a code worth complaining about is said out loud, so a step that came back
-        // and did not complain came back with 0. One that was killed never came back, and
-        // one that was skipped never went.
-        let code = match (code, conclusion) {
-            (Some(code), _) => Some(code),
-            (None, Conclusion::Skipped) => None,
-            (None, _) if killed => None,
-            (None, _) => Some(0),
-        };
+        printed(&said, out);
 
         out.report(Event::StepFinished {
             index,
             name,
             depth: 0,
-            conclusion,
-            code,
+            conclusion: conclusion(record.result.as_deref()),
+            code: None,
         });
     }
 
@@ -201,8 +190,8 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
     }
 }
 
-fn printed(said: &str, out: &mut dyn Reporter) -> (Option<i32>, bool) {
-    let (mut code, mut killed, mut echoing) = (None, false, false);
+fn printed(said: &str, out: &mut dyn Reporter) {
+    let mut echoing = false;
 
     for line in said.lines() {
         let line = clean(without_timestamp(line).as_str());
@@ -218,24 +207,12 @@ fn printed(said: &str, out: &mut dyn Reporter) -> (Option<i32>, bool) {
             echoing = line != "##[endgroup]";
             continue;
         }
-        if line.contains("has timed out after") {
-            killed = true;
-        }
 
-        match reported(&line) {
-            Said::Event(event) => out.report(event),
-            Said::Code(said) => code = Some(said),
-            Said::Nothing => {}
-        }
+        out.report(Event::StepOutput {
+            stream: Stream::Out,
+            line,
+        });
     }
-
-    (code, killed)
-}
-
-enum Said {
-    Event(Event),
-    Code(i32),
-    Nothing,
 }
 
 /// What a runner puts against a step's log although no step printed it.
@@ -272,43 +249,6 @@ fn without_timestamp(line: &str) -> String {
         Some((stamp, rest)) if stamp.ends_with('Z') && stamp.contains('T') => rest.to_owned(),
         _ => line.to_owned(),
     }
-}
-
-fn reported(line: &str) -> Said {
-    if let Some(code) = line
-        .strip_prefix("##[error]Process completed with exit code ")
-        .and_then(|code| code.trim_end_matches('.').parse().ok())
-    {
-        return Said::Code(code);
-    }
-
-    for (marker, level) in [
-        ("##[debug]", Level::Debug),
-        ("##[notice]", Level::Notice),
-        ("##[warning]", Level::Warning),
-        ("##[error]", Level::Error),
-    ] {
-        if let Some(text) = line.strip_prefix(marker) {
-            return Said::Event(Event::Message {
-                level,
-                text: text.to_owned(),
-            });
-        }
-    }
-
-    if let Some(name) = line.strip_prefix("##[group]") {
-        return Said::Event(Event::Progress {
-            text: format!("[{name}]"),
-        });
-    }
-    if line == "##[endgroup]" {
-        return Said::Nothing;
-    }
-
-    Said::Event(Event::StepOutput {
-        stream: Stream::Out,
-        line: line.to_owned(),
-    })
 }
 
 struct Agent {

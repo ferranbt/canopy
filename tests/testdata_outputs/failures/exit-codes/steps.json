@@ -16,7 +16,7 @@
     "name": "The ordinary failure",
     "depth": 0,
     "conclusion": "success",
-    "code": 1
+    "code": null
   },
   {
     "event": "step-started",
@@ -30,7 +30,7 @@
     "name": "A code of its own, after saying something",
     "depth": 0,
     "conclusion": "success",
-    "code": 3
+    "code": null
   },
   {
     "event": "step-started",
@@ -44,7 +44,7 @@
     "name": "The highest a code goes",
     "depth": 0,
     "conclusion": "success",
-    "code": 255
+    "code": null
   },
   {
     "event": "step-started",
@@ -58,7 +58,7 @@
     "name": "A step that is killed rather than exiting",
     "depth": 0,
     "conclusion": "success",
-    "code": 137
+    "code": null
   },
   {
     "event": "step-started",
@@ -72,7 +72,7 @@
     "name": "A line failing part way through",
     "depth": 0,
     "conclusion": "success",
-    "code": 1
+    "code": null
   },
   {
     "event": "step-started",
@@ -86,7 +86,7 @@
     "name": "The status of the last line is the step's",
     "depth": 0,
     "conclusion": "success",
-    "code": 1
+    "code": null
   },
   {
     "event": "step-started",
@@ -100,7 +100,7 @@
     "name": "What each of them came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

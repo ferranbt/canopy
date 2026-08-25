@@ -42,7 +42,7 @@ fn main() -> ExitCode {
     };
 
     let mut json = Json::new(std::io::stdout());
-    let mut terminal = Terminal;
+    let mut terminal = Terminal::default();
     let out: &mut dyn Reporter = match args.json {
         true => &mut json,
         false => &mut terminal,

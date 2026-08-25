@@ -1,2 +1,6 @@
+##[group]a group of lines
 inside the group
+##[endgroup]
+##[warning]something worth watching
+##[error]something that went wrong
 said everything

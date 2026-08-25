@@ -122,7 +122,7 @@ impl Worker for Host {
             &context,
             &options,
             &mut HostMachine,
-            &mut Tee(Terminal, progress),
+            &mut Tee(Terminal::default(), progress),
         );
 
         Ok(match conclusion {

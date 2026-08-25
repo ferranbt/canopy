@@ -11,17 +11,12 @@
     "depth": 0
   },
   {
-    "event": "message",
-    "level": "error",
-    "text": "Can't find 'action.yml', 'action.yaml' or 'Dockerfile' under '$GITHUB_WORKSPACE/actions/nowhere'. Did you forget to run actions/checkout before running your local action?"
-  },
-  {
     "event": "step-finished",
     "index": 0,
     "name": "A local action that was never written",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -35,7 +30,7 @@
     "name": "What the step it could not resolve came to",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "step-started",
@@ -49,7 +44,7 @@
     "name": "And the job carried on without it",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

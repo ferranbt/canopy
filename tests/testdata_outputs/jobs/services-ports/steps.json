@@ -16,7 +16,7 @@
     "name": "Reach the service where it was published",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

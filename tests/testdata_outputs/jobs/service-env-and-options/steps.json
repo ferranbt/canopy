@@ -16,7 +16,7 @@
     "name": "Reach the service that only starts when it was told a password",
     "depth": 0,
     "conclusion": "success",
-    "code": 0
+    "code": null
   },
   {
     "event": "job-finished",

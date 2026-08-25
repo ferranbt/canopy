@@ -4,3 +4,4 @@ FAIL  quotes are part of the value: expected == ""quoted"", got "quoted"
 ok    the later line wins
 ok    check 5
 5 check(s), 1 failed
+##[error]Process completed with exit code 1.
