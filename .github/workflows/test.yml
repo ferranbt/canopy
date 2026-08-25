@@ -42,8 +42,13 @@ jobs:
         run: cargo test --workspace --lib
 
   integration-tests:
-    name: Run integration tests
+    name: Run integration tests (${{ matrix.runner }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [gh-actions-runner, local-runner]
+
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -58,7 +63,7 @@ jobs:
           docker pull redis:7-alpine
 
       - name: Run integration tests
-        run: just integration
+        run: just integration "" ${{ matrix.runner }}
 
   extension-tests:
     name: Run VS Code extension tests

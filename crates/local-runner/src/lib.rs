@@ -10,7 +10,7 @@ use gh_actions_context::RunContext;
 use gh_actions_plan::Plan;
 use gh_actions_runner::{At, Error, Options, Summary, actions, report::Reporter};
 
-use crate::container::{Containers, Images, default_images};
+use crate::container::{Images, InContainers, default_images};
 
 use gh_actions_services::Services;
 use gh_actions_spec::{Uses, Workflow};
@@ -131,7 +131,7 @@ impl Local {
     ) -> Result<Summary, Error> {
         let options = self.options();
 
-        let mut machine = Containers::new(
+        let mut machine = InContainers::new(
             self.config.images.clone(),
             vec![
                 self.config.workspace.clone(),

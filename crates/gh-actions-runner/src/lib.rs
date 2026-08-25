@@ -2,6 +2,7 @@
 
 pub mod actions;
 pub mod commands;
+pub mod containers;
 pub mod error;
 pub mod executor;
 pub mod job;
@@ -13,6 +14,7 @@ pub mod validate;
 
 pub use error::{At, Error};
 
+pub use containers::{Containers, Images};
 pub use executor::{
     Exec, ExecRequest, ExecResult, ExecStatus, HostMachine, Image, Machine, Started, run_until,
 };

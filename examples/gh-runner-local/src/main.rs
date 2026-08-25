@@ -117,11 +117,17 @@ impl Worker for Host {
             },
         };
 
+        let mut machine = HostMachine::new(vec![
+            options.workspace.clone(),
+            options.temp.clone(),
+            options.cache.clone(),
+        ]);
+
         let conclusion = gh_actions_runner::run_steps(
             &planned,
             &context,
             &options,
-            &mut HostMachine,
+            &mut machine,
             &mut Tee(Terminal::default(), progress),
         );
 

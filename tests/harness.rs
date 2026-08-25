@@ -179,6 +179,9 @@ impl Outcome {
             });
         }
 
+        // What was recorded before a rule was written is settled by it too.
+        outcome.settle();
+
         Ok(outcome)
     }
 
@@ -280,6 +283,14 @@ fn plain(line: &str) -> String {
 }
 
 fn settled(line: &str) -> String {
+    // Where an interpreter lives is the machine's business, not the runner's.
+    if let Some(rest) = line.strip_prefix("shell: ") {
+        let (program, switches) = rest.split_once(' ').unwrap_or((rest, ""));
+        let program = program.rsplit('/').next().unwrap_or(program);
+
+        return format!("shell: {program} {switches}").trim_end().to_owned();
+    }
+
     line.split(' ')
         .map(|word| word.split('/').map(piece).collect::<Vec<_>>().join("/"))
         .collect::<Vec<_>>()
