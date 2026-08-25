@@ -1,0 +1,95 @@
+name: Many steps
+
+on: push
+
+env:
+  WORKFLOW_LEVEL: from the workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      JOB_LEVEL: from the job
+
+    steps:
+      - name: A bare step
+        run: echo one
+
+      - name: A step with an environment of its own
+        env:
+          STEP_LEVEL: from the step
+        run: echo two
+
+      - name: A step that names its shell
+        shell: bash
+        run: echo three
+
+      - name: A step of several lines
+        run: |
+          echo four
+          echo five
+          echo six
+
+      - name: A step with an id
+        id: named
+        run: echo seven
+
+      - name: A step held to a condition that holds
+        if: success()
+        run: echo eight
+
+      - name: A step that reads the workflow environment
+        run: echo "${{ env.WORKFLOW_LEVEL }}"
+
+      - name: A step that reads the job environment
+        run: echo "${{ env.JOB_LEVEL }}"
+
+      - name: A step that looks at another
+        if: steps.named.conclusion == 'success'
+        run: echo nine
+
+      - name: A step given a working directory
+        working-directory: .
+        run: echo ten
+
+      - name: A step that would be forgiven
+        continue-on-error: true
+        run: echo eleven
+
+      - name: A step of its own timeout
+        timeout-minutes: 5
+        run: echo twelve
+
+      - name: A step with several of everything
+        id: crowded
+        env:
+          ONE: first
+          TWO: second
+          THREE: third
+        run: |
+          echo "${ONE}"
+          echo "${TWO}"
+          echo "${THREE}"
+
+      - name: A step that names the shell it wants
+        shell: sh
+        run: echo thirteen
+
+      - name: A step that reads what the runner is
+        run: echo "${{ runner.os }} ${{ runner.arch }}"
+
+      - name: A step that reads what the run is
+        run: echo "${{ github.event_name }} ${{ github.workflow }}"
+
+      - name: A step with an interpolated name for ${{ github.event_name }}
+        run: echo fourteen
+
+      - name: A step that is passed over
+        if: ${{ false }}
+        run: echo never
+
+      - name: A step after the one passed over
+        run: echo fifteen
+
+      - name: The last step
+        run: echo sixteen

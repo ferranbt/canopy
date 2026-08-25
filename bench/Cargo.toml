@@ -1,0 +1,21 @@
+[package]
+name = "canopy-bench"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dev-dependencies]
+criterion = { package = "codspeed-criterion-compat", version = "2.7", features = [
+    "html_reports",
+] }
+gh-actions-context.workspace = true
+gh-actions-expr.workspace = true
+gh-actions-plan.workspace = true
+gh-actions-runner.workspace = true
+gh-actions-spec.workspace = true
+yaml-with-spans.workspace = true
+
+[[bench]]
+name = "runner"
+harness = false

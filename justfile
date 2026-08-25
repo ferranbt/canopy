@@ -13,6 +13,9 @@ fix-lint:
     cargo fmt --all
     cargo clippy --fix --allow-dirty --allow-staged --all-targets --all-features
 
+bench filter="":
+    cargo bench -p canopy-bench {{ if filter == "" { "" } else { "-- " + filter } }}
+
 release version *args:
     cargo release {{version}} {{args}}
 

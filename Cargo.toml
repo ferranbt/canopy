@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "bench",
     "crates/canopy",
     "crates/gh-actions-spec",
     "crates/gh-actions-expr",

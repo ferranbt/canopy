@@ -65,6 +65,25 @@ jobs:
       - name: Run integration tests
         run: just integration "" ${{ matrix.runner }}
 
+  benchmarks:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-codspeed
+
+      - name: Build the benchmarks
+        run: cargo codspeed build -p canopy-bench
+
+      - uses: CodSpeedHQ/action@v3
+        with:
+          run: cargo codspeed run
+          token: ${{ secrets.CODSPEED_TOKEN }}
+
   extension-tests:
     name: Run VS Code extension tests
     runs-on: ubuntu-latest

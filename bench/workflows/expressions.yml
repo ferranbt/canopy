@@ -1,0 +1,46 @@
+name: Expressions everywhere
+
+on: push
+
+env:
+  LIST: '["one", "two", "three"]'
+  SHAPE: '{"name": "canopy", "kind": "runner"}'
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flavour: [plain, salted]
+
+    env:
+      GREETING: ${{ format('hello {0} from {1}', matrix.flavour, github.event_name) }}
+
+    steps:
+      - name: A value read out of JSON
+        id: read
+        run: echo "${{ fromJSON(env.LIST)[1] }} ${{ fromJSON(env.SHAPE).name }}"
+
+      - name: A condition of several parts
+        if: success() && matrix.flavour != 'sour' && contains(env.LIST, 'two')
+        run: echo held
+
+      - name: What every one of them comes to
+        env:
+          JOINED: ${{ join(fromJSON(env.LIST), ', ') }}
+          SHOUTED: ${{ toJSON(fromJSON(env.SHAPE)) }}
+          SHAPED: ${{ format('{0}-{1}-{2}', runner.os, matrix.flavour, github.run_number) }}
+          COUNTED: ${{ fromJSON(env.LIST)[2] }}
+          COMPARED: ${{ (github.event_name == 'push') && !cancelled() }}
+        run: echo counted
+
+      - name: A step that reads the one before it
+        if: steps.read.conclusion == 'success' && !failure()
+        run: echo "${{ steps.read.outcome }}"
+
+      - name: Every kind of string handling
+        run: |
+          echo "${{ startsWith(github.workflow, 'Expr') }}"
+          echo "${{ endsWith(github.event_name, 'push') }}"
+          echo "${{ contains(fromJSON(env.LIST), 'three') }}"
+          echo "${{ format('{0}{1}{2}', 'a', 'b', 'c') }}"

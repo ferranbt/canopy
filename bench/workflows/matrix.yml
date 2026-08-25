@@ -1,0 +1,38 @@
+name: A matrix and what waits on it
+
+on: push
+
+jobs:
+  spread:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [debug, release, profiling]
+        edition: [2015, 2018, 2021]
+        include:
+          - target: release
+            edition: 2021
+            polished: true
+        exclude:
+          - target: profiling
+            edition: 2015
+
+    steps:
+      - name: What this one is
+        run: echo "${{ matrix.target }} ${{ matrix.edition }}"
+
+      - name: What the run is doing
+        run: echo "${{ strategy.job-index }} of ${{ strategy.job-total }}"
+
+      - name: Only the polished one
+        if: matrix.polished
+        run: echo polished
+
+  gather:
+    runs-on: ubuntu-latest
+    needs: spread
+
+    steps:
+      - name: What the matrix came to
+        run: echo "${{ needs.spread.result }}"
