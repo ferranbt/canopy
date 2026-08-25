@@ -1,0 +1,25 @@
+##[group]Run actions/upload-artifact@v4
+with:
+  name: taken
+  path: out
+  if-no-files-found: warn
+  compression-level: 6
+  overwrite: false
+  include-hidden-files: false
+env:
+  ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
+  ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/
+  ACTIONS_RUNTIME_TOKEN: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzY3AiOiJBY3Rpb25zLlJlc3VsdHM6MDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxOjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMiIsImlzcyI6ImxvY2FsLWFjdGlvbnMtc2VydmljZXMifQ.Q2QAi6kLwEqIqWvYiUG3C946SAmkmIenT_4WOiVPO4o
+  ACTIONS_RUNTIME_URL: http://127.0.0.1:<port>/
+##[endgroup]
+With the provided path, there will be 1 file uploaded
+Artifact name is valid!
+Root directory input is valid!
+Beginning upload of artifact content to blob storage
+Uploaded bytes 146
+Finished uploading artifact content to blob storage!
+SHA256 digest of uploaded artifact zip is <digest>
+Finalizing artifact upload
+Artifact taken.zip successfully finalized. Artifact ID 2
+Artifact taken has been successfully uploaded! Final size is 146 bytes. Artifact ID is 2
+Artifact download URL: https://github.com/ferranbt/canopy/actions/runs/1/artifacts/2

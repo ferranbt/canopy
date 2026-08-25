@@ -72,6 +72,13 @@ impl Artifacts for LocalArtifacts {
         std::fs::write(self.path(name), bytes)
     }
 
+    fn delete(&self, name: &str) -> Option<Artifact> {
+        let artifact = self.known.lock().expect("artifact lock").remove(name)?;
+        let _ = std::fs::remove_file(self.path(name));
+
+        Some(artifact)
+    }
+
     fn load(&self, name: &str) -> std::io::Result<Vec<u8>> {
         std::fs::read(self.path(name))
     }
