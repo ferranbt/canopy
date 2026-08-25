@@ -22,22 +22,22 @@ members = [
 resolver = "3"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.2"
 edition = "2024"
 license = "MPL-2.0"
 repository = "https://github.com/ferranbt/canopy"
 
 [workspace.dependencies]
-gh-actions-spec = { path = "crates/gh-actions-spec", version = "0.1.0" }
-gh-actions-expr = { path = "crates/gh-actions-expr", version = "0.1.0" }
-gh-actions-context = { path = "crates/gh-actions-context", version = "0.1.0" }
-gh-actions-plan = { path = "crates/gh-actions-plan", version = "0.1.0" }
-gh-actions-report = { path = "crates/gh-actions-report", version = "0.1.0" }
-gh-actions-lint = { path = "crates/gh-actions-lint", version = "0.1.0" }
-gh-actions-runner = { path = "crates/gh-actions-runner", version = "0.1.0" }
-gh-actions-services = { path = "crates/gh-actions-services", version = "0.1.0" }
+gh-actions-spec = { path = "crates/gh-actions-spec", version = "0.1.2" }
+gh-actions-expr = { path = "crates/gh-actions-expr", version = "0.1.2" }
+gh-actions-context = { path = "crates/gh-actions-context", version = "0.1.2" }
+gh-actions-plan = { path = "crates/gh-actions-plan", version = "0.1.2" }
+gh-actions-report = { path = "crates/gh-actions-report", version = "0.1.2" }
+gh-actions-lint = { path = "crates/gh-actions-lint", version = "0.1.2" }
+gh-actions-runner = { path = "crates/gh-actions-runner", version = "0.1.2" }
+gh-actions-services = { path = "crates/gh-actions-services", version = "0.1.2" }
 local-runner = { path = "crates/local-runner" }
 canopy-lsp = { path = "crates/canopy-lsp" }
-yaml-with-spans = { path = "crates/yaml-with-spans", version = "0.1.0" }
-gh-actions-listener = { path = "crates/gh-actions-listener", version = "0.1.0" }
+yaml-with-spans = { path = "crates/yaml-with-spans", version = "0.1.2" }
+gh-actions-listener = { path = "crates/gh-actions-listener", version = "0.1.2" }
 serde = { version = "1.0", features = ["derive"] }
