@@ -2,7 +2,7 @@
   "name": "canopy",
   "displayName": "GitHub Actions (canopy)",
   "description": "Checks GitHub Actions workflows as you write them, via the canopy language server.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "ferranborreguero",
   "license": "MPL-2.0",
   "repository": {

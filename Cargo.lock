@@ -814,7 +814,7 @@ dependencies = [
 
 [[package]]
 name = "canopy"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "canopy-lsp",
  "clap",
@@ -830,7 +830,7 @@ dependencies = [
 
 [[package]]
 name = "canopy-lsp"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "chrono",
  "gh-actions-lint",
@@ -845,7 +845,7 @@ dependencies = [
 
 [[package]]
 name = "canopy-tests"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "chrono",
@@ -1536,7 +1536,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-context"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gh-actions-expr",
  "serde",
@@ -1545,7 +1545,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-expr"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "glob",
  "serde",
@@ -1555,7 +1555,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-lint"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gh-actions-context",
  "gh-actions-expr",
@@ -1566,7 +1566,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-listener"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aes",
  "axum",
@@ -1593,7 +1593,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-plan"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gh-actions-context",
  "gh-actions-expr",
@@ -1603,7 +1603,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-report"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gh-actions-context",
  "serde",
@@ -1612,7 +1612,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-runner"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gh-actions-context",
  "gh-actions-expr",
@@ -1626,7 +1626,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-services"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "base64",
@@ -1638,7 +1638,7 @@ dependencies = [
 
 [[package]]
 name = "gh-actions-spec"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "indexmap",
  "serde",
@@ -1647,7 +1647,7 @@ dependencies = [
 
 [[package]]
 name = "gh-runner-fargate-ondemand"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aws-config",
  "aws-sdk-cloudwatchlogs",
@@ -1665,7 +1665,7 @@ dependencies = [
 
 [[package]]
 name = "gh-runner-local"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "gh-actions-context",
@@ -1680,7 +1680,7 @@ dependencies = [
 
 [[package]]
 name = "gh-runner-registration"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "gh-actions-listener",
@@ -2222,7 +2222,7 @@ dependencies = [
 
 [[package]]
 name = "job-runner"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "gh-actions-context",
@@ -2323,7 +2323,7 @@ checksum = "92daf443525c4cce67b150400bc2316076100ce0b3686209eb8cf3c31612e6f0"
 
 [[package]]
 name = "local-runner"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gh-actions-context",
  "gh-actions-plan",
@@ -4254,7 +4254,7 @@ checksum = "66fee0b777b0f5ac1c69bb06d361268faafa61cd4682ae064a171c16c433e9e4"
 
 [[package]]
 name = "yaml-with-spans"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
 ]
