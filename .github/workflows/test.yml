@@ -58,7 +58,10 @@ jobs:
           docker pull redis:7-alpine
 
       - name: Run integration tests
-        run: just integration
+        run: just integration "" gh-actions-runner
+
+      - name: Run integration tests (local runner)
+        run: just integration "" local-runner
 
   extension-tests:
     name: Run VS Code extension tests

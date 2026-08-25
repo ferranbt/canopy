@@ -22,8 +22,8 @@ build-runner-image:
 gh-runner file="": build-runner-image
     cargo run --bin gh-runner -- {{ if file == "" { "" } else { "--test " + file } }}
 
-integration file="":
-    cargo run --bin integration -- {{ if file == "" { "" } else { "--test " + file } }}
+integration file="" runner="":
+    cargo run --bin integration -- {{ if file == "" { "" } else { "--test " + file } }} {{ if runner == "" { "" } else { "--runner " + runner } }}
 
 count-tests:
     #!/usr/bin/env sh
