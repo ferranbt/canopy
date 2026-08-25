@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use gh_actions_context::{Conclusion, JobResult, RunContext};
-use gh_actions_expr::Value;
+use gh_actions_expr::{Value, interpolate};
 
 use gh_actions_spec::{Scalar, Step, Uses, With};
 
@@ -51,8 +51,54 @@ impl JobMessage {
         let mut run = self.context_data.to_run_context();
         run.github.job = self.job_name.clone();
         run.github.token = self.runtime_token().unwrap_or_default().to_owned();
+        // The service sends workflow secrets as secret variables. The two internal access
+        // tokens have dedicated contexts and, like the official runner, are not exposed under
+        // `secrets` as well.
+        run.secrets = self
+            .variables
+            .iter()
+            .filter(|(name, variable)| {
+                variable.is_secret
+                    && !name.eq_ignore_ascii_case("system.accesstoken")
+                    && !name.eq_ignore_ascii_case("system.github.token")
+            })
+            .map(|(name, variable)| (name.clone(), variable.value.clone()))
+            .collect();
+        extend_environment(&mut run, &self.environment_variables);
         // Nothing says where the workspace is: that is the runner's own business.
         run
+    }
+}
+
+/// Workflow and job env arrive as a list of mappings, in precedence order. Each mapping is
+/// evaluated against the contexts established before it, then made visible to later mappings.
+fn extend_environment(run: &mut RunContext, environments: &serde_json::Value) {
+    let Some(environments) = environments.as_array() else {
+        return;
+    };
+
+    for environment in environments {
+        let Some(environment) = environment.as_object() else {
+            continue;
+        };
+        let context = run.to_expr_context();
+        let resolved = environment.iter().filter_map(|(name, value)| {
+            let source = match value {
+                serde_json::Value::String(value) => value.clone(),
+                serde_json::Value::Bool(value) => value.to_string(),
+                serde_json::Value::Number(value) => value.to_string(),
+                _ => {
+                    tracing::warn!(%name, "cannot read a job environment variable");
+                    return None;
+                }
+            };
+            let value = interpolate(&source, &context).unwrap_or_else(|err| {
+                tracing::warn!(%err, %name, "cannot evaluate a job environment variable");
+                source
+            });
+            Some((name.clone(), value))
+        });
+        run.env.extend(resolved);
     }
 }
 
@@ -158,6 +204,64 @@ mod tests {
         assert_eq!(context.github.r#ref, "refs/heads/main");
         assert_eq!(context.github.run_number, 9);
         assert!(context.matrix.is_none(), "this job has no matrix");
+    }
+
+    #[test]
+    fn only_workflow_secrets_enter_the_secrets_context() {
+        let context = job().to_run_context();
+
+        assert_eq!(context.secrets["github_token"], "redacted");
+        assert!(
+            !context.secrets.contains_key("system.github.token"),
+            "the runner's internal token has its own github.token context"
+        );
+    }
+
+    #[test]
+    fn an_expression_input_reads_a_secret_variable() {
+        let job = JobMessage::decode(
+            r#"{
+                "variables": {"GH_TOKEN": {"value": "a-secret", "isSecret": true}},
+                "steps": [{"inputs": {"type": 2, "map": [
+                    {"Key": {"type": 0, "lit": "token"},
+                     "Value": {"type": 3, "expr": "secrets.GH_TOKEN"}}
+                ]}}]
+            }"#,
+        )
+        .expect("the expression token decodes");
+
+        assert_eq!(job.steps[0].inputs["token"], "${{ secrets.GH_TOKEN }}");
+        assert_eq!(
+            gh_actions_expr::interpolate(
+                &job.steps[0].inputs["token"],
+                &job.to_run_context().to_expr_context()
+            )
+            .expect("the secret expression evaluates"),
+            "a-secret"
+        );
+    }
+
+    #[test]
+    fn job_environment_reads_a_secret_variable() {
+        let job = JobMessage::decode(
+            r#"{
+                "variables": {"TOKEN": {
+                    "value": "a-secret",
+                    "isSecret": true
+                }},
+                "environmentVariables": [{"type": 2, "map": [
+                    {"Key": {"type": 0, "lit": "TOKEN"},
+                     "Value": {"type": 3, "expr": "secrets.TOKEN"}}
+                ]}]
+            }"#,
+        )
+        .expect("the job environment decodes");
+
+        let context = job.to_run_context();
+        assert_eq!(
+            context.env.get("TOKEN").map(String::as_str),
+            Some("a-secret")
+        );
     }
 
     #[test]

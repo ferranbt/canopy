@@ -3,8 +3,10 @@
 //! Contexts arrive as `{"t": 2, "d": [{"k": .., "v": ..}]}` for a dictionary and
 //! `{"t": 1, "a": [..]}` for an array. Steps arrive in a second encoding of their own:
 //! `{"type": 0, "lit": ..}` for a literal, `{"type": 1, "seq": [..]}` for a sequence and
-//! `{"type": 2, "map": [{"Key": .., "Value": ..}]}` for a mapping. Both say what they are
-//! in a key of their own, so both can be undone before anything is given a type.
+//! `{"type": 2, "map": [{"Key": .., "Value": ..}]}` for a mapping. An expression uses
+//! `{"type": 3, "expr": ..}` and is put back into the `${{ .. }}` form the runner evaluates.
+//! Both say what they are in a key of their own, so both can be undone before anything is
+//! given a type.
 
 use serde_json::{Map, Value};
 
@@ -35,11 +37,21 @@ pub fn normalize(value: Value) -> Value {
         return match kind {
             0 => fields.get("lit").cloned().unwrap_or(Value::Null),
             1 => items(fields, "seq"),
-            _ => entries(fields, "map", "Key", "Value"),
+            2 => entries(fields, "map", "Key", "Value"),
+            3 => expression(&fields),
+            _ => Value::Object(fields),
         };
     }
 
     Value::Object(fields)
+}
+
+fn expression(fields: &Map<String, Value>) -> Value {
+    fields
+        .get("expr")
+        .and_then(Value::as_str)
+        .map(|source| Value::String(format!("${{{{ {source} }}}}")))
+        .unwrap_or(Value::Null)
 }
 
 fn items(mut fields: Map<String, Value>, under: &str) -> Value {
@@ -107,6 +119,50 @@ mod tests {
                     "type": "action",
                     "displayNameToken": "Checkout",
                     "inputs": {"go-version": "1.25"}
+                }]
+            })
+        );
+    }
+
+    #[test]
+    fn an_expression_token_returns_to_its_embedded_form() {
+        let value = normalize(serde_json::json!({
+            "steps": [{
+                "type": "action",
+                "displayNameToken": {
+                    "type": 0,
+                    "file": 1,
+                    "line": 13,
+                    "lit": "Checkout"
+                },
+                "inputs": {"type": 2, "map": [
+                    {
+                        "Key": {"type": 0, "lit": "submodules"},
+                        "Value": {"type": 0, "lit": "true"}
+                    },
+                    {
+                        "Key": {"type": 0, "lit": "token"},
+                        "Value": {
+                            "type": 3,
+                            "file": 1,
+                            "line": 16,
+                            "expr": "secrets.GH_TOKEN"
+                        }
+                    }
+                ]}
+            }]
+        }));
+
+        assert_eq!(
+            value,
+            serde_json::json!({
+                "steps": [{
+                    "type": "action",
+                    "displayNameToken": "Checkout",
+                    "inputs": {
+                        "submodules": "true",
+                        "token": "${{ secrets.GH_TOKEN }}"
+                    }
                 }]
             })
         );
