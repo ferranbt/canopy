@@ -1,6 +1,6 @@
 ##[group]Run actions/awkward-inputs
 with:
-  needed: spaces  and "quotes" and $HOME
+  needed: spaces  and "quotes" and nothing of the machine
   UPPER: shouted
   two words: spaced
   who-to-greet: dashed
@@ -31,7 +31,7 @@ undeclared=[]
 ##[group]Run echo "context dashed=[dashed]"
 echo "context dashed=[dashed]"
 echo "context upper=[shouted]"
-echo "context needed=[spaces  and "quotes" and $HOME]"
+echo "context needed=[spaces  and "quotes" and nothing of the machine]"
 shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
 env:
   ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
@@ -41,4 +41,4 @@ env:
 ##[endgroup]
 context dashed=[dashed]
 context upper=[shouted]
-context needed=[spaces  and quotes and /root]
+context needed=[spaces  and quotes and nothing of the machine]

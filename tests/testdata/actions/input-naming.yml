@@ -24,4 +24,4 @@ jobs:
       - name: Values that need no quoting to survive
         uses: ./actions/awkward-inputs
         with:
-          needed: 'spaces  and "quotes" and $HOME'
+          needed: 'spaces  and "quotes" and nothing of the machine'

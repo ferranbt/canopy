@@ -383,8 +383,14 @@ pub fn run_until(
     }
 
     let status = child.wait().at(&program)?;
-    let _ = output.join();
-    let _ = errors.join();
+
+    // Only what a step that came back of its own accord had left to say is waited for: one
+    // that was killed may have left something of its own running, and whatever still holds
+    // the other end would keep the reading going for as long as it lives.
+    if !timed_out {
+        let _ = output.join();
+        let _ = errors.join();
+    }
 
     if timed_out {
         // Word for word what GitHub says, since a workflow may be reading the log for it.
@@ -400,7 +406,8 @@ pub fn run_until(
         });
     }
 
-    if let (Some(code), false, Exec::Script { .. }) = (status.code(), timed_out, &request.exec)
+    let came_back_with = came_back_with(&status);
+    if let (Some(code), false, Exec::Script { .. }) = (came_back_with, timed_out, &request.exec)
         && !status.success()
     {
         out.report(Event::Message {
@@ -412,10 +419,24 @@ pub fn run_until(
     Ok(ExecResult {
         status: ExecStatus {
             success: status.success() && !timed_out && !refused,
-            code: status.code(),
+            code: came_back_with,
         },
         commands,
     })
+}
+
+/// What a process came back with, where one that was killed came back with the signal that
+/// killed it, counted from 128. Nothing else says what became of it.
+fn came_back_with(status: &std::process::ExitStatus) -> Option<i32> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+
+        return status.code().or_else(|| status.signal().map(|by| 128 + by));
+    }
+
+    #[cfg(not(unix))]
+    status.code()
 }
 
 /// What a step may ask the runner for, which it says by setting it in its own environment.
