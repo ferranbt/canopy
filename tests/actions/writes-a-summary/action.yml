@@ -1,0 +1,11 @@
+name: Writes a summary
+description: Puts something in the summary the way an action that reports its work would.
+
+runs:
+  using: composite
+  steps:
+    - name: Say it in the summary
+      shell: bash
+      run: |
+        echo "### said by an action" >> "$GITHUB_STEP_SUMMARY"
+        echo "an action read back: [$(cat "$GITHUB_STEP_SUMMARY")]"

@@ -1,0 +1,42 @@
+name: What a step summarises
+
+on: push
+
+jobs:
+  writing-it-down:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write some of it, then some more
+        run: |
+          echo "## What happened" >> "$GITHUB_STEP_SUMMARY"
+          echo "a line about it" >> "$GITHUB_STEP_SUMMARY"
+          printf 'and a table:\n\n| one | two |\n| --- | --- |\n' >> "$GITHUB_STEP_SUMMARY"
+
+          echo "read back: [$(tr '\n' '|' < "$GITHUB_STEP_SUMMARY")]"
+          echo "$GITHUB_STEP_SUMMARY" > mine.txt
+
+      - name: The next step starts with one of its own
+        run: |
+          echo "what is in it to start with: [$(cat "$GITHUB_STEP_SUMMARY")]"
+          if [ "$GITHUB_STEP_SUMMARY" = "$(cat mine.txt)" ]; then
+            echo "the same file as the step before"
+          else
+            echo "a file of its own"
+          fi
+
+      - name: Whatever it is told, markdown and all
+        run: |
+          printf '`code`, a | pipe, and <b>markup</b>\n' >> "$GITHUB_STEP_SUMMARY"
+          echo "read back: [$(cat "$GITHUB_STEP_SUMMARY")]"
+
+      - name: An action writes to its own
+        uses: ./actions/writes-a-summary
+
+      - name: Which the step after it does not see
+        run: echo "what is in it: [$(cat "$GITHUB_STEP_SUMMARY")]"
+
+      - name: Emptying it leaves nothing behind
+        run: |
+          echo "written first" >> "$GITHUB_STEP_SUMMARY"
+          : > "$GITHUB_STEP_SUMMARY"
+          echo "after emptying it: [$(cat "$GITHUB_STEP_SUMMARY")]"

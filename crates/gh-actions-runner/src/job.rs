@@ -1507,8 +1507,12 @@ fn passed_over(planned: &PlannedStep) -> Option<String> {
 
 fn step_name(planned: &PlannedStep, context: &Context) -> Result<String, Error> {
     let step = &planned.step;
+    let named = context
+        .clone()
+        .with("steps", gh_actions_expr::Value::Object(BTreeMap::new()));
+
     let base = match (&step.name, &step.uses, &step.run) {
-        (Some(name), _, _) => interpolate(name, context)?,
+        (Some(name), _, _) => interpolate(name, &named)?,
         (None, Some(uses), _) => uses.to_string(),
         (None, None, Some(run)) => run.lines().next().unwrap_or_default().trim().to_owned(),
         (None, None, None) => format!("step {}", planned.position + 1),

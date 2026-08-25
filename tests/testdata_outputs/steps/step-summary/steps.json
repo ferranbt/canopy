@@ -1,0 +1,79 @@
+[
+  {
+    "event": "job-started",
+    "id": "writing-it-down",
+    "label": "writing-it-down"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Write some of it, then some more"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Write some of it, then some more",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "The next step starts with one of its own"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "The next step starts with one of its own",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Whatever it is told, markdown and all"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Whatever it is told, markdown and all",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "An action writes to its own"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "An action writes to its own",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "Which the step after it does not see"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "Which the step after it does not see",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 5,
+    "name": "Emptying it leaves nothing behind"
+  },
+  {
+    "event": "step-finished",
+    "index": 5,
+    "name": "Emptying it leaves nothing behind",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "writing-it-down",
+    "label": "writing-it-down",
+    "conclusion": "success"
+  }
+]

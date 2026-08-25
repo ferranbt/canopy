@@ -1,0 +1,39 @@
+name: What a step is called
+
+on: push
+
+env:
+  NAMED_BY_THE_WORKFLOW: from the workflow
+
+jobs:
+  called-all-sorts:
+    runs-on: ubuntu-latest
+    steps:
+      - id: meta
+        name: Worked out from ${{ github.event_name }} and ${{ runner.os }}
+        run: echo "version=1.2.3" >> "$GITHUB_OUTPUT"
+
+      - name: Named after what a step before it returned, ${{ steps.meta.outputs.version }}
+        run: echo "a name can say what came before it"
+
+      - name: Named after an expression that came to nothing, [${{ steps.meta.outputs.nothing }}]
+        run: echo "and one that came to nothing"
+
+      - name: A name with a slash / a colon: and "quotes"
+        run: echo "punctuation and all"
+
+      - name: Ünïcödé and a 🌲 in the name
+        run: echo "letters that are not ascii"
+
+      - name: A name so long that it goes on and on and on and on and on and on and on and on and on and on and on and on and on and on and on and on
+        run: echo "and the whole of it is the name"
+
+      - run: echo "a step with no name of its own"
+
+      - run: |
+          echo "the first line of a script of several"
+          echo "which is the one it is named after"
+
+      - uses: ./actions/awkward-inputs
+        with:
+          needed: named after the action it uses
