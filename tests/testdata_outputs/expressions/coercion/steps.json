@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Comparisons across types",
-    "depth": 0
+    "name": "Comparisons across types"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Comparisons across types",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the logical operators return",
-    "depth": 0
+    "name": "What the logical operators return"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the logical operators return",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "The ones worth recording rather than guessing at",
-    "depth": 0
+    "name": "The ones worth recording rather than guessing at"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "The ones worth recording rather than guessing at",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

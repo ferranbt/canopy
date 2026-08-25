@@ -1,0 +1,59 @@
+name: Groups
+
+on: push
+
+jobs:
+  folding-lines-away:
+    runs-on: ubuntu-latest
+    steps:
+      - name: A group with lines in it
+        run: |
+          echo "before the group"
+          echo "::group::what it is called"
+          echo "inside it"
+          echo "::endgroup::"
+          echo "after the group"
+
+      - name: One group after another
+        run: |
+          echo "::group::the first"
+          echo "in the first"
+          echo "::endgroup::"
+          echo "::group::the second"
+          echo "in the second"
+          echo "::endgroup::"
+
+      - name: A group opened inside another
+        run: |
+          echo "::group::the outer one"
+          echo "inside the outer one"
+          echo "::group::the inner one"
+          echo "inside the inner one"
+          echo "::endgroup::"
+          echo "after the inner one"
+          echo "::endgroup::"
+
+      - name: A group nothing closes
+        run: |
+          echo "::group::left open"
+          echo "inside the one left open"
+
+      - name: The step after the one that left a group open
+        run: echo "a step of its own"
+
+      - name: An end with no beginning
+        run: |
+          echo "::endgroup::"
+          echo "said after an end nothing began"
+
+      - name: A group with no name
+        run: |
+          echo "::group::"
+          echo "inside the one with no name"
+          echo "::endgroup::"
+
+      - name: What a group is called can be worked out
+        run: |
+          echo "::group::a group of $(echo counted) lines"
+          echo "inside it"
+          echo "::endgroup::"

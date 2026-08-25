@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "./actions/state-docker",
-    "depth": 0
+    "name": "./actions/state-docker"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "./actions/state-docker",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the container wrote comes back",
-    "depth": 0
+    "name": "What the container wrote comes back"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the container wrote comes back",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "./actions/state-docker (post)",
-    "depth": 0
+    "name": "Post ./actions/state-docker"
   },
   {
     "event": "step-finished",
     "index": 2,
-    "name": "./actions/state-docker (post)",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "name": "Post ./actions/state-docker",
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

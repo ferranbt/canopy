@@ -7,100 +7,79 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "This one is fine",
-    "depth": 0
+    "name": "This one is fine"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "This one is fine",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Tolerated failure",
-    "depth": 0
+    "name": "Tolerated failure"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Tolerated failure",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "Still running after a tolerated failure",
-    "depth": 0
+    "name": "Still running after a tolerated failure"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "Still running after a tolerated failure",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "Real failure",
-    "depth": 0
+    "name": "Real failure"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "Real failure",
-    "depth": 0,
-    "conclusion": "failure",
-    "code": null
+    "conclusion": "failure"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "Skipped after the failure",
-    "depth": 0
+    "name": "Skipped after the failure"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "Skipped after the failure",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "skipped"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "Cleanup runs anyway",
-    "depth": 0
+    "name": "Cleanup runs anyway"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "Cleanup runs anyway",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 6,
-    "name": "Only on failure",
-    "depth": 0
+    "name": "Only on failure"
   },
   {
     "event": "step-finished",
     "index": 6,
     "name": "Only on failure",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

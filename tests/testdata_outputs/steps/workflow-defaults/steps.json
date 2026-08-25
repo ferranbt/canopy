@@ -7,30 +7,24 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Make the directory the default points at",
-    "depth": 0
+    "name": "Make the directory the default points at"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Make the directory the default points at",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Run where the workflow said, in the shell it named",
-    "depth": 0
+    "name": "Run where the workflow said, in the shell it named"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Run where the workflow said, in the shell it named",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

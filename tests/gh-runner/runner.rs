@@ -150,7 +150,15 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
         });
 
         let said = uploads.remove(&record.id).unwrap_or_default();
-        printed(&said, out);
+        said.lines()
+            .map(|line| clean(&without_timestamp(line)))
+            .filter(|line| !CHATTER.iter().any(|chatter| line.starts_with(chatter)))
+            .for_each(|line| {
+                out.report(Event::StepOutput {
+                    stream: Stream::Out,
+                    line,
+                });
+            });
 
         out.report(Event::StepFinished {
             index,
@@ -190,31 +198,6 @@ fn report(updates: Vec<Update>, id: &str, out: &mut dyn Reporter) -> Result<(), 
     }
 }
 
-fn printed(said: &str, out: &mut dyn Reporter) {
-    let mut echoing = false;
-
-    for line in said.lines() {
-        let line = clean(without_timestamp(line).as_str());
-        if CHATTER.iter().any(|chatter| line.starts_with(chatter)) {
-            continue;
-        }
-
-        // A runner opens a step by printing it back, which is the step as it was given.
-        if line.starts_with("##[group]Run ") {
-            echoing = true;
-        }
-        if echoing {
-            echoing = line != "##[endgroup]";
-            continue;
-        }
-
-        out.report(Event::StepOutput {
-            stream: Stream::Out,
-            line,
-        });
-    }
-}
-
 /// What a runner puts against a step's log although no step printed it.
 const CHATTER: [&str; 8] = [
     "Post job cleanup.",
@@ -227,21 +210,10 @@ const CHATTER: [&str; 8] = [
     "Machine name:",
 ];
 
-/// The steps handed over carry the ids they were given. A runner adds its own: `Set up job`
-/// and `Complete job`, which canopy has no counterpart for, and the hooks of every action
-/// that has them, which canopy names the other way round.
 fn named(record: &Record) -> Option<String> {
-    if record.id.starts_with(message::STEPS) {
-        return Some(record.name.clone());
-    }
+    let hook = record.name.starts_with("Pre ") || record.name.starts_with("Post ");
 
-    for (hook, phase) in [("Pre ", "pre"), ("Post ", "post")] {
-        if let Some(name) = record.name.strip_prefix(hook) {
-            return Some(format!("{name} ({phase})"));
-        }
-    }
-
-    None
+    (record.id.starts_with(message::STEPS) || hook).then(|| record.name.clone())
 }
 
 fn without_timestamp(line: &str) -> String {
@@ -302,24 +274,9 @@ fn start() -> Result<Agent, String> {
 }
 
 fn clean(line: &str) -> String {
-    let mut plain = String::with_capacity(line.len());
-    let mut rest = line;
-
-    while let Some(start) = rest.find('\u{1b}') {
-        plain.push_str(&rest[..start]);
-        rest = match rest[start..].find('m') {
-            Some(end) => &rest[start + end + 1..],
-            None => "",
-        };
-    }
-    plain.push_str(rest);
-
-    let plain = plain
-        .replace(WORKSPACE, "$GITHUB_WORKSPACE")
+    line.replace(WORKSPACE, "$GITHUB_WORKSPACE")
         .replace("/home/runner/_work/_temp", "$RUNNER_TEMP")
-        .replace("/home/runner/_work", "$RUNNER_WORK");
-
-    plain.trim_end().to_owned()
+        .replace("/home/runner/_work", "$RUNNER_WORK")
 }
 
 fn conclusion(result: Option<&str>) -> Conclusion {

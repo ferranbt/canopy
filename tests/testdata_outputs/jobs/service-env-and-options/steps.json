@@ -7,16 +7,13 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Reach the service that only starts when it was told a password",
-    "depth": 0
+    "name": "Reach the service that only starts when it was told a password"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Reach the service that only starts when it was told a password",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

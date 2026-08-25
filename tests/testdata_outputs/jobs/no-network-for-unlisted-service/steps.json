@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "The one it asked for is there",
-    "depth": 0
+    "name": "The one it asked for is there"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "The one it asked for is there",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "A name it did not ask for is not",
-    "depth": 0
+    "name": "A name it did not ask for is not"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "A name it did not ask for is not",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "Nor is the name of an image it happens to run",
-    "depth": 0
+    "name": "Nor is the name of an image it happens to run"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "Nor is the name of an image it happens to run",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

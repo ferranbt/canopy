@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A step that takes longer than it is allowed",
-    "depth": 0
+    "name": "A step that takes longer than it is allowed"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A step that takes longer than it is allowed",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "The step was killed rather than left running",
-    "depth": 0
+    "name": "The step was killed rather than left running"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "The step was killed rather than left running",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "A step within its time is untouched",
-    "depth": 0
+    "name": "A step within its time is untouched"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "A step within its time is untouched",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

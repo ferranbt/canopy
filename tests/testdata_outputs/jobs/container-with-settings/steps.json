@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Check the image again",
-    "depth": 0
+    "name": "Check the image again"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Check the image again",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Check the environment the container was given",
-    "depth": 0
+    "name": "Check the environment the container was given"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Check the environment the container was given",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "Check the extra docker options were passed",
-    "depth": 0
+    "name": "Check the extra docker options were passed"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "Check the extra docker options were passed",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

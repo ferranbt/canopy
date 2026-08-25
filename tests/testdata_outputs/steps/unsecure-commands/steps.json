@@ -7,30 +7,24 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "The older spelling is allowed again",
-    "depth": 0
+    "name": "The older spelling is allowed again"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "The older spelling is allowed again",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "And is on the path for what follows",
-    "depth": 0
+    "name": "And is on the path for what follows"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "And is on the path for what follows",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

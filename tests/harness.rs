@@ -33,11 +33,14 @@ impl Reporter for Outcome {
         }
 
         for line in report::github_log(&event) {
-            if !self.inside || got_ready(&line) {
+            let line = plain(&line);
+            let line = line.trim_end();
+
+            if !self.inside || got_ready(line) {
                 continue;
             }
             if let Some(printed) = self.logs.last_mut() {
-                printed.lines.push(line.trim_end().to_owned());
+                printed.lines.push(line.to_owned());
             }
         }
 
@@ -92,7 +95,7 @@ impl Outcome {
     /// What no two runs agree on and neither is wrong about.
     pub fn settle(&mut self) {
         for said in self.said() {
-            *said = settled(&plain(said));
+            *said = settled(said);
 
             if let Some((before, rest)) = said.split_once(" B)")
                 && let Some((head, bytes)) = before.rsplit_once('(')

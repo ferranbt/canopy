@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "The older spelling, without opting into it",
-    "depth": 0
+    "name": "The older spelling, without opting into it"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "The older spelling, without opting into it",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the step that asked came to",
-    "depth": 0
+    "name": "What the step that asked came to"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the step that asked came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "The file it wrote is still there, whatever the command came to",
-    "depth": 0
+    "name": "The file it wrote is still there, whatever the command came to"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "The file it wrote is still there, whatever the command came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

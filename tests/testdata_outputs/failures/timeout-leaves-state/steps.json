@@ -7,30 +7,24 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Writes to the state files, then outstays its welcome",
-    "depth": 0
+    "name": "Writes to the state files, then outstays its welcome"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Writes to the state files, then outstays its welcome",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What survived the kill",
-    "depth": 0
+    "name": "What survived the kill"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What survived the kill",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

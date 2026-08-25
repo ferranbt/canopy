@@ -7,72 +7,57 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Values that are awkward to write down",
-    "depth": 0
+    "name": "Values that are awkward to write down"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Values that are awkward to write down",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What came back out",
-    "depth": 0
+    "name": "What came back out"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What came back out",
-    "depth": 0,
-    "conclusion": "failure",
-    "code": null
+    "conclusion": "failure"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "The ones the checks cannot hold, printed instead",
-    "depth": 0
+    "name": "The ones the checks cannot hold, printed instead"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "The ones the checks cannot hold, printed instead",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "skipped"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "The same name in both files",
-    "depth": 0
+    "name": "The same name in both files"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "The same name in both files",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "skipped"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "They are kept apart",
-    "depth": 0
+    "name": "They are kept apart"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "They are kept apart",
-    "depth": 0,
-    "conclusion": "skipped",
-    "code": null
+    "conclusion": "skipped"
   },
   {
     "event": "job-finished",

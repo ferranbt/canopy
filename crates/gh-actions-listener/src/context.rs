@@ -66,7 +66,7 @@ impl PipelineStep {
             name: Some(self.display_name.clone()).filter(|name| !name.is_empty()),
             // Every step arrives with one, and `success()` is what having none compiles to.
             r#if: self.condition.clone(),
-            env: (!self.env.is_empty()).then(|| scalars(&self.env)),
+            env: (!self.env.is_empty()).then(|| scalars(&self.env).into_iter().collect()),
             ..Step::default()
         };
 
@@ -102,7 +102,7 @@ impl JobMessage {
     }
 }
 
-fn scalars(values: &BTreeMap<String, String>) -> BTreeMap<String, Scalar> {
+fn scalars(values: &BTreeMap<String, String>) -> With {
     values
         .iter()
         .map(|(name, value)| (name.clone(), Scalar::String(value.clone())))

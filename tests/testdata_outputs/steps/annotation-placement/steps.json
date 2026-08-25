@@ -1,0 +1,68 @@
+[
+  {
+    "event": "job-started",
+    "id": "among-what-a-step-says",
+    "label": "among-what-a-step-says"
+  },
+  {
+    "event": "step-started",
+    "index": 0,
+    "name": "Between the lines it belongs between"
+  },
+  {
+    "event": "step-finished",
+    "index": 0,
+    "name": "Between the lines it belongs between",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 1,
+    "name": "One after another, in the order they were said"
+  },
+  {
+    "event": "step-finished",
+    "index": 1,
+    "name": "One after another, in the order they were said",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 2,
+    "name": "Inside a group"
+  },
+  {
+    "event": "step-finished",
+    "index": 2,
+    "name": "Inside a group",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 3,
+    "name": "A message of more than one line"
+  },
+  {
+    "event": "step-finished",
+    "index": 3,
+    "name": "A message of more than one line",
+    "conclusion": "success"
+  },
+  {
+    "event": "step-started",
+    "index": 4,
+    "name": "The last thing a step says"
+  },
+  {
+    "event": "step-finished",
+    "index": 4,
+    "name": "The last thing a step says",
+    "conclusion": "success"
+  },
+  {
+    "event": "job-finished",
+    "id": "among-what-a-step-says",
+    "label": "among-what-a-step-says",
+    "conclusion": "success"
+  }
+]

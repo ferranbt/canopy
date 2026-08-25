@@ -7,100 +7,79 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A secret of more than one line, hidden a line at a time",
-    "depth": 0
+    "name": "A secret of more than one line, hidden a line at a time"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A secret of more than one line, hidden a line at a time",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "Inside what a step says to the runner",
-    "depth": 0
+    "name": "Inside what a step says to the runner"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "Inside what a step says to the runner",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "In the middle of a longer line, and more than once",
-    "depth": 0
+    "name": "In the middle of a longer line, and more than once"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "In the middle of a longer line, and more than once",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "On standard error as well",
-    "depth": 0
+    "name": "On standard error as well"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "On standard error as well",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "A mask an action asked for",
-    "depth": 0
+    "name": "A mask an action asked for"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "A mask an action asked for",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "Holds for the steps that follow it",
-    "depth": 0
+    "name": "Holds for the steps that follow it"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "Holds for the steps that follow it",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 6,
-    "name": "What is not a secret is left alone",
-    "depth": 0
+    "name": "What is not a secret is left alone"
   },
   {
     "event": "step-finished",
     "index": 6,
     "name": "What is not a secret is left alone",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

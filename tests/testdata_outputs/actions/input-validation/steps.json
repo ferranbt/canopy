@@ -7,72 +7,57 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A required input nobody gave",
-    "depth": 0
+    "name": "A required input nobody gave"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A required input nobody gave",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What leaving it out came to",
-    "depth": 0
+    "name": "What leaving it out came to"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What leaving it out came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "An input the action never declared",
-    "depth": 0
+    "name": "An input the action never declared"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "An input the action never declared",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "What passing it came to",
-    "depth": 0
+    "name": "What passing it came to"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "What passing it came to",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "An input the action still takes",
-    "depth": 0
+    "name": "An input the action still takes"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "An input the action still takes",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

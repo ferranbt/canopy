@@ -7,114 +7,90 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A file to point the annotations at",
-    "depth": 0
+    "name": "A file to point the annotations at"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A file to point the annotations at",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "An error against a place in a file",
-    "depth": 0
+    "name": "An error against a place in a file"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "An error against a place in a file",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "With an end and a title as well",
-    "depth": 0
+    "name": "With an end and a title as well"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "With an end and a title as well",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "A warning the same way",
-    "depth": 0
+    "name": "A warning the same way"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "A warning the same way",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "A notice, which the runner takes and says nothing about",
-    "depth": 0
+    "name": "A notice, which the runner takes and says nothing about"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "A notice, which the runner takes and says nothing about",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "The levels with nothing attached",
-    "depth": 0
+    "name": "The levels with nothing attached"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "The levels with nothing attached",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 6,
-    "name": "A property the runner has no use for",
-    "depth": 0
+    "name": "A property the runner has no use for"
   },
   {
     "event": "step-finished",
     "index": 6,
     "name": "A property the runner has no use for",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 7,
-    "name": "The step is still a success, annotations and all",
-    "depth": 0
+    "name": "The step is still a success, annotations and all"
   },
   {
     "event": "step-finished",
     "index": 7,
     "name": "The step is still a success, annotations and all",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

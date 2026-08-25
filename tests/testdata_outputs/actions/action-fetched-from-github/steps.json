@@ -7,30 +7,24 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "actions/hello-world-javascript-action@main",
-    "depth": 0
+    "name": "actions/hello-world-javascript-action@main"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "actions/hello-world-javascript-action@main",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "What the fetched action returned",
-    "depth": 0
+    "name": "What the fetched action returned"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "What the fetched action returned",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

@@ -7,114 +7,90 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "A percent in the data is written as one",
-    "depth": 0
+    "name": "A percent in the data is written as one"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "A percent in the data is written as one",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "A newline in the data is written as one",
-    "depth": 0
+    "name": "A newline in the data is written as one"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "A newline in the data is written as one",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "A carriage return too",
-    "depth": 0
+    "name": "A carriage return too"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "A carriage return too",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "All three at once",
-    "depth": 0
+    "name": "All three at once"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "All three at once",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 4,
-    "name": "A property with a comma and a colon in it",
-    "depth": 0
+    "name": "A property with a comma and a colon in it"
   },
   {
     "event": "step-finished",
     "index": 4,
     "name": "A property with a comma and a colon in it",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 5,
-    "name": "What is not an escape is left alone",
-    "depth": 0
+    "name": "What is not an escape is left alone"
   },
   {
     "event": "step-finished",
     "index": 5,
     "name": "What is not an escape is left alone",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 6,
-    "name": "A command with nothing after it",
-    "depth": 0
+    "name": "A command with nothing after it"
   },
   {
     "event": "step-finished",
     "index": 6,
     "name": "A command with nothing after it",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 7,
-    "name": "Text that only looks like a command",
-    "depth": 0
+    "name": "Text that only looks like a command"
   },
   {
     "event": "step-finished",
     "index": 7,
     "name": "Text that only looks like a command",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

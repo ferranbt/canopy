@@ -7,58 +7,46 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "The command the output file replaced",
-    "depth": 0
+    "name": "The command the output file replaced"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "The command the output file replaced",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "And the one the state file replaced",
-    "depth": 0
+    "name": "And the one the state file replaced"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "And the one the state file replaced",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "The one that was taken away outright",
-    "depth": 0
+    "name": "The one that was taken away outright"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "The one that was taken away outright",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 3,
-    "name": "What each of them left behind",
-    "depth": 0
+    "name": "What each of them left behind"
   },
   {
     "event": "step-finished",
     "index": 3,
     "name": "What each of them left behind",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",

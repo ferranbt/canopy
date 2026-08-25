@@ -7,44 +7,35 @@
   {
     "event": "step-started",
     "index": 0,
-    "name": "Make the directories the defaults point at",
-    "depth": 0
+    "name": "Make the directories the defaults point at"
   },
   {
     "event": "step-finished",
     "index": 0,
     "name": "Make the directories the defaults point at",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 1,
-    "name": "The job's defaults win",
-    "depth": 0
+    "name": "The job's defaults win"
   },
   {
     "event": "step-finished",
     "index": 1,
     "name": "The job's defaults win",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "step-started",
     "index": 2,
-    "name": "A step wins over both",
-    "depth": 0
+    "name": "A step wins over both"
   },
   {
     "event": "step-finished",
     "index": 2,
     "name": "A step wins over both",
-    "depth": 0,
-    "conclusion": "success",
-    "code": null
+    "conclusion": "success"
   },
   {
     "event": "job-finished",
