@@ -10,8 +10,8 @@ use gh_actions_plan::PlannedJob;
 use gh_actions_runner::report::{Event, Reporter, Stream};
 use gh_actions_spec::Workflow;
 
-use crate::message;
-use crate::service::{self, Listening, Service, Update};
+use super::message;
+use super::service::{self, Listening, Service, Update};
 
 const IMAGE: &str = "gh-runner";
 const CONTAINER: &str = "gh-runner";

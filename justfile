@@ -23,10 +23,10 @@ build-runner-image:
     docker build -q -f tests/gh-runner/runner.Dockerfile -t gh-runner tests/gh-runner
 
 gh-runner file="": build-runner-image
-    cargo run --bin gh-runner -- {{ if file == "" { "" } else { "--test " + file } }}
+    cargo run --bin integration -- --runner official-gh-runner {{ if file == "" { "" } else { "--test " + file } }}
 
-integration file="" runner="":
-    cargo run --bin integration -- {{ if file == "" { "" } else { "--test " + file } }} {{ if runner == "" { "" } else { "--runner " + runner } }}
+integration file="" runner="" validate="":
+    cargo run --bin integration -- {{ if file == "" { "" } else { "--test " + file } }} {{ if runner == "" { "" } else { "--runner " + runner } }} {{ if validate == "" { "" } else { "--validate" } }}
 
 count-tests:
     #!/usr/bin/env sh

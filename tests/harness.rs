@@ -189,7 +189,7 @@ impl Outcome {
         std::fs::create_dir_all(at).map_err(|err| format!("{}: {err}", at.display()))?;
         clear(at, called);
 
-        let happened = at.join(format!("{called}steps.json"));
+        let happened = at.join(format!("steps{called}.json"));
         let recorded = serde_json::to_string_pretty(&self.events).map_err(|err| err.to_string())?;
         std::fs::write(&happened, recorded)
             .map_err(|err| format!("{}: {err}", happened.display()))?;
@@ -217,9 +217,16 @@ fn clear(at: &Path, called: &str) {
 
     for entry in entries.flatten() {
         let name = entry.file_name().to_string_lossy().into_owned();
-        let theirs = called.is_empty() && name.starts_with("cnp_");
+        let stem = name.split_once('.').map_or(name.clone(), |(stem, _)| stem.to_owned());
 
-        if name.starts_with(called) && !theirs {
+        // Only what a runner writes under its own name: the one that writes without a suffix
+        // is not to take the copies away with it.
+        let mine = match called.is_empty() {
+            true => !stem.contains('_'),
+            false => stem.ends_with(called),
+        };
+
+        if mine {
             let _ = std::fs::remove_file(entry.path());
         }
     }
@@ -245,7 +252,7 @@ fn log(at: &Path, called: &str, of: usize, step: &str) -> PathBuf {
         .collect();
 
     let step = sanitised.trim_matches('-').replace("--", "-");
-    at.join(format!("{called}{:02}-{step}.log", of + 1))
+    at.join(format!("{:02}-{step}{called}.log", of + 1))
 }
 
 /// What a runner says while it builds and starts a container, which no two runs say alike.
@@ -367,8 +374,8 @@ impl TargetFile {
 
     /// Beside what the runner GitHub ships did, under a name of its own: only what the
     /// runner did is kept.
-    pub fn ours(&self, outcome: &Outcome) -> Result<(), String> {
-        outcome.write(&expected(&self.path), "cnp_")
+    pub fn copy(&self, outcome: &Outcome, called: &str) -> Result<(), String> {
+        outcome.write(&expected(&self.path), called)
     }
 }
 
@@ -410,7 +417,7 @@ impl Default for Harness {
 }
 
 impl Harness {
-    pub fn new(prefix: &str) -> Self {
+    pub fn new(called: &str) -> Self {
         // Who committed and what they called it is the machine's to say, and a recording
         // made on one machine is read on another.
         unsafe {
@@ -424,7 +431,7 @@ impl Harness {
         let at = chrono::Local::now().format("%Y-%m-%d_%H-%M-%S");
         let artifacts = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("artifacts")
-            .join(format!("{prefix}{at}"));
+            .join(format!("{at}{called}"));
 
         Self { artifacts }
     }
@@ -487,6 +494,8 @@ impl Harness {
 
         let artifacts = self.artifacts.join(name.trim_end_matches(".yml"));
         let workspace = artifacts.join("workspace");
+        // A case run twice starts from the same nothing both times.
+        let _ = std::fs::remove_dir_all(&workspace);
         std::fs::create_dir_all(&workspace)
             .map_err(|err| format!("cannot make a workspace: {err}"))?;
 
