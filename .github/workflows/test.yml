@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [cnp-gh-runner, local-runner]
+        runner: [cnp-gh, local]
 
     steps:
       - uses: actions/checkout@v4
