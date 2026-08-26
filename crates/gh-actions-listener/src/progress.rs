@@ -68,11 +68,11 @@ impl Progress {
         })
     }
 
-    fn step_started(&mut self, position: usize) {
+    fn step_started(&mut self, position: usize, name: String) {
         let Some(step) = self.job.steps.get(position) else {
             return;
         };
-        let (id, name) = (step.id.clone(), step.display_name.clone());
+        let id = step.id.clone();
 
         if let Some(feed) = &mut self.feed {
             feed.step(&id);
@@ -200,7 +200,7 @@ impl Reporter for Progress {
         }
 
         match event {
-            Event::StepStarted { index, .. } => self.step_started(index),
+            Event::StepStarted { index, name, .. } => self.step_started(index, name),
             Event::StepFinished {
                 index, conclusion, ..
             } => {
@@ -248,5 +248,43 @@ impl Lease {
     fn drop(self) {
         self.running.store(false, Ordering::Relaxed);
         let _ = self.thread.join();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::client::types::PipelineStep;
+
+    fn job() -> JobMessage {
+        JobMessage {
+            steps: vec![PipelineStep {
+                id: "first-id".to_owned(),
+                display_name: "${{ format('Build {0}', matrix.target) }}".to_owned(),
+                ..PipelineStep::default()
+            }],
+            ..JobMessage::default()
+        }
+    }
+
+    fn started(index: usize, name: &str) -> Event {
+        Event::StepStarted {
+            index,
+            name: name.to_owned(),
+            depth: 0,
+        }
+    }
+
+    #[test]
+    fn reports_the_evaluated_name_from_the_runner() {
+        let mut progress = Progress::open(&job()).expect("progress can be kept locally");
+
+        progress.report(started(0, "Build linux"));
+
+        let results = progress.results();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].external_id, "first-id");
+        assert_eq!(results[0].name, "Build linux");
+        assert_eq!(results[0].number, 1);
     }
 }
