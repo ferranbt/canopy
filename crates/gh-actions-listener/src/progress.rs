@@ -38,7 +38,7 @@ const RENEW_EVERY: Duration = Duration::from_secs(60);
 struct Step {
     id: String,
     name: String,
-    outcome: Outcome,
+    conclusion: Conclusion,
     started_at: SystemTime,
     finished_at: Option<SystemTime>,
     log: String,
@@ -82,7 +82,7 @@ impl Progress {
         self.steps.entry(position).or_insert_with(|| Step {
             id,
             name,
-            outcome: Outcome::Succeeded,
+            conclusion: Conclusion::Success,
             started_at: SystemTime::now(),
             finished_at: None,
             log: String::new(),
@@ -106,11 +106,13 @@ impl Progress {
         }
     }
 
-    fn step_finished(&mut self, position: usize, outcome: Outcome) {
+    fn step_finished(&mut self, position: usize, conclusion: Conclusion) {
         if let Some(step) = self.steps.get_mut(&position) {
             step.finished_at = Some(SystemTime::now());
-            if outcome == Outcome::Failed {
-                step.outcome = outcome;
+            // An action's hooks can finish under the same step. Keep the strongest result:
+            // failure wins over skipped, and skipped wins over success.
+            if conclusion == Conclusion::Failure || step.conclusion == Conclusion::Success {
+                step.conclusion = conclusion;
             }
         }
 
@@ -185,7 +187,7 @@ impl Progress {
                     Some(_) => "completed",
                     None => "inProgress",
                 },
-                conclusion: step.finished_at.map(|_| step.outcome.name()),
+                conclusion: step.finished_at.map(|_| step_conclusion(step.conclusion)),
                 started_at: Some(timestamp(step.started_at)),
                 completed_at: step.finished_at.map(timestamp),
             })
@@ -203,16 +205,18 @@ impl Reporter for Progress {
             Event::StepStarted { index, name, .. } => self.step_started(index, name),
             Event::StepFinished {
                 index, conclusion, ..
-            } => {
-                let outcome = match conclusion {
-                    Conclusion::Failure => Outcome::Failed,
-                    _ => Outcome::Succeeded,
-                };
-                self.step_finished(index, outcome);
-            }
+            } => self.step_finished(index, conclusion),
             // The rest is about the job, which the listener already knows about.
             _ => {}
         }
+    }
+}
+
+fn step_conclusion(conclusion: Conclusion) -> &'static str {
+    match conclusion {
+        Conclusion::Success => "succeeded",
+        Conclusion::Failure => "failed",
+        Conclusion::Skipped => "skipped",
     }
 }
 
@@ -275,6 +279,16 @@ mod tests {
         }
     }
 
+    fn finished(index: usize, name: &str, conclusion: Conclusion) -> Event {
+        Event::StepFinished {
+            index,
+            name: name.to_owned(),
+            depth: 0,
+            conclusion,
+            code: None,
+        }
+    }
+
     #[test]
     fn reports_the_evaluated_name_from_the_runner() {
         let mut progress = Progress::open(&job()).expect("progress can be kept locally");
@@ -286,5 +300,17 @@ mod tests {
         assert_eq!(results[0].external_id, "first-id");
         assert_eq!(results[0].name, "Build linux");
         assert_eq!(results[0].number, 1);
+    }
+
+    #[test]
+    fn reports_a_skipped_step_as_skipped() {
+        let mut progress = Progress::open(&job()).expect("progress can be kept locally");
+
+        progress.report(started(0, "Build linux"));
+        progress.report(finished(0, "Build linux", Conclusion::Skipped));
+
+        let results = progress.results();
+        assert_eq!(results[0].status, "completed");
+        assert_eq!(results[0].conclusion, Some("skipped"));
     }
 }
