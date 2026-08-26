@@ -12,7 +12,7 @@ use local_runner::{Config, Local};
 struct Cli {
     #[arg(long)]
     test: Option<String>,
-    #[arg(long, value_enum, default_value_t = Runner::CnpGhRunner)]
+    #[arg(long, value_enum, default_value_t = Runner::CnpGh)]
     runner: Runner,
     #[arg(long)]
     validate: bool,
@@ -20,17 +20,17 @@ struct Cli {
 
 #[derive(Clone, Copy, PartialEq, Eq, ValueEnum)]
 enum Runner {
-    CnpGhRunner,
-    OfficialGhRunner,
-    LocalRunner,
+    CnpGh,
+    OfficialGh,
+    Local,
 }
 
 impl Runner {
     fn called(self) -> &'static str {
         match self {
-            Self::CnpGhRunner => "_cnp",
-            Self::OfficialGhRunner => "",
-            Self::LocalRunner => "_loc",
+            Self::CnpGh => "_cnp",
+            Self::OfficialGh => "",
+            Self::Local => "_loc",
         }
     }
 }
@@ -121,7 +121,7 @@ fn main() -> Result<()> {
     tracing();
 
     let cli = Cli::parse();
-    if cli.validate && cli.runner == Runner::OfficialGhRunner {
+    if cli.validate && cli.runner == Runner::OfficialGh {
         bail!("`--validate` is for a canopy runner: there is nothing to hold this one to");
     }
 
@@ -134,19 +134,19 @@ fn main() -> Result<()> {
 
         let checked = (|| -> Result<(), String> {
             let outcome = harness.run(&file.path, |case| match cli.runner {
-                Runner::CnpGhRunner => on_this_machine(case),
-                Runner::LocalRunner => in_containers(case),
-                Runner::OfficialGhRunner => using_gh_runner(case),
+                Runner::CnpGh => on_this_machine(case),
+                Runner::Local => in_containers(case),
+                Runner::OfficialGh => using_gh_runner(case),
             })?;
             file.copy(&outcome, cli.runner.called())?;
 
-            if cli.runner == Runner::OfficialGhRunner {
+            if cli.runner == Runner::OfficialGh {
                 return Ok(());
             }
 
             if cli.validate {
                 let theirs = harness.run(&file.path, using_gh_runner)?;
-                file.copy(&theirs, Runner::OfficialGhRunner.called())?;
+                file.copy(&theirs, Runner::OfficialGh.called())?;
 
                 return theirs.matches(&outcome);
             }

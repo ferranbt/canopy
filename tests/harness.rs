@@ -217,7 +217,9 @@ fn clear(at: &Path, called: &str) {
 
     for entry in entries.flatten() {
         let name = entry.file_name().to_string_lossy().into_owned();
-        let stem = name.split_once('.').map_or(name.clone(), |(stem, _)| stem.to_owned());
+        let stem = name
+            .split_once('.')
+            .map_or(name.clone(), |(stem, _)| stem.to_owned());
 
         // Only what a runner writes under its own name: the one that writes without a suffix
         // is not to take the copies away with it.
