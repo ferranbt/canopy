@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::{Sender, channel};
 use std::time::Duration;
 
+use chrono::{DateTime, Utc};
 use eyre::{Result, eyre};
 use gh_actions_context::{Conclusion, Runner};
 use gh_actions_listener::{
@@ -23,8 +24,14 @@ use tokio::runtime::Runtime;
 
 const PROBE: &str = "probe-canopy.yml";
 
+/// What every runner a probe registers is named after, so a leftover one is known for one.
+const PROBES: &str = "canopy-probe-";
+
 /// Long enough for GitHub to hand the job over, and for the job to run.
 const WAIT: Duration = Duration::from_secs(600);
+
+/// How often GitHub is asked where the run has got to.
+const BETWEEN: Duration = Duration::from_secs(10);
 
 /// The few calls the probe makes to GitHub, sync because everything around them is.
 struct Github {
@@ -40,17 +47,18 @@ impl Github {
             .split_once('/')
             .ok_or_else(|| eyre!("{repository:?} is not an owner and a repo"))?;
 
+        let on = Runtime::new()?;
+        let github =
+            on.block_on(async { Octocrab::builder().personal_token(token.to_owned()).build() })?;
+
         Ok(Self {
-            github: Octocrab::builder()
-                .personal_token(token.to_owned())
-                .build()?,
-            on: Runtime::new()?,
+            github,
+            on,
             owner: owner.to_owned(),
             repo: repo.to_owned(),
         })
     }
 
-    /// Short-lived and single-use: it buys the credentials a runner keeps.
     fn registration_token(&self) -> Result<String> {
         let minted = self.on.block_on(
             self.github
@@ -73,7 +81,42 @@ impl Github {
         Ok(())
     }
 
-    fn remove_runner(&self, named: &str) -> Result<()> {
+    fn wait_for_run(&self, workflow: &str, since: DateTime<Utc>) -> Result<String> {
+        let mut waited = Duration::ZERO;
+
+        loop {
+            let runs = self.on.block_on(
+                self.github
+                    .workflows(&self.owner, &self.repo)
+                    .list_runs(workflow)
+                    .event("workflow_dispatch")
+                    .per_page(20)
+                    .send(),
+            )?;
+
+            let ours = runs
+                .items
+                .into_iter()
+                .filter(|run| run.created_at >= since)
+                .min_by_key(|run| run.created_at);
+
+            match ours {
+                Some(run) if run.status == "completed" => {
+                    return Ok(run.conclusion.unwrap_or_else(|| run.status.clone()));
+                }
+                Some(run) => tracing::info!(status = %run.status, url = %run.html_url, "the run"),
+                None => tracing::info!("the dispatch has not turned into a run yet"),
+            }
+
+            if waited >= WAIT {
+                return Err(eyre!("the run never finished"));
+            }
+            std::thread::sleep(BETWEEN);
+            waited += BETWEEN;
+        }
+    }
+
+    fn remove_runners(&self, named: &str) -> Result<()> {
         let runners = self.on.block_on(
             self.github
                 .actions()
@@ -81,15 +124,18 @@ impl Github {
                 .send(),
         )?;
 
-        let Some(runner) = runners.items.into_iter().find(|it| it.name == named) else {
-            return Ok(());
-        };
+        let leftover = runners.items.into_iter().filter(|it| {
+            it.name == named || (it.name.starts_with(PROBES) && it.status != "online")
+        });
 
-        self.on.block_on(self.github.actions().delete_repo_runner(
-            &self.owner,
-            &self.repo,
-            runner.id,
-        ))?;
+        for runner in leftover {
+            tracing::info!(runner = %runner.name, "removing");
+            self.on.block_on(self.github.actions().delete_repo_runner(
+                &self.owner,
+                &self.repo,
+                runner.id,
+            ))?;
+        }
 
         Ok(())
     }
@@ -104,7 +150,15 @@ struct Probe {
 
 impl Worker for Probe {
     fn run(&mut self, job: &JobMessage, progress: &mut Progress) -> Result<Outcome, Error> {
+        tracing::info!(
+            job = %job.job_display_name,
+            steps = job.steps.len(),
+            secrets = job.secrets().len(),
+            "the probe was handed a job"
+        );
+
         let outcome = self.work_through(job, progress);
+        tracing::info!(outcome = outcome.name(), "the probe ran the job");
         let _ = self.told.send((Box::new(job.clone()), outcome));
 
         Ok(outcome)
@@ -181,10 +235,12 @@ fn listen(credentials: Credentials, probe: Probe) -> Result<(), Error> {
 fn main() -> Result<()> {
     tracing();
 
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     let repository = asked_for("GITHUB_REPOSITORY")?;
     let branch = std::env::var("GITHUB_REF_NAME").unwrap_or_else(|_| "main".to_owned());
     let named = format!(
-        "canopy-probe-{}",
+        "{PROBES}{}",
         std::env::var("GITHUB_RUN_ID").unwrap_or_else(|_| std::process::id().to_string())
     );
 
@@ -195,11 +251,13 @@ fn main() -> Result<()> {
         name: named.clone(),
         labels: vec![named.clone()],
     })?;
-    println!("registered {named}");
+    tracing::info!(runner = %named, "registered");
 
     let (told, heard) = channel();
     let probe = Probe {
-        work: PathBuf::from("_work").join(&named),
+        // Absolute, since a step runs in the workspace and would look for its script under
+        // that rather than under where the runner wrote it.
+        work: std::env::current_dir()?.join("_work").join(&named),
         told,
     };
     std::thread::spawn(move || {
@@ -210,20 +268,23 @@ fn main() -> Result<()> {
 
     // The job queues until a runner with the label turns up, so dispatching once the runner
     // is registered is enough; it is picked up as soon as the session is open.
+    let since = chrono::Utc::now();
     github.dispatch(PROBE, &branch, &named)?;
-    println!("dispatched {PROBE} at {named}");
+    tracing::info!(workflow = PROBE, at = %named, "dispatched, waiting to be handed the job");
 
     let came = heard.recv_timeout(WAIT);
-    let deregistered = github.remove_runner(&named);
-
     let (job, outcome) = came.map_err(|_| eyre!("no job was handed over within {WAIT:?}"))?;
-    deregistered?;
 
-    println!(
-        "ok    {} came to {} over {} step(s)",
-        job.job_display_name,
-        outcome.name(),
-        job.steps.len()
+    // Not over when the steps are: the listener is still uploading what they said.
+    let conclusion = github.wait_for_run(PROBE, since);
+    github.remove_runners(&named)?;
+
+    tracing::info!(
+        job = %job.job_display_name,
+        outcome = outcome.name(),
+        steps = job.steps.len(),
+        github = %conclusion?,
+        "the probe is done"
     );
     Ok(())
 }
@@ -236,8 +297,11 @@ fn asked_for(name: &str) -> Result<String> {
 }
 
 fn tracing() {
+    let log_level = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
+
     tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_env_filter(log_level)
         .with_target(false)
         .init();
 }

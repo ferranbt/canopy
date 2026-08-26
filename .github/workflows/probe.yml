@@ -1,0 +1,30 @@
+name: Probe
+
+# Registers a runner of its own and has GitHub dispatch `probe-canopy.yml` at it, so what a
+# real run hands a runner, and what GitHub makes of what canopy sends back, is held to
+# GitHub itself rather than to a recording.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: canopy-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Run a workflow on canopy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Register, dispatch, and run what comes back
+        run: cargo run -p canopy-tests --bin ci-workflow
+        env:
+          CANOPY_PROBE_TOKEN: ${{ secrets.CANOPY_PROBE_TOKEN }}
+          RUST_LOG: info

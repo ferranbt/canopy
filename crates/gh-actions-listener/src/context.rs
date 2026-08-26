@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
-use gh_actions_context::{Conclusion, JobResult, RunContext};
+use gh_actions_context::{Conclusion, JobResult, RunContext, Strategy};
 use gh_actions_expr::{Value, interpolate};
 
-use gh_actions_spec::{Scalar, Step, Uses, With};
+use gh_actions_spec::{Expr, Scalar, Step, Uses, With};
 
 use crate::client::types::{JobContext, JobMessage, PipelineStep, StepReference};
 
@@ -24,6 +24,12 @@ impl JobContext {
 
         run.inputs = self.inputs.clone();
         run.vars = self.vars.clone();
+        run.strategy = Strategy {
+            fail_fast: self.strategy.fail_fast,
+            job_index: self.strategy.job_index,
+            job_total: self.strategy.job_total,
+            max_parallel: self.strategy.max_parallel,
+        };
         run.matrix = (!self.matrix.is_empty()).then(|| {
             self.matrix
                 .iter()
@@ -113,6 +119,10 @@ impl PipelineStep {
             // Every step arrives with one, and `success()` is what having none compiles to.
             r#if: self.condition.clone(),
             env: (!self.env.is_empty()).then(|| scalars(&self.env).into_iter().collect()),
+            // Already decided by the service, so what arrives is the answer rather than the
+            // expression a workflow may have written.
+            continue_on_error: self.continue_on_error.map(Expr::Value),
+            timeout_minutes: self.timeout_in_minutes.map(Expr::Value),
             ..Step::default()
         };
 
@@ -173,6 +183,50 @@ mod tests {
 
     fn job() -> JobMessage {
         JobMessage::decode(include_str!("../fixtures/acquired-job.json")).expect("the job decodes")
+    }
+
+    /// The probe workflow as a real run hands it over, with its secrets taken out: every
+    /// step of it is something the service has an encoding of its own for.
+    #[test]
+    fn test_fixtures_probe() {
+        let job = JobMessage::decode(include_str!("../fixtures/probe-job.json"))
+            .expect("the job decodes");
+
+        assert_eq!(job.job_display_name, "probe");
+        assert_eq!(job.steps.len(), 11);
+        assert!(job.secrets().contains(&"the-probe-secret".to_owned()));
+        assert_eq!(job.secrets().len(), 3, "and both tokens");
+
+        let steps = &job.steps;
+        assert_eq!(steps[9].display_name, "A failure that is forgiven");
+        assert_eq!(steps[9].continue_on_error, Some(true));
+        assert_eq!(steps[0].continue_on_error, None, "it declared none");
+        assert_eq!(steps[10].condition.as_deref(), Some("success() && (false)"));
+        assert_eq!(
+            steps[3].display_name,
+            "A name with \"quotes\", a comma, and é🌲"
+        );
+        assert_eq!(
+            steps[0].env.get("FROM_SECRET").map(String::as_str),
+            Some("${{ secrets.CANOPY_TEST_SECRET }}")
+        );
+        assert!(steps[0].inputs["script"].starts_with("test -n \"$FROM_SECRET\""));
+
+        // What the service decided about a step is what the runner is asked to do.
+        let run = job.to_steps().expect("the steps read");
+        assert_eq!(run[9].continue_on_error, Some(Expr::Value(true)));
+        assert_eq!(run[0].continue_on_error, None);
+        assert_eq!(run[10].r#if.as_deref(), Some("success() && (false)"));
+
+        let context = job.to_run_context();
+        assert_eq!(context.github.repository, "ferranbt/canopy");
+        assert_eq!(context.github.event_name, "workflow_dispatch");
+        assert_eq!(context.github.run_id, 32_960_554_847);
+        assert_eq!(
+            context.inputs.get("label").map(String::as_str),
+            Some("canopy-probe-575695")
+        );
+        assert!(context.strategy.fail_fast, "it is not turned off");
     }
 
     #[test]

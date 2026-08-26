@@ -5,6 +5,11 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::client::types::{JobContext, PipelineStep, normalize};
+use crate::error::Error;
+
+fn as_protocol(err: serde_json::Error) -> Error {
+    Error::Protocol(err.to_string())
+}
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -95,8 +100,13 @@ pub struct JobMessage {
 
 impl JobMessage {
     /// Reads a job as the service sends it, encodings and all.
-    pub fn decode(raw: &str) -> Result<Self, serde_json::Error> {
-        serde_json::from_value(normalize(serde_json::from_str(raw)?))
+    pub fn decode(raw: &str) -> Result<Self, Error> {
+        let sent = normalize(serde_json::from_str(raw).map_err(as_protocol)?);
+
+        serde_path_to_error::deserialize(sent).map_err(|err| {
+            let at = err.path().to_string();
+            Error::Protocol(format!("at {at}: {}", err.into_inner()))
+        })
     }
 
     pub fn env(&self) -> BTreeMap<String, String> {

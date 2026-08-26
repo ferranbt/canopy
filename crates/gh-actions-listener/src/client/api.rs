@@ -257,7 +257,7 @@ impl Client {
         };
 
         let answered = self.send(self.request(Method::POST, &url, Some(&body)))?;
-        Ok(JobMessage::decode(&answered)?)
+        JobMessage::decode(&answered)
     }
 }
 
