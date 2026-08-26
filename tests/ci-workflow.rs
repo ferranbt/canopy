@@ -238,7 +238,9 @@ fn main() -> Result<()> {
     let _ = rustls::crypto::ring::default_provider().install_default();
 
     let repository = asked_for("GITHUB_REPOSITORY")?;
-    let branch = std::env::var("GITHUB_REF_NAME").unwrap_or_else(|_| "main".to_owned());
+    let branch = asked_for("PROBE_REF")
+        .or_else(|_| asked_for("GITHUB_REF_NAME"))
+        .unwrap_or_else(|_| "main".to_owned());
     let named = format!(
         "{PROBES}{}",
         std::env::var("GITHUB_RUN_ID").unwrap_or_else(|_| std::process::id().to_string())
