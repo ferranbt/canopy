@@ -12,10 +12,6 @@ path = "harness.rs"
 name = "integration"
 path = "integration.rs"
 
-[[bin]]
-name = "gh-runner"
-path = "gh-runner/main.rs"
-
 [dependencies]
 local-runner.workspace = true
 gh-actions-runner.workspace = true
