@@ -61,5 +61,7 @@ jobs:
         run: cargo run -p canopy-tests --bin ci-workflow
         env:
           CANOPY_PROBE_TOKEN: ${{ secrets.CANOPY_PROBE_TOKEN }}
-          GITHUB_REF_NAME: ${{ steps.asked.outputs.branch || github.ref_name }}
+          # On a pull request the ref is `37/merge`, which is not a branch and so cannot be
+          # dispatched at. The head branch is what the probe wants.
+          GITHUB_REF_NAME: ${{ steps.asked.outputs.branch || github.head_ref || github.ref_name }}
           RUST_LOG: info
