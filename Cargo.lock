@@ -879,6 +879,7 @@ dependencies = [
  "glob",
  "jsonwebtoken 9.3.1",
  "local-runner",
+ "octocrab",
  "serde",
  "serde_json",
  "tokio",

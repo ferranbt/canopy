@@ -1,0 +1,91 @@
+name: Probe canopy
+
+# Dispatched by tests/ci-workflow.rs onto the runner it registers, never on its own. Every
+# step here is something the listener has to encode on the way back to GitHub.
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        description: The runner this is meant for
+        required: true
+
+jobs:
+  probe:
+    runs-on: [self-hosted, "${{ inputs.label }}"]
+
+    env:
+      JOB_LEVEL: from the job
+
+    steps:
+      - name: A secret arrives through the environment
+        env:
+          FROM_SECRET: ${{ secrets.CANOPY_TEST_SECRET }}
+        run: |
+          test -n "$FROM_SECRET"
+          echo "said out loud, this is $FROM_SECRET"
+
+      - name: A secret arrives through an expression
+        env:
+          FROM_SECRET: ${{ secrets.CANOPY_TEST_SECRET }}
+        run: |
+          test "${{ secrets.CANOPY_TEST_SECRET }}" = "$FROM_SECRET"
+
+      - name: The contexts say where this is running
+        run: |
+          test "${{ github.repository }}" = "$GITHUB_REPOSITORY"
+          test "${{ github.event_name }}" = "workflow_dispatch"
+          test "${{ github.run_id }}" = "$GITHUB_RUN_ID"
+          test "${{ inputs.label }}" != ""
+          test "${{ runner.os }}" = "Linux"
+          test -d "${{ runner.temp }}"
+          test "$JOB_LEVEL" = "from the job"
+
+      - name: 'A name with "quotes", a comma, and é🌲'
+        run: echo "the name of this step has to survive the timeline"
+
+      - name: Lines that are hard to carry
+        run: |
+          echo "héllo 🌲 канопи"
+          printf '\033[31mred\033[0m and \033[1mbold\033[0m\n'
+          printf 'over%swritten\n' "$(printf '\r')"
+          head -c 8000 /dev/zero | tr '\0' 'x'
+          echo
+          echo "	a tab and trailing spaces   "
+          seq 1 300
+
+      - name: Lines can be grouped and hidden
+        run: |
+          echo "::group::What is inside"
+          echo "one"
+          echo "two"
+          echo "::endgroup::"
+          echo "::debug::only a debug run sees this"
+
+      - name: What a step leaves for the next one
+        id: leaves
+        run: |
+          echo "where=here" >> "$GITHUB_OUTPUT"
+          printf 'SPREAD<<EOF\nfirst\nsecond\nEOF\n' >> "$GITHUB_ENV"
+          echo "CARRIED=onwards" >> "$GITHUB_ENV"
+          echo "### A summary of the probe" >> "$GITHUB_STEP_SUMMARY"
+          echo "with a line of its own" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: And what the next one finds
+        run: |
+          test "${{ steps.leaves.outputs.where }}" = "here"
+          test "$CARRIED" = "onwards"
+          test "$SPREAD" = "$(printf 'first\nsecond')"
+
+      - name: What a step says about itself
+        run: |
+          echo "::notice title=Probe::the run reached the end"
+          echo "::warning file=probe-canopy.yml,line=1,col=1::a warning of its own"
+          echo "::error file=probe-canopy.yml,line=2::an error that is not a failure"
+
+      - name: A failure that is forgiven
+        continue-on-error: true
+        run: exit 3
+
+      - name: A step that is passed over
+        if: ${{ false }}
+        run: exit 1

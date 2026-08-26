@@ -12,6 +12,10 @@ path = "harness.rs"
 name = "integration"
 path = "integration.rs"
 
+[[bin]]
+name = "ci-workflow"
+path = "ci-workflow.rs"
+
 [dependencies]
 local-runner.workspace = true
 gh-actions-runner.workspace = true
@@ -31,4 +35,5 @@ glob = "0.3"
 axum = "0.8"
 jsonwebtoken = "9"
 tokio = { version = "1", features = ["rt-multi-thread", "net", "sync", "macros", "time"] }
+octocrab = "0.54.1"
 
