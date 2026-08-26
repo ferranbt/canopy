@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 use base64::Engine as _;
 use gh_actions_context::Runner;
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::auth::Credentials;
 use crate::client::crypto;
@@ -143,7 +143,7 @@ impl<W: Worker> Listener<W> {
                 Some(offer) => match self.client.acquire_job(&offer) {
                     Ok(job) => Some((job, Some(offer))),
                     Err(err) => {
-                        warn!(%err, request = %offer.runner_request_id, "cannot collect the job");
+                        error!(%err, request = %offer.runner_request_id, "cannot collect the job");
                         None
                     }
                 },
@@ -217,7 +217,7 @@ impl<W: Worker> Listener<W> {
 
     fn decode_job(&self, envelope: &Envelope, key: Option<&[u8]>) -> Result<JobMessage, Error> {
         let Some(key) = key else {
-            return Ok(JobMessage::decode(&envelope.body)?);
+            return JobMessage::decode(&envelope.body);
         };
 
         let iv = envelope
@@ -231,9 +231,7 @@ impl<W: Worker> Listener<W> {
             .decode(&envelope.body)
             .map_err(|err| Error::Crypto(format!("body is not base64: {err}")))?;
 
-        Ok(JobMessage::decode(&crypto::decrypt_message(
-            key, &iv, &body,
-        )?)?)
+        JobMessage::decode(&crypto::decrypt_message(key, &iv, &body)?)
     }
 
     fn refresh_token_if_stale(&mut self) -> Result<(), Error> {

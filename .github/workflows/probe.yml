@@ -1,0 +1,65 @@
+name: Probe
+
+# Registers a runner of its own and has GitHub dispatch `probe-canopy.yml` at it, so what a
+# real run hands a runner, and what GitHub makes of what canopy sends back, is held to
+# GitHub itself rather than to a recording.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - crates/gh-actions-listener/**
+      - tests/ci-workflow.rs
+      - .github/workflows/probe*.yml
+  pull_request:
+    paths:
+      - crates/gh-actions-listener/**
+      - tests/ci-workflow.rs
+      - .github/workflows/probe*.yml
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: canopy-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Run a workflow on canopy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # A comment runs this from the default branch with the token in reach, so only someone
+    # who could push here can ask for it.
+    if: >
+      github.event_name != 'issue_comment' || (
+        github.event.issue.pull_request &&
+        startsWith(github.event.comment.body, '/test-listener') &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+      )
+
+    steps:
+      - name: The branch the comment was about
+        id: asked
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch=$(gh pr view "${{ github.event.issue.number }}" --json headRefName --jq .headRefName)
+          repo=$(gh pr view "${{ github.event.issue.number }}" --json headRepositoryOwner --jq .headRepositoryOwner.login)
+          test "$repo" = "${{ github.repository_owner }}" \
+            || { echo "a fork has no branch here to dispatch at"; exit 1; }
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.asked.outputs.branch || github.head_ref || github.ref }}
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Register, dispatch, and run what comes back
+        run: cargo run -p canopy-tests --bin ci-workflow
+        env:
+          CANOPY_PROBE_TOKEN: ${{ secrets.CANOPY_PROBE_TOKEN }}
+          PROBE_REF: ${{ steps.asked.outputs.branch || github.head_ref || github.ref_name }}
+          RUST_LOG: info

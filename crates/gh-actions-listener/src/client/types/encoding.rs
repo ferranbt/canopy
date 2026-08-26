@@ -1,8 +1,9 @@
 //! The encodings the service wraps a job's JSON in, undone.
 //!
 //! Contexts arrive as `{"t": 2, "d": [{"k": .., "v": ..}]}` for a dictionary and
-//! `{"t": 1, "a": [..]}` for an array. Steps arrive in a second encoding of their own:
-//! `{"type": 0, "lit": ..}` for a literal, `{"type": 1, "seq": [..]}` for a sequence and
+//! `{"t": 1, "a": [..]}` for an array; anything else is sent as the JSON it already is.
+//! Steps arrive in a second encoding of their own: `{"type": 0, "lit": ..}` for a string,
+//! `{"type": 5, "bool": ..}` for a boolean, `{"type": 1, "seq": [..]}` for a sequence and
 //! `{"type": 2, "map": [{"Key": .., "Value": ..}]}` for a mapping. An expression uses
 //! `{"type": 3, "expr": ..}` and is put back into the `${{ .. }}` form the runner evaluates.
 //! Both say what they are in a key of their own, so both can be undone before anything is
@@ -35,11 +36,10 @@ pub fn normalize(value: Value) -> Value {
 
     if let Some(kind) = fields.get("type").and_then(Value::as_u64) {
         return match kind {
-            0 => fields.get("lit").cloned().unwrap_or(Value::Null),
             1 => items(fields, "seq"),
             2 => entries(fields, "map", "Key", "Value"),
             3 => expression(&fields),
-            _ => Value::Object(fields),
+            _ => literal(fields),
         };
     }
 
@@ -54,10 +54,22 @@ fn expression(fields: &Map<String, Value>) -> Value {
         .unwrap_or(Value::Null)
 }
 
-fn items(mut fields: Map<String, Value>, under: &str) -> Value {
-    match fields.remove(under) {
+fn items(mut fields: Map<String, Value>, at: &str) -> Value {
+    match fields.remove(at) {
         Some(items @ Value::Array(_)) => items,
         _ => Value::Array(Vec::new()),
+    }
+}
+
+/// A literal keeps its value under a key named after the kind of literal it is: `lit` for a
+/// string, `bool` for a boolean, `num` for a number.
+fn literal(mut fields: Map<String, Value>) -> Value {
+    match ["lit", "bool", "num"]
+        .into_iter()
+        .find_map(|kind| fields.remove(kind))
+    {
+        Some(value) => value,
+        None => Value::Object(fields),
     }
 }
 
@@ -119,6 +131,28 @@ mod tests {
                     "type": "action",
                     "displayNameToken": "Checkout",
                     "inputs": {"go-version": "1.25"}
+                }]
+            })
+        );
+    }
+
+    #[test]
+    fn a_literal_that_is_not_a_string_is_a_literal_all_the_same() {
+        let value = normalize(serde_json::json!({
+            "steps": [{
+                "displayNameToken": {"type": 0, "lit": "A failure that is forgiven"},
+                "continueOnError": {"type": 5, "file": 1, "line": 86, "col": 28, "bool": true},
+                "timeoutInMinutes": {"type": 6, "num": 5}
+            }]
+        }));
+
+        assert_eq!(
+            value,
+            serde_json::json!({
+                "steps": [{
+                    "displayNameToken": "A failure that is forgiven",
+                    "continueOnError": true,
+                    "timeoutInMinutes": 5
                 }]
             })
         );

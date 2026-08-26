@@ -1,0 +1,912 @@
+{
+ "fileTable": [
+  ".github/workflows/probe-canopy.yml"
+ ],
+ "mask": [
+  {
+   "type": "regex",
+   "value": "\\b(?:eyJ0eXAiOi|eyJhbGciOi|eyJ4NXQiOi|eyJraWQiOi)[^\\s'\";]+"
+  },
+  {
+   "type": "regex",
+   "value": "\\bBearer\\s+[^\\s'\";]+"
+  },
+  {
+   "type": "regex",
+   "value": "\\bgh[pousr]{1}_[A-Za-z0-9]{36}\\b"
+  }
+ ],
+ "steps": [
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "71098d27-eb8d-4ecc-a5d5-20d488a2bfb0",
+   "contextName": "__run",
+   "name": "__run",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 20,
+    "col": 15,
+    "lit": "A secret arrives through the environment"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "environment": {
+    "type": 2,
+    "file": 1,
+    "line": 22,
+    "col": 11,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "file": 1,
+       "line": 22,
+       "col": 11,
+       "lit": "FROM_SECRET"
+      },
+      "Value": {
+       "type": 3,
+       "file": 1,
+       "line": 22,
+       "col": 24,
+       "expr": "secrets.CANOPY_TEST_SECRET"
+      }
+     }
+    ]
+   },
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 23,
+       "col": 14,
+       "lit": "test -n \"$FROM_SECRET\"\necho \"said out loud, this is $FROM_SECRET\"\n"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "049723c5-01ed-44fa-ac19-d2f26c90656c",
+   "contextName": "__run_2",
+   "name": "__run_2",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 27,
+    "col": 15,
+    "lit": "A secret arrives through an expression"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "environment": {
+    "type": 2,
+    "file": 1,
+    "line": 29,
+    "col": 11,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "file": 1,
+       "line": 29,
+       "col": 11,
+       "lit": "FROM_SECRET"
+      },
+      "Value": {
+       "type": 3,
+       "file": 1,
+       "line": 29,
+       "col": 24,
+       "expr": "secrets.CANOPY_TEST_SECRET"
+      }
+     }
+    ]
+   },
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 3,
+       "file": 1,
+       "line": 30,
+       "col": 14,
+       "expr": "format('test \"{0}\" = \"$FROM_SECRET\"\n', secrets.CANOPY_TEST_SECRET)"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "81b91f1f-5f13-4efc-93e7-5632d5254bb5",
+   "contextName": "__run_3",
+   "name": "__run_3",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 33,
+    "col": 15,
+    "lit": "The contexts say where this is running"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 3,
+       "file": 1,
+       "line": 34,
+       "col": 14,
+       "expr": "format('test \"{0}\" = \"$GITHUB_REPOSITORY\"\ntest \"{1}\" = \"workflow_dispatch\"\ntest \"{2}\" = \"$GITHUB_RUN_ID\"\ntest \"{3}\" != \"\"\ntest \"{4}\" = \"Linux\"\ntest -d \"{5}\"\ntest \"$JOB_LEVEL\" = \"from the job\"\n', github.repository, github.event_name, github.run_id, inputs.label, runner.os, runner.temp)"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "f8d67ca2-9f28-41a5-b53e-0b0376f324cc",
+   "contextName": "__run_4",
+   "name": "__run_4",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 43,
+    "col": 15,
+    "lit": "A name with \"quotes\", a comma, and é🌲"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 44,
+       "col": 14,
+       "lit": "echo \"the name of this step has to survive the timeline\""
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "1b801982-852b-49f2-b128-2321bac8fb25",
+   "contextName": "__run_5",
+   "name": "__run_5",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 46,
+    "col": 15,
+    "lit": "Lines that are hard to carry"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 47,
+       "col": 14,
+       "lit": "echo \"héllo 🌲 канопи\"\nprintf '\\033[31mred\\033[0m and \\033[1mbold\\033[0m\\n'\nprintf 'over%swritten\\n' \"$(printf '\\r')\"\nhead -c 8000 /dev/zero | tr '\\0' 'x'\necho\necho \"\ta tab and trailing spaces   \"\nseq 1 300\n"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "8b0ba4c0-3ae8-44b7-a5bc-914d46faefe9",
+   "contextName": "__run_6",
+   "name": "__run_6",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 56,
+    "col": 15,
+    "lit": "Lines can be grouped and hidden"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 57,
+       "col": 14,
+       "lit": "echo \"::group::What is inside\"\necho \"one\"\necho \"two\"\necho \"::endgroup::\"\necho \"::debug::only a debug run sees this\"\n"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "917051eb-848b-474b-9ce1-dbb9e726e69e",
+   "contextName": "leaves",
+   "name": "leaves",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 64,
+    "col": 15,
+    "lit": "What a step leaves for the next one"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 66,
+       "col": 14,
+       "lit": "echo \"where=here\" >> \"$GITHUB_OUTPUT\"\nprintf 'SPREAD<<EOF\\nfirst\\nsecond\\nEOF\\n' >> \"$GITHUB_ENV\"\necho \"CARRIED=onwards\" >> \"$GITHUB_ENV\"\necho \"### A summary of the probe\" >> \"$GITHUB_STEP_SUMMARY\"\necho \"with a line of its own\" >> \"$GITHUB_STEP_SUMMARY\"\n"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "9d3caa82-c1d4-426b-a0ff-6b3cd0fd1f08",
+   "contextName": "__run_7",
+   "name": "__run_7",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 73,
+    "col": 15,
+    "lit": "And what the next one finds"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 3,
+       "file": 1,
+       "line": 74,
+       "col": 14,
+       "expr": "format('test \"{0}\" = \"here\"\ntest \"$CARRIED\" = \"onwards\"\ntest \"$SPREAD\" = \"$(printf ''first\\nsecond'')\"\n', steps.leaves.outputs.where)"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "3f5f3c49-a211-4994-8846-36332734f3a3",
+   "contextName": "__run_8",
+   "name": "__run_8",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 79,
+    "col": 15,
+    "lit": "What a step says about itself"
+   },
+   "condition": "success()",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 80,
+       "col": 14,
+       "lit": "echo \"::notice title=Probe::the run reached the end\"\necho \"::warning file=probe-canopy.yml,line=1,col=1::a warning of its own\"\necho \"::error file=probe-canopy.yml,line=2::an error that is not a failure\"\n"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "c0d5dbfd-3b43-4ffd-8912-01b328816c4e",
+   "contextName": "__run_9",
+   "name": "__run_9",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 85,
+    "col": 15,
+    "lit": "A failure that is forgiven"
+   },
+   "condition": "success()",
+   "continueOnError": {
+    "type": 5,
+    "file": 1,
+    "line": 86,
+    "col": 28,
+    "bool": true
+   },
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 87,
+       "col": 14,
+       "lit": "exit 3"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "type": "action",
+   "reference": {
+    "type": "script"
+   },
+   "id": "1c36c208-859e-44ab-8cfe-b00bac63c98b",
+   "contextName": "__run_10",
+   "name": "__run_10",
+   "displayNameToken": {
+    "type": 0,
+    "file": 1,
+    "line": 89,
+    "col": 15,
+    "lit": "A step that is passed over"
+   },
+   "condition": "success() && (false)",
+   "continueOnError": null,
+   "timeoutInMinutes": null,
+   "inputs": {
+    "type": 2,
+    "map": [
+     {
+      "Key": {
+       "type": 0,
+       "lit": "script"
+      },
+      "Value": {
+       "type": 0,
+       "file": 1,
+       "line": 91,
+       "col": 14,
+       "lit": "exit 1"
+      }
+     }
+    ]
+   }
+  }
+ ],
+ "variables": {
+  "Actions.EnableHttpRedirects": {
+   "value": "true"
+  },
+  "CANOPY_TEST_SECRET": {
+   "value": "the-probe-secret",
+   "isSecret": true
+  },
+  "DistributedTask.UploadStepSummary": {
+   "value": "true"
+  },
+  "actions_runner_node20_removal_date": {
+   "value": ""
+  },
+  "actions_uses_cache_service_v2": {
+   "value": "true"
+  },
+  "github_token": {
+   "value": "redacted",
+   "isSecret": true
+  },
+  "system.github.job": {
+   "value": "probe"
+  },
+  "system.github.results_endpoint": {
+   "value": "https://results-receiver.actions.githubusercontent.com/"
+  },
+  "system.github.token": {
+   "value": "redacted",
+   "isSecret": true
+  },
+  "system.github.token.permissions": {
+   "value": "{\"Contents\":\"read\",\"Metadata\":\"read\",\"Packages\":\"read\"}"
+  },
+  "system.orchestrationId": {
+   "value": "b552ef8d-f1ba-41b8-8baa-12c8cbaf9a53.probe.__default"
+  },
+  "system.phaseDisplayName": {
+   "value": "probe"
+  },
+  "system.runnerEnvironment": {
+   "value": "self-hosted"
+  },
+  "system.runnerGroupName": {
+   "value": "Default"
+  }
+ },
+ "messageType": "RunnerJobRequest",
+ "plan": {
+  "planType": "actions",
+  "version": 0,
+  "planId": "b552ef8d-f1ba-41b8-8baa-12c8cbaf9a53",
+  "artifactUri": "",
+  "artifactLocation": ""
+ },
+ "timeline": {
+  "id": "b552ef8d-f1ba-41b8-8baa-12c8cbaf9a53",
+  "changeId": 0,
+  "location": null
+ },
+ "jobId": "056ce8a4-acb1-5540-a327-021ecfff69cb",
+ "jobDisplayName": "probe",
+ "jobName": "__default",
+ "requestId": 0,
+ "lockedUntil": "0001-01-01T00:00:00",
+ "environmentVariables": [
+  {
+   "type": 2,
+   "file": 1,
+   "line": 17,
+   "col": 7,
+   "map": [
+    {
+     "Key": {
+      "type": 0,
+      "file": 1,
+      "line": 17,
+      "col": 7,
+      "lit": "JOB_LEVEL"
+     },
+     "Value": {
+      "type": 0,
+      "file": 1,
+      "line": 17,
+      "col": 18,
+      "lit": "from the job"
+     }
+    }
+   ]
+  }
+ ],
+ "defaults": [],
+ "jobOutputs": null,
+ "jobContainer": null,
+ "jobServiceContainers": null,
+ "resources": {
+  "endpoints": [
+   {
+    "data": {
+     "ServerId": "",
+     "ServerName": "",
+     "CacheServerUrl": "https://artifactcache.actions.githubusercontent.com/redacted/",
+     "FeedStreamUrl": "wss://results-receiver.actions.githubusercontent.com/_ws/ingest.sock",
+     "ResultsServiceUrl": "https://results-receiver.actions.githubusercontent.com/",
+     "PipelinesServiceUrl": "https://pipelinesghubeus6.actions.githubusercontent.com/redacted/",
+     "GenerateIdTokenUrl": "",
+     "ConnectivityChecks": "[\"https://broker.actions.githubusercontent.com/health\"]",
+     "ConnectivityAndDNSChecks": ""
+    },
+    "name": "SystemVssConnection",
+    "url": "https://run-actions-1-azure-eastus.actions.githubusercontent.com/218/",
+    "authorization": {
+     "parameters": {
+      "AccessToken": "redacted"
+     },
+     "scheme": "OAuth"
+    },
+    "isShared": false,
+    "isReady": true
+   }
+  ]
+ },
+ "contextData": {
+  "github": {
+   "t": 2,
+   "d": [
+    {
+     "k": "ref",
+     "v": "refs/heads/main"
+    },
+    {
+     "k": "sha",
+     "v": "4369c25e41fafd30f1eda01b2e78bbde22b42f66"
+    },
+    {
+     "k": "repository",
+     "v": "ferranbt/canopy"
+    },
+    {
+     "k": "repository_owner",
+     "v": "ferranbt"
+    },
+    {
+     "k": "run_id",
+     "v": "32960554847"
+    },
+    {
+     "k": "run_number",
+     "v": "6"
+    },
+    {
+     "k": "run_attempt",
+     "v": "1"
+    },
+    {
+     "k": "actor",
+     "v": "ferranbt"
+    },
+    {
+     "k": "workflow",
+     "v": "Probe canopy"
+    },
+    {
+     "k": "head_ref",
+     "v": ""
+    },
+    {
+     "k": "base_ref",
+     "v": ""
+    },
+    {
+     "k": "event_name",
+     "v": "workflow_dispatch"
+    },
+    {
+     "k": "server_url",
+     "v": "https://github.com"
+    },
+    {
+     "k": "api_url",
+     "v": "https://api.github.com"
+    },
+    {
+     "k": "ref_name",
+     "v": "main"
+    },
+    {
+     "k": "ref_protected",
+     "v": false
+    },
+    {
+     "k": "ref_type",
+     "v": "branch"
+    },
+    {
+     "k": "secret_source",
+     "v": "Actions"
+    },
+    {
+     "k": "event",
+     "v": {
+      "t": 2,
+      "d": [
+       {
+        "k": "ref",
+        "v": "refs/heads/main"
+       },
+       {
+        "k": "workflow",
+        "v": ".github/workflows/probe-canopy.yml"
+       },
+       {
+        "k": "inputs",
+        "v": {
+         "t": 2,
+         "d": [
+          {
+           "k": "label",
+           "v": "canopy-probe-575695"
+          }
+         ]
+        }
+       },
+       {
+        "k": "repository",
+        "v": {
+         "t": 2,
+         "d": [
+          {
+           "k": "id",
+           "v": 1342913932
+          },
+          {
+           "k": "name",
+           "v": "canopy"
+          },
+          {
+           "k": "full_name",
+           "v": "ferranbt/canopy"
+          },
+          {
+           "k": "private",
+           "v": false
+          },
+          {
+           "k": "owner",
+           "v": {
+            "t": 2,
+            "d": [
+             {
+              "k": "login",
+              "v": "ferranbt"
+             },
+             {
+              "k": "id",
+              "v": 30872539
+             },
+             {
+              "k": "type",
+              "v": "User"
+             },
+             {
+              "k": "site_admin",
+              "v": false
+             }
+            ]
+           }
+          },
+          {
+           "k": "html_url",
+           "v": "https://github.com/ferranbt/canopy"
+          },
+          {
+           "k": "fork",
+           "v": false
+          },
+          {
+           "k": "size",
+           "v": 607
+          },
+          {
+           "k": "stargazers_count",
+           "v": 38
+          },
+          {
+           "k": "language",
+           "v": "Rust"
+          },
+          {
+           "k": "mirror_url",
+           "v": null
+          },
+          {
+           "k": "license",
+           "v": {
+            "t": 2,
+            "d": [
+             {
+              "k": "key",
+              "v": "mpl-2.0"
+             },
+             {
+              "k": "spdx_id",
+              "v": "MPL-2.0"
+             }
+            ]
+           }
+          },
+          {
+           "k": "topics",
+           "v": {
+            "t": 1,
+            "a": []
+           }
+          },
+          {
+           "k": "visibility",
+           "v": "public"
+          },
+          {
+           "k": "default_branch",
+           "v": "main"
+          }
+         ]
+        }
+       },
+       {
+        "k": "sender",
+        "v": {
+         "t": 2,
+         "d": [
+          {
+           "k": "login",
+           "v": "ferranbt"
+          },
+          {
+           "k": "id",
+           "v": 30872539
+          },
+          {
+           "k": "type",
+           "v": "User"
+          },
+          {
+           "k": "site_admin",
+           "v": false
+          }
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "k": "workflow_ref",
+     "v": "ferranbt/canopy/.github/workflows/probe-canopy.yml@refs/heads/main"
+    },
+    {
+     "k": "repository_id",
+     "v": "1342913932"
+    },
+    {
+     "k": "triggering_actor",
+     "v": "ferranbt"
+    }
+   ]
+  },
+  "inputs": {
+   "t": 2,
+   "d": [
+    {
+     "k": "label",
+     "v": "canopy-probe-575695"
+    }
+   ]
+  },
+  "job": {
+   "t": 2,
+   "d": [
+    {
+     "k": "check_run_id",
+     "v": 98151732201
+    },
+    {
+     "k": "workflow_ref",
+     "v": "ferranbt/canopy/.github/workflows/probe-canopy.yml@refs/heads/main"
+    },
+    {
+     "k": "workflow_repository",
+     "v": "ferranbt/canopy"
+    },
+    {
+     "k": "workflow_file_path",
+     "v": ".github/workflows/probe-canopy.yml"
+    }
+   ]
+  },
+  "matrix": null,
+  "needs": {
+   "t": 2,
+   "d": []
+  },
+  "strategy": {
+   "t": 2,
+   "d": [
+    {
+     "k": "fail-fast",
+     "v": true
+    },
+    {
+     "k": "job-index",
+     "v": 0
+    },
+    {
+     "k": "job-total",
+     "v": 1
+    },
+    {
+     "k": "max-parallel",
+     "v": 1
+    }
+   ]
+  },
+  "vars": {
+   "t": 2,
+   "d": []
+  }
+ },
+ "snapshot": null,
+ "billingOwnerId": "U_kgDOAdcT2w"
+}
