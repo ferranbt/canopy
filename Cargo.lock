@@ -871,6 +871,7 @@ dependencies = [
  "clap",
  "eyre",
  "gh-actions-context",
+ "gh-actions-encoding",
  "gh-actions-listener",
  "gh-actions-plan",
  "gh-actions-runner",
@@ -1694,6 +1695,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "gh-actions-encoding"
+version = "0.1.3"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "gh-actions-expr"
 version = "0.1.3"
 dependencies = [
@@ -1725,6 +1734,7 @@ dependencies = [
  "chrono",
  "cipher",
  "gh-actions-context",
+ "gh-actions-encoding",
  "gh-actions-expr",
  "gh-actions-report",
  "gh-actions-spec",

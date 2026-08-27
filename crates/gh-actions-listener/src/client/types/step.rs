@@ -2,6 +2,7 @@
 
 use std::collections::BTreeMap;
 
+use gh_actions_encoding::token;
 use serde::{Deserialize, Serialize};
 
 /// Unknown fields are refused rather than ignored: this protocol is undocumented, and a
@@ -14,18 +15,21 @@ pub struct PipelineStep {
     /// The id the service knows this step by, which is what results are reported against.
     pub id: String,
     pub name: String,
-    #[serde(alias = "displayNameToken")]
+    #[serde(alias = "displayNameToken", with = "token")]
     pub display_name: String,
     pub reference: StepReference,
     /// What later steps read this one's outputs through, i.e. its `id`.
     pub context_name: Option<String>,
     /// Always present, and `success()` when the step declared no `if`.
     pub condition: Option<String>,
+    #[serde(with = "token::maybe")]
     pub continue_on_error: Option<bool>,
+    #[serde(with = "token::maybe")]
     pub timeout_in_minutes: Option<u64>,
     /// A script step keeps its script here; an action keeps what it was given.
+    #[serde(with = "token")]
     pub inputs: BTreeMap<String, String>,
-    #[serde(alias = "environment")]
+    #[serde(alias = "environment", with = "token")]
     pub env: BTreeMap<String, String>,
 }
 

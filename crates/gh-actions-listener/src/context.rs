@@ -218,6 +218,15 @@ mod tests {
         assert_eq!(run[0].continue_on_error, None);
         assert_eq!(run[10].r#if.as_deref(), Some("success() && (false)"));
 
+        // Written back in the shape it came in, so what goes out is what the service sends.
+        let written = serde_json::to_string(&job).expect("the job writes");
+        let read = JobMessage::decode(&written).expect("and reads back");
+        assert_eq!(read.steps.len(), job.steps.len());
+        assert_eq!(read.steps[9].continue_on_error, Some(true));
+        assert_eq!(read.steps[0].env, job.steps[0].env);
+        assert_eq!(read.context_data.github.repository, "ferranbt/canopy");
+        assert!(read.context_data.strategy.fail_fast);
+
         let context = job.to_run_context();
         assert_eq!(context.github.repository, "ferranbt/canopy");
         assert_eq!(context.github.event_name, "workflow_dispatch");

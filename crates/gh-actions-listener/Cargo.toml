@@ -8,6 +8,7 @@ description = "The protocol a self-hosted GitHub Actions runner speaks to GitHub
 
 [dependencies]
 gh-actions-context.workspace = true
+gh-actions-encoding.workspace = true
 gh-actions-expr.workspace = true
 gh-actions-report.workspace = true
 gh-actions-spec.workspace = true
