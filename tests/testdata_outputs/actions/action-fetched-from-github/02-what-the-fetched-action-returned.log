@@ -59,7 +59,7 @@ if [ "$checked" = "0" ]; then
 fi
 echo "$checked check(s), $failed failed"
 [ "$failed" = "0" ]
-shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+shell: bash --noprofile --norc -e -o pipefail {0}
 env:
   ACTIONS_CACHE_URL: http://127.0.0.1:<port>/
   ACTIONS_RESULTS_URL: http://127.0.0.1:<port>/

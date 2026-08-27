@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::payloads::Payload;
+use gh_actions_payloads::Payload;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]

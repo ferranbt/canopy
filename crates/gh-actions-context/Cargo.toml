@@ -8,5 +8,6 @@ description = "The contexts a GitHub Actions run exposes, and the events behind 
 
 [dependencies]
 gh-actions-expr.workspace = true
+gh-actions-payloads.workspace = true
 serde.workspace = true
 serde_json = "1.0"
