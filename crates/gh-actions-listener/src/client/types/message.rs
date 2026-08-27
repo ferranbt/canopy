@@ -2,14 +2,11 @@
 
 use std::collections::BTreeMap;
 
+use gh_actions_encoding::token;
 use serde::{Deserialize, Serialize};
 
-use crate::client::types::{JobContext, PipelineStep, normalize};
+use crate::client::types::{JobContext, PipelineStep};
 use crate::error::Error;
-
-fn as_protocol(err: serde_json::Error) -> Error {
-    Error::Protocol(err.to_string())
-}
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -88,22 +85,26 @@ pub struct JobMessage {
     pub variables: BTreeMap<String, Variable>,
     pub resources: serde_json::Value,
     pub mask: serde_json::Value,
+    #[serde(with = "token")]
     pub defaults: serde_json::Value,
+    #[serde(with = "token")]
     pub environment_variables: serde_json::Value,
     pub file_table: serde_json::Value,
+    #[serde(with = "token")]
     pub job_container: serde_json::Value,
+    #[serde(with = "token")]
     pub job_service_containers: serde_json::Value,
+    #[serde(with = "token")]
     pub job_outputs: serde_json::Value,
     pub locked_until: serde_json::Value,
     pub snapshot: serde_json::Value,
 }
 
 impl JobMessage {
-    /// Reads a job as the service sends it, encodings and all.
     pub fn decode(raw: &str) -> Result<Self, Error> {
-        let sent = normalize(serde_json::from_str(raw).map_err(as_protocol)?);
+        let mut read = serde_json::Deserializer::from_str(raw);
 
-        serde_path_to_error::deserialize(sent).map_err(|err| {
+        serde_path_to_error::deserialize(&mut read).map_err(|err| {
             let at = err.path().to_string();
             Error::Protocol(format!("at {at}: {}", err.into_inner()))
         })

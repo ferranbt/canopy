@@ -1,7 +1,6 @@
 //! What goes over the wire, in both directions.
 
 pub mod context;
-pub mod encoding;
 pub mod message;
 pub mod registration;
 pub mod results;
@@ -10,7 +9,6 @@ pub mod session;
 pub mod step;
 
 pub use context::{GithubContext, JobContext, JobDetails, NeedsResult, StrategyContext};
-pub use encoding::normalize;
 pub use message::{Envelope, JobMessage, JobOffer, Outcome, Plan, Timeline, Variable};
 pub use registration::{
     Agent, AgentAuthorization, AgentRequest, Label, Pool, Pools, PublicKey, PublicKeyRequest,

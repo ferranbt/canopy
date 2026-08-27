@@ -3,6 +3,7 @@
 use std::collections::BTreeMap;
 
 use gh_actions_context::Payload;
+use gh_actions_encoding::data;
 use serde::{Deserialize, Deserializer, Serialize};
 
 /// Unknown fields are refused rather than ignored: this protocol is undocumented, and a
@@ -10,13 +11,20 @@ use serde::{Deserialize, Deserializer, Serialize};
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct JobContext {
+    #[serde(with = "data")]
     pub github: GithubContext,
+    #[serde(with = "data")]
     pub job: JobDetails,
+    #[serde(with = "data")]
     pub strategy: StrategyContext,
+    #[serde(with = "data")]
     pub inputs: BTreeMap<String, String>,
     /// Already resolved to this job's combination by the service, and empty without one.
+    #[serde(with = "data")]
     pub matrix: BTreeMap<String, serde_json::Value>,
+    #[serde(with = "data")]
     pub needs: BTreeMap<String, NeedsResult>,
+    #[serde(with = "data")]
     pub vars: BTreeMap<String, String>,
 }
 
