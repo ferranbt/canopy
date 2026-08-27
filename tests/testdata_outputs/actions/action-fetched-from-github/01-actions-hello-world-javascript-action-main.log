@@ -10,6 +10,7 @@ env:
 Hello, canopy!
 The event payload: {
   "after": "$GITHUB_SHA",
+  "base_ref": null,
   "before": "",
   "commits": [
     {
@@ -26,6 +27,7 @@ The event payload: {
       "timestamp": ""
     }
   ],
+  "compare": "",
   "created": false,
   "deleted": false,
   "forced": false,
@@ -49,20 +51,33 @@ The event payload: {
   },
   "ref": "refs/heads/$GITHUB_REF_NAME",
   "repository": {
+    "archived": false,
+    "clone_url": "",
     "default_branch": "$GITHUB_REF_NAME",
+    "description": null,
+    "fork": false,
     "full_name": "ferranbt/canopy",
+    "git_url": "",
     "html_url": "",
     "id": 0,
+    "language": null,
     "name": "canopy",
     "owner": {
+      "avatar_url": "",
+      "html_url": "",
       "id": 0,
       "login": "ferranbt",
       "site_admin": false,
       "type": ""
     },
-    "private": false
+    "private": false,
+    "ssh_url": "",
+    "topics": [],
+    "visibility": ""
   },
   "sender": {
+    "avatar_url": "",
+    "html_url": "",
     "id": 0,
     "login": "canopy",
     "site_admin": false,
