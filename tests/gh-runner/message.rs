@@ -3,6 +3,7 @@
 use std::collections::BTreeMap;
 
 use gh_actions_context::RunContext;
+use gh_actions_encoding::data;
 use gh_actions_plan::PlannedJob;
 use gh_actions_spec::{Container, Defaults, Expr, RunDefaults, Scalar, Step, Uses, Workflow};
 
@@ -91,7 +92,7 @@ pub fn encode(
         .as_object()
         .into_iter()
         .flatten()
-        .map(|(name, value)| (name.clone(), context(value)))
+        .map(|(name, value)| (name.clone(), data::written(value.clone())))
         .collect();
 
     serde_json::json!({
@@ -354,24 +355,6 @@ fn mapping(values: &BTreeMap<String, String>) -> serde_json::Value {
         .collect();
 
     serde_json::json!({ "type": 2, "map": pairs })
-}
-
-/// The encoding the contexts arrive in, which is not the one the steps arrive in.
-fn context(value: &serde_json::Value) -> serde_json::Value {
-    match value {
-        serde_json::Value::Array(items) => {
-            serde_json::json!({ "t": 1, "a": items.iter().map(context).collect::<Vec<_>>() })
-        }
-        serde_json::Value::Object(fields) => {
-            let entries: Vec<serde_json::Value> = fields
-                .iter()
-                .map(|(key, value)| serde_json::json!({ "k": key, "v": context(value) }))
-                .collect();
-
-            serde_json::json!({ "t": 2, "d": entries })
-        }
-        scalar => scalar.clone(),
-    }
 }
 
 pub const STEPS: &str = "00000000-0000-0001-";

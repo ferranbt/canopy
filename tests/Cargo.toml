@@ -20,6 +20,7 @@ path = "ci-workflow.rs"
 local-runner.workspace = true
 gh-actions-runner.workspace = true
 gh-actions-listener.workspace = true
+gh-actions-encoding.workspace = true
 gh-actions-context.workspace = true
 gh-actions-plan.workspace = true
 gh-actions-spec.workspace = true

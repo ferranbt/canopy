@@ -67,7 +67,7 @@ pub(crate) fn read(value: Value) -> Value {
     }
 }
 
-fn written(value: Value) -> Value {
+pub fn written(value: Value) -> Value {
     match value {
         Value::Array(of) => {
             let items: Vec<Value> = of.into_iter().map(written).collect();

@@ -871,6 +871,7 @@ dependencies = [
  "clap",
  "eyre",
  "gh-actions-context",
+ "gh-actions-encoding",
  "gh-actions-listener",
  "gh-actions-plan",
  "gh-actions-runner",

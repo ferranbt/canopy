@@ -68,7 +68,7 @@ pub(crate) fn read(value: Value) -> Value {
     }
 }
 
-fn written(value: Value) -> Value {
+pub fn written(value: Value) -> Value {
     match value {
         Value::String(said) => match source(&said) {
             Some(source) => serde_json::json!({ "type": 3, "expr": source }),
