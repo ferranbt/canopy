@@ -1,0 +1,44 @@
+[package]
+name = "gh-actions-payloads"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "The payloads GitHub delivers describing what actually happened"
+
+[features]
+record = [
+    "dep:base64",
+    "dep:chrono",
+    "dep:clap",
+    "dep:octocrab",
+    "dep:tokio",
+    "dep:tracing",
+    "dep:tracing-subscriber",
+]
+
+[[bin]]
+name = "record-webhooks"
+path = "src/bin/record-webhooks.rs"
+required-features = ["record"]
+
+[dependencies]
+serde.workspace = true
+serde_json = "1.0"
+
+base64 = { version = "0.22", optional = true }
+chrono = { version = "0.4", default-features = false, features = [
+    "clock",
+    "std",
+], optional = true }
+clap = { version = "4", features = ["derive"], optional = true }
+octocrab = { version = "0.54", optional = true }
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "time",
+], optional = true }
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+], optional = true }

@@ -1,5 +1,4 @@
 pub mod github;
-pub mod payloads;
 pub mod runner;
 
 use std::collections::BTreeMap;
@@ -7,12 +6,13 @@ use std::collections::BTreeMap;
 use gh_actions_expr::{Context, Status, Value, to_value};
 use serde::{Deserialize, Serialize};
 
-pub use github::Github;
-pub use payloads::{
-    Author, Branch, Comment, Commit, Extra, Issue, IssueCommentEvent, IssuesEvent, Label, Payload,
-    PullRequest, PullRequestEvent, Push, Release, ReleaseEvent, Repository, Schedule, User,
-    WorkflowDispatch, WorkflowRun, WorkflowRunEvent,
+pub use gh_actions_payloads::{
+    Author, Branch, CheckRun, CheckRunEvent, Comment, Commit, Create, Extra, Issue,
+    IssueCommentEvent, IssuesEvent, Label, LabelEvent, Payload, PullRequest, PullRequestEvent,
+    Push, Release, ReleaseEvent, Repository, Schedule, User, WorkflowDispatch, WorkflowJob,
+    WorkflowJobEvent, WorkflowRun, WorkflowRunEvent,
 };
+pub use github::Github;
 pub use runner::Runner;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]

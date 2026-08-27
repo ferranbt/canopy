@@ -22,6 +22,10 @@ pub struct User {
     pub r#type: String,
     #[serde(default)]
     pub site_admin: bool,
+    #[serde(default)]
+    pub html_url: String,
+    #[serde(default)]
+    pub avatar_url: String,
     #[serde(flatten)]
     pub other: Extra,
 }
@@ -42,6 +46,24 @@ pub struct Repository {
     pub default_branch: String,
     #[serde(default)]
     pub html_url: String,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub fork: bool,
+    #[serde(default)]
+    pub archived: bool,
+    #[serde(default)]
+    pub visibility: String,
+    #[serde(default)]
+    pub language: Option<String>,
+    #[serde(default, deserialize_with = "null_as_default")]
+    pub topics: Vec<String>,
+    #[serde(default)]
+    pub clone_url: String,
+    #[serde(default)]
+    pub ssh_url: String,
+    #[serde(default)]
+    pub git_url: String,
     #[serde(flatten)]
     pub other: Extra,
 }

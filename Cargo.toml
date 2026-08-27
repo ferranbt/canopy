@@ -5,6 +5,7 @@ members = [
     "crates/gh-actions-spec",
     "crates/gh-actions-expr",
     "crates/gh-actions-context",
+    "crates/gh-actions-payloads",
     "crates/gh-actions-encoding",
     "crates/gh-actions-plan",
     "crates/gh-actions-report",
@@ -34,6 +35,7 @@ gh-actions-spec = { path = "crates/gh-actions-spec", version = "0.1.3" }
 gh-actions-expr = { path = "crates/gh-actions-expr", version = "0.1.3" }
 gh-actions-context = { path = "crates/gh-actions-context", version = "0.1.3" }
 gh-actions-encoding = { path = "crates/gh-actions-encoding", version = "0.1.3" }
+gh-actions-payloads = { path = "crates/gh-actions-payloads", version = "0.1.3" }
 gh-actions-plan = { path = "crates/gh-actions-plan", version = "0.1.3" }
 gh-actions-report = { path = "crates/gh-actions-report", version = "0.1.3" }
 gh-actions-lint = { path = "crates/gh-actions-lint", version = "0.1.3" }
