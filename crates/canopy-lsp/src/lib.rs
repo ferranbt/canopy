@@ -391,28 +391,38 @@ mod tests {
     fn a_finding_is_not_placed_by_what_a_script_happens_to_say() {
         // The `needs:` inside the shell script is text, not a field. Reading the file
         // rather than searching it is what tells the two apart.
-        let found = analyze(concat!(
-            "name: Test\n",
-            "on: push\n",
-            "jobs:\n",
-            "  build:\n",
-            "    runs-on: ubuntu-latest\n",
-            "    steps:\n",
-            "      - run: |\n",
-            "          cat <<EOF\n",
-            "          needs: pretend\n",
-            "          EOF\n",
-            "    needs: gone\n",
-        ));
+        let found = analyze(
+            r#"name: Test
+on: push
+permissions: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          cat <<EOF
+          needs: pretend
+          EOF
+    needs: gone
+"#,
+        );
 
         assert_eq!(found.len(), 1);
-        assert_eq!(found[0].range.start.line, 10);
+        assert_eq!(found[0].range.start.line, 11);
     }
 
     #[test]
     fn a_sound_workflow_reports_nothing() {
         let found = analyze(
-            "name: Test\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n",
+            r#"name: Test
+on: push
+permissions: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+"#,
         );
 
         assert!(found.is_empty(), "unexpected: {found:?}");
@@ -421,7 +431,15 @@ mod tests {
     #[test]
     fn a_finding_carries_its_rule_and_its_line() {
         let found = analyze(
-            "name: Test\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - name: nothing\n",
+            r#"name: Test
+on: push
+permissions: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: nothing
+"#,
         );
 
         assert_eq!(found.len(), 1);
@@ -430,7 +448,7 @@ mod tests {
             Some(NumberOrString::String("step-shape".to_string()))
         );
         assert_eq!(found[0].severity, Some(DiagnosticSeverity::ERROR));
-        assert_eq!(found[0].range.start.line, 6);
+        assert_eq!(found[0].range.start.line, 7);
     }
 
     #[test]

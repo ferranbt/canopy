@@ -2,10 +2,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use gh_actions_expr::{Expr, Reference, Value, template};
 use gh_actions_plan::contexts::JobContext;
-use gh_actions_spec::Workflow;
 
 use crate::rules::normal_jobs;
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 /// Checks that expressions only reach for contexts that are there.
 ///
@@ -18,7 +17,8 @@ impl Rule for ContextAvailability {
         "context-availability"
     }
 
-    fn check(&self, workflow: &Workflow, contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let (workflow, contexts) = (input.workflow, &input.contexts);
         let mut findings = Vec::new();
 
         for (id, job) in normal_jobs(workflow) {
@@ -131,11 +131,13 @@ fn job_level(reference: &Reference, seen: &Seen) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::ContextAvailability;
+    use crate::tests::findings_of;
 
     #[test]
     fn steps_are_not_available_in_a_job_condition() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -155,7 +157,8 @@ jobs:
 
     #[test]
     fn a_need_read_through_brackets_is_checked_too() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -177,7 +180,8 @@ jobs:
 
     #[test]
     fn a_misspelled_context_field_is_caught() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -206,7 +210,8 @@ jobs:
     fn every_field_the_context_carries_passes() {
         // `token` is never filled in locally and `action_path` only inside a composite
         // action, but both are fields of the context and workflows read them constantly.
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -225,7 +230,8 @@ jobs:
     fn a_context_the_workflow_fills_in_is_not_checked_field_by_field() {
         // Nothing here knows what a step wrote to `$GITHUB_ENV`, so an unknown key is not
         // evidence of anything.
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -242,7 +248,8 @@ jobs:
 
     #[test]
     fn matrix_without_a_strategy_is_refused() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -263,7 +270,8 @@ jobs:
 
     #[test]
     fn matrix_with_a_strategy_passes() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -283,7 +291,8 @@ jobs:
 
     #[test]
     fn reading_a_job_this_one_does_not_need_is_refused() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push
@@ -308,7 +317,8 @@ jobs:
 
     #[test]
     fn a_context_that_does_not_exist_is_refused() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &ContextAvailability,
             r"
 name: Test
 on: push

@@ -1,7 +1,7 @@
-use gh_actions_spec::{Env, Scalar, Workflow};
+use gh_actions_spec::{Env, Scalar};
 
 use crate::rules::normal_jobs;
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 const ALLOWED: &str = "ACTIONS_ALLOW_UNSECURE_COMMANDS";
 
@@ -14,7 +14,8 @@ impl Rule for InsecureCommands {
         "insecure-commands"
     }
 
-    fn check(&self, workflow: &Workflow, _contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let workflow = input.workflow;
         let mut findings = Vec::new();
         let mut report = |location: String| {
             findings.push(Diagnostic::warning(
@@ -65,11 +66,13 @@ fn turned_on(env: Option<&Env>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::InsecureCommands;
+    use crate::tests::findings_of;
 
     #[test]
     fn turning_the_commands_back_on_is_reported_wherever_it_is_done() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &InsecureCommands,
             r"
 name: Build
 on: push
@@ -97,7 +100,8 @@ jobs:
 
     #[test]
     fn leaving_them_off_is_fine() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &InsecureCommands,
             r"
 name: Build
 on: push

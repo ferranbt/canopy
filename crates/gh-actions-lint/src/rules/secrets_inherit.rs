@@ -1,6 +1,6 @@
-use gh_actions_spec::{Job, Secrets, Workflow};
+use gh_actions_spec::{Job, Secrets};
 
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 /// Checks that a called workflow is handed the secrets it needs rather than all of them.
 pub struct SecretsInherit;
@@ -10,7 +10,8 @@ impl Rule for SecretsInherit {
         "secrets-inherit"
     }
 
-    fn check(&self, workflow: &Workflow, _contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let workflow = input.workflow;
         workflow
             .jobs
             .iter()
@@ -36,11 +37,13 @@ impl Rule for SecretsInherit {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::SecretsInherit;
+    use crate::tests::findings_of;
 
     #[test]
     fn inheriting_every_secret_is_reported() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &SecretsInherit,
             r"
 name: Call
 on: push
@@ -58,7 +61,8 @@ jobs:
 
     #[test]
     fn naming_the_secrets_is_fine() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &SecretsInherit,
             r"
 name: Call
 on: push

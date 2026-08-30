@@ -213,7 +213,7 @@ suite("canopy language server", () => {
       ["build", "ship"]
     );
     // Selecting a job puts the cursor on its key.
-    assert.strictEqual(outline[0].selectionRange.start.line, 4);
+    assert.strictEqual(outline[0].selectionRange.start.line, 5);
     // Its steps hang off it, named the way the runner announces them.
     assert.deepStrictEqual(
       outline[0].children.map((step) => step.name),
@@ -242,7 +242,7 @@ suite("canopy language server", () => {
       (lens) => lens.command!.arguments?.[1] === "build"
     );
     assert.ok(build, "expected a lens naming the build job");
-    assert.strictEqual(build!.range.start.line, 4);
+    assert.strictEqual(build!.range.start.line, 5);
     assert.strictEqual(build!.command!.command, "canopy.run");
   });
 
@@ -254,8 +254,8 @@ suite("canopy language server", () => {
     const broken = analyzed(uri);
     const edit = new vscode.WorkspaceEdit();
     const needs = new vscode.Range(
-      new vscode.Position(13, 0),
-      new vscode.Position(13, doc.lineAt(13).text.length)
+      new vscode.Position(14, 0),
+      new vscode.Position(14, doc.lineAt(14).text.length)
     );
     assert.strictEqual(doc.getText(needs), "    needs: build");
     edit.replace(uri, needs, "    needs: gone");

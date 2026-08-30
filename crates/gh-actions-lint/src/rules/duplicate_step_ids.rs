@@ -1,9 +1,7 @@
 use std::collections::BTreeMap;
 
-use gh_actions_spec::Workflow;
-
 use crate::rules::normal_jobs;
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 /// Checks that step ids are unique within their job.
 pub struct DuplicateStepIds;
@@ -13,7 +11,8 @@ impl Rule for DuplicateStepIds {
         "duplicate-step-ids"
     }
 
-    fn check(&self, workflow: &Workflow, _contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let workflow = input.workflow;
         let mut findings = Vec::new();
 
         for (id, job) in normal_jobs(workflow) {
@@ -45,11 +44,13 @@ impl Rule for DuplicateStepIds {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::DuplicateStepIds;
+    use crate::tests::findings_of;
 
     #[test]
     fn a_repeated_id_is_refused() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &DuplicateStepIds,
             r"
 name: Test
 on: push
@@ -71,7 +72,8 @@ jobs:
 
     #[test]
     fn the_same_id_in_another_job_is_fine() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &DuplicateStepIds,
             r"
 name: Test
 on: push
