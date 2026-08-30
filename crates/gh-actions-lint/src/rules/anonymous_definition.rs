@@ -1,6 +1,4 @@
-use gh_actions_spec::Workflow;
-
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 /// Checks that a workflow says what it is called, since what it is called is what every run
 /// of it is listed under.
@@ -11,7 +9,8 @@ impl Rule for AnonymousDefinition {
         "anonymous-definition"
     }
 
-    fn check(&self, workflow: &Workflow, _contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let workflow = input.workflow;
         if workflow.name.is_some() {
             return Vec::new();
         }
@@ -26,11 +25,13 @@ impl Rule for AnonymousDefinition {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::AnonymousDefinition;
+    use crate::tests::findings_of;
 
     #[test]
     fn a_workflow_without_a_name_is_reported() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &AnonymousDefinition,
             r"
 on: push
 jobs:
@@ -47,7 +48,8 @@ jobs:
 
     #[test]
     fn one_with_a_name_is_left_alone() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &AnonymousDefinition,
             r"
 name: Build
 on: push

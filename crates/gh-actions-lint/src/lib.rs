@@ -12,27 +12,41 @@ pub use gh_actions_plan::{Diagnostic, Severity, has_errors};
 /// What each job of the workflow can see, keyed by job id.
 pub type Contexts = BTreeMap<String, JobContext>;
 
+pub struct RuleInput<'a> {
+    pub workflow: &'a Workflow,
+    pub document: &'a Document,
+    pub contexts: Contexts,
+}
+
+impl<'a> RuleInput<'a> {
+    pub fn new(document: &'a Document, workflow: &'a Workflow) -> Self {
+        Self {
+            contexts: contexts::for_workflow(workflow),
+            workflow,
+            document,
+        }
+    }
+}
+
 pub trait Rule {
     /// Name reported with every finding.
     fn name(&self) -> &'static str;
 
-    /// Everything this rule objects to, against contexts that arrive already built.
-    fn check(&self, workflow: &Workflow, contexts: &Contexts) -> Vec<Diagnostic>;
+    /// Everything this rule objects to.
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic>;
 }
 
 /// Runs every rule, in the order they are registered.
-pub fn lint(workflow: &Workflow) -> Vec<Diagnostic> {
-    let contexts = contexts::for_workflow(workflow);
-
+pub fn lint(input: &RuleInput) -> Vec<Diagnostic> {
     rules::all()
         .iter()
-        .flat_map(|rule| rule.check(workflow, &contexts))
+        .flat_map(|rule| rule.check(input))
         .collect()
 }
 
 /// Runs every rule and drops what the workflow's own comments ask to pass over.
 pub fn check(document: &Document, workflow: &Workflow) -> Vec<Diagnostic> {
-    lint(workflow)
+    lint(&RuleInput::new(document, workflow))
         .into_iter()
         .filter(|finding| !skip::ignored(document, finding))
         .collect()
@@ -43,8 +57,19 @@ mod tests {
     use super::*;
 
     pub(crate) fn lint_source(yaml: &str) -> Vec<Diagnostic> {
-        let workflow: Workflow = yaml_with_spans::from_str(yaml).expect("workflow parses");
-        lint(&workflow)
+        let document = Document::parse(yaml).expect("document parses");
+        let workflow: Workflow =
+            yaml_with_spans::from_node(&document.root).expect("workflow parses");
+
+        lint(&RuleInput::new(&document, &workflow))
+    }
+
+    pub(crate) fn findings_of(rule: &dyn Rule, yaml: &str) -> Vec<Diagnostic> {
+        let document = Document::parse(yaml).expect("document parses");
+        let workflow: Workflow =
+            yaml_with_spans::from_node(&document.root).expect("workflow parses");
+
+        rule.check(&RuleInput::new(&document, &workflow))
     }
 
     fn check_source(yaml: &str) -> Vec<Diagnostic> {
@@ -54,10 +79,12 @@ mod tests {
         check(&document, &workflow)
     }
 
-    /// A workflow with one problem per job, so a directive's reach can be seen.
+    /// A workflow with one problem per job, so a directive's reach can be seen. It is
+    /// otherwise sound, so what it says about a directive is not lost among other findings.
     const NOISY: &str = r"
 name: Test
 on: push
+permissions: {}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -119,6 +146,7 @@ jobs:
             r"
 name: Test
 on: push
+permissions: {}
 jobs:
   build:
     runs-on: ubuntu-latest

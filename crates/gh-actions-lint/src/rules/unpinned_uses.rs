@@ -1,7 +1,7 @@
-use gh_actions_spec::{Uses, Workflow};
+use gh_actions_spec::Uses;
 
 use crate::rules::normal_jobs;
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 /// Checks that an action is asked for by commit, since a tag or a branch is whatever the
 /// repository it came from says it is today.
@@ -12,7 +12,8 @@ impl Rule for UnpinnedUses {
         "unpinned-uses"
     }
 
-    fn check(&self, workflow: &Workflow, _contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let workflow = input.workflow;
         let mut findings = Vec::new();
 
         for (id, job) in normal_jobs(workflow) {
@@ -51,11 +52,13 @@ fn commit(reference: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::UnpinnedUses;
+    use crate::tests::findings_of;
 
     #[test]
     fn a_tag_or_a_branch_is_reported() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &UnpinnedUses,
             r"
 name: Build
 on: push
@@ -75,7 +78,8 @@ jobs:
 
     #[test]
     fn a_commit_and_an_action_of_our_own_are_fine() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &UnpinnedUses,
             r"
 name: Build
 on: push

@@ -1,8 +1,6 @@
-use gh_actions_expr::{Expr, template};
-use gh_actions_spec::Workflow;
-
 use crate::rules::normal_jobs;
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
+use gh_actions_expr::{Expr, template};
 
 /// Checks that job outputs read steps the job actually has.
 ///
@@ -15,7 +13,8 @@ impl Rule for JobOutputs {
         "job-outputs"
     }
 
-    fn check(&self, workflow: &Workflow, contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let (workflow, contexts) = (input.workflow, &input.contexts);
         let mut findings = Vec::new();
 
         for (id, job) in normal_jobs(workflow) {
@@ -65,11 +64,13 @@ fn no_step(wanted: &str, ids: &[&str]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::JobOutputs;
+    use crate::tests::findings_of;
 
     #[test]
     fn an_output_reading_an_unknown_step_is_refused() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &JobOutputs,
             r"
 name: Test
 on: push
@@ -91,7 +92,8 @@ jobs:
 
     #[test]
     fn an_output_reading_a_real_step_passes() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &JobOutputs,
             r"
 name: Test
 on: push
@@ -111,7 +113,8 @@ jobs:
 
     #[test]
     fn a_job_whose_steps_have_no_ids_says_so() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &JobOutputs,
             r"
 name: Test
 on: push

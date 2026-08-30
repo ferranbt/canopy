@@ -1,7 +1,7 @@
-use gh_actions_spec::{Container, Uses, Workflow};
+use gh_actions_spec::{Container, Uses};
 
 use crate::rules::normal_jobs;
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 /// Checks that an image is asked for by digest, since a tag is whatever the registry it came
 /// from says it is today.
@@ -12,7 +12,8 @@ impl Rule for UnpinnedImages {
         "unpinned-images"
     }
 
-    fn check(&self, workflow: &Workflow, _contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let workflow = input.workflow;
         let mut findings = Vec::new();
         let mut report = |location: String, image: &str| {
             findings.push(Diagnostic::warning(
@@ -70,11 +71,13 @@ fn pinned(image: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::UnpinnedImages;
+    use crate::tests::findings_of;
 
     #[test]
     fn a_tag_is_reported_wherever_the_image_is_asked_for() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &UnpinnedImages,
             r"
 name: Build
 on: push
@@ -99,7 +102,8 @@ jobs:
 
     #[test]
     fn a_digest_is_fine() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &UnpinnedImages,
             r"
 name: Build
 on: push

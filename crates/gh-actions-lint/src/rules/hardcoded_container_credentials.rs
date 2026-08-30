@@ -1,7 +1,7 @@
-use gh_actions_spec::{Container, ContainerSettings, Workflow};
+use gh_actions_spec::{Container, ContainerSettings};
 
 use crate::rules::normal_jobs;
-use crate::{Contexts, Diagnostic, Rule};
+use crate::{Diagnostic, Rule, RuleInput};
 
 /// Checks that the password a registry is reached with comes from a secret, since a workflow
 /// file is readable by anyone who can read the repository.
@@ -12,7 +12,8 @@ impl Rule for HardcodedContainerCredentials {
         "hardcoded-container-credentials"
     }
 
-    fn check(&self, workflow: &Workflow, _contexts: &Contexts) -> Vec<Diagnostic> {
+    fn check(&self, input: &RuleInput) -> Vec<Diagnostic> {
+        let workflow = input.workflow;
         let mut findings = Vec::new();
 
         for (id, job) in normal_jobs(workflow) {
@@ -61,11 +62,13 @@ fn written_down(settings: &ContainerSettings) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::lint_source;
+    use super::HardcodedContainerCredentials;
+    use crate::tests::findings_of;
 
     #[test]
     fn a_password_written_into_the_workflow_is_reported() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &HardcodedContainerCredentials,
             r"
 name: Build
 on: push
@@ -92,7 +95,8 @@ jobs:
 
     #[test]
     fn a_service_is_looked_at_too() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &HardcodedContainerCredentials,
             r"
 name: Build
 on: push
@@ -119,7 +123,8 @@ jobs:
 
     #[test]
     fn one_taken_from_a_secret_is_fine() {
-        let findings = lint_source(
+        let findings = findings_of(
+            &HardcodedContainerCredentials,
             r"
 name: Build
 on: push
