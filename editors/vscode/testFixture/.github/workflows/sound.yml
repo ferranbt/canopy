@@ -1,5 +1,6 @@
 name: Sound
 on: push
+permissions: {}
 
 jobs:
   build:
