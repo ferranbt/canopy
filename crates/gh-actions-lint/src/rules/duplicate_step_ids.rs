@@ -51,6 +51,7 @@ mod tests {
     fn a_repeated_id_is_refused() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -72,6 +73,7 @@ jobs:
     fn the_same_id_in_another_job_is_fine() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   one:

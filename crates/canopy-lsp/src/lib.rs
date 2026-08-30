@@ -392,6 +392,7 @@ mod tests {
         // The `needs:` inside the shell script is text, not a field. Reading the file
         // rather than searching it is what tells the two apart.
         let found = analyze(concat!(
+            "name: Test\n",
             "on: push\n",
             "jobs:\n",
             "  build:\n",
@@ -405,13 +406,13 @@ mod tests {
         ));
 
         assert_eq!(found.len(), 1);
-        assert_eq!(found[0].range.start.line, 9);
+        assert_eq!(found[0].range.start.line, 10);
     }
 
     #[test]
     fn a_sound_workflow_reports_nothing() {
         let found = analyze(
-            "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n",
+            "name: Test\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n",
         );
 
         assert!(found.is_empty(), "unexpected: {found:?}");
@@ -420,7 +421,7 @@ mod tests {
     #[test]
     fn a_finding_carries_its_rule_and_its_line() {
         let found = analyze(
-            "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - name: nothing\n",
+            "name: Test\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - name: nothing\n",
         );
 
         assert_eq!(found.len(), 1);
@@ -429,7 +430,7 @@ mod tests {
             Some(NumberOrString::String("step-shape".to_string()))
         );
         assert_eq!(found[0].severity, Some(DiagnosticSeverity::ERROR));
-        assert_eq!(found[0].range.start.line, 5);
+        assert_eq!(found[0].range.start.line, 6);
     }
 
     #[test]
