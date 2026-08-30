@@ -1,5 +1,13 @@
 # `exclude` takes combinations away and `include` adds to the ones that are left. The jobs
 # leave a marker each and a final job counts them, since a job cannot see its siblings.
+#
+# expect: run = success
+# expect: setup = success
+# expect: combinations (linux, 1) = success
+# expect: combinations (extended, linux, 2) = success
+# expect: combinations (mac, 2) = success
+# expect: check = success
+
 name: Matrix include and exclude
 
 on: push

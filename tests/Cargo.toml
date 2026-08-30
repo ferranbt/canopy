@@ -16,6 +16,10 @@ path = "integration.rs"
 name = "ci-workflow"
 path = "ci-workflow.rs"
 
+[[test]]
+name = "scheduling"
+path = "scheduling.rs"
+
 [dependencies]
 local-runner.workspace = true
 gh-actions-runner.workspace = true

@@ -1,4 +1,11 @@
 # A job saying its failure should not count: the run passes, and what needed it still runs.
+#
+# expect: run = success
+# expect: allowed-to-fail = success
+# expect: after-it = success
+# expect: matrix-allowed-to-fail (steady) = success
+# expect: matrix-allowed-to-fail (true, risky) = success
+
 name: Job continue-on-error
 
 on: push
