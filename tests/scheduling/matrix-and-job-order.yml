@@ -1,4 +1,11 @@
 # Matrix expansion, job ordering through `needs`, and job outputs.
+#
+# expect: run = success
+# expect: build (debug) = success
+# expect: build (true, release) = success
+# expect: report = success
+# expect: skipped = skipped
+
 name: Matrix and needs
 
 on: push

@@ -1,5 +1,19 @@
 # What a failing job does to the jobs around it: nothing, unless they needed it or share
 # its matrix. The jobs leave marker files behind and the last one reads them.
+#
+# expect: run = failure
+# expect: setup = success
+# expect: fails = failure
+# expect: unrelated = success
+# expect: dependent = skipped
+# expect: keeps-going (1) = success
+# expect: keeps-going (2) = failure
+# expect: keeps-going (3) = success
+# expect: called-off (1) = failure
+# expect: called-off (2) = skipped
+# expect: called-off (3) = skipped
+# expect: check = success
+
 name: Job failure handling
 
 on: push

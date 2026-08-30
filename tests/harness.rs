@@ -495,15 +495,7 @@ impl Harness {
             .to_string();
 
         let artifacts = self.artifacts.join(name.trim_end_matches(".yml"));
-        let workspace = artifacts.join("workspace");
-        // A case run twice starts from the same nothing both times.
-        let _ = std::fs::remove_dir_all(&workspace);
-        std::fs::create_dir_all(&workspace)
-            .map_err(|err| format!("cannot make a workspace: {err}"))?;
-
-        let actions = testdata.parent().unwrap_or(&testdata).join("actions");
-        copy(&actions, &workspace.join("actions"))
-            .map_err(|err| format!("cannot copy the actions: {err}"))?;
+        let workspace = workspace(&artifacts)?;
 
         let temp = artifacts.join("temp");
         let planner = Local::start(Config {
@@ -581,6 +573,18 @@ fn well_formed(outcome: &Outcome) -> Result<(), String> {
         return Err(format!("step {name:?} never finished"));
     }
     Ok(())
+}
+
+pub fn workspace(at: &Path) -> Result<PathBuf, String> {
+    let workspace = at.join("workspace");
+    let _ = std::fs::remove_dir_all(&workspace);
+    std::fs::create_dir_all(&workspace).map_err(|err| format!("cannot make a workspace: {err}"))?;
+
+    let actions = Path::new(env!("CARGO_MANIFEST_DIR")).join("actions");
+    copy(&actions, &workspace.join("actions"))
+        .map_err(|err| format!("cannot copy the actions: {err}"))?;
+
+    Ok(workspace)
 }
 
 fn copy(from: &Path, to: &Path) -> std::io::Result<()> {
