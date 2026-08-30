@@ -56,6 +56,7 @@ mod tests {
 
     /// A workflow with one problem per job, so a directive's reach can be seen.
     const NOISY: &str = r"
+name: Test
 on: push
 jobs:
   build:
@@ -116,6 +117,7 @@ jobs:
     fn a_sound_workflow_has_nothing_to_say_about_it() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:

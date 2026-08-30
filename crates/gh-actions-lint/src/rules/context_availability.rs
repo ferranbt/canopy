@@ -137,6 +137,7 @@ mod tests {
     fn steps_are_not_available_in_a_job_condition() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -156,6 +157,7 @@ jobs:
     fn a_need_read_through_brackets_is_checked_too() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -177,6 +179,7 @@ jobs:
     fn a_misspelled_context_field_is_caught() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -205,6 +208,7 @@ jobs:
         // action, but both are fields of the context and workflows read them constantly.
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -223,6 +227,7 @@ jobs:
         // evidence of anything.
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -239,6 +244,7 @@ jobs:
     fn matrix_without_a_strategy_is_refused() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -259,6 +265,7 @@ jobs:
     fn matrix_with_a_strategy_passes() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -278,6 +285,7 @@ jobs:
     fn reading_a_job_this_one_does_not_need_is_refused() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   setup:
@@ -302,6 +310,7 @@ jobs:
     fn a_context_that_does_not_exist_is_refused() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:

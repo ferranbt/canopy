@@ -71,6 +71,7 @@ mod tests {
     fn an_output_reading_an_unknown_step_is_refused() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -92,6 +93,7 @@ jobs:
     fn an_output_reading_a_real_step_passes() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:
@@ -111,6 +113,7 @@ jobs:
     fn a_job_whose_steps_have_no_ids_says_so() {
         let findings = lint_source(
             r"
+name: Test
 on: push
 jobs:
   build:

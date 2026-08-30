@@ -1,6 +1,12 @@
+pub mod anonymous_definition;
 pub mod context_availability;
 pub mod duplicate_step_ids;
+pub mod hardcoded_container_credentials;
+pub mod insecure_commands;
 pub mod job_outputs;
+pub mod secrets_inherit;
+pub mod unpinned_images;
+pub mod unpinned_uses;
 
 use crate::Rule;
 
@@ -9,6 +15,12 @@ pub fn all() -> Vec<Box<dyn Rule>> {
         Box::new(duplicate_step_ids::DuplicateStepIds),
         Box::new(context_availability::ContextAvailability),
         Box::new(job_outputs::JobOutputs),
+        Box::new(anonymous_definition::AnonymousDefinition),
+        Box::new(secrets_inherit::SecretsInherit),
+        Box::new(insecure_commands::InsecureCommands),
+        Box::new(hardcoded_container_credentials::HardcodedContainerCredentials),
+        Box::new(unpinned_uses::UnpinnedUses),
+        Box::new(unpinned_images::UnpinnedImages),
     ]
 }
 
